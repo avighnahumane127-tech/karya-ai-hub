@@ -19,6 +19,9 @@
  */
 
 @theme inline {
+  --font-sans:
+    "Instrument Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, monospace;
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
@@ -59,36 +62,56 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
+  --color-ready: var(--ready);
+  --color-ready-soft: var(--ready-soft);
+  --color-warn: var(--warn);
+  --color-warn-soft: var(--warn-soft);
+  --color-blocked: var(--blocked);
+  --color-blocked-soft: var(--blocked-soft);
+  --color-info: var(--info);
+  --color-info-soft: var(--info-soft);
+  --color-surface: var(--surface);
+  --color-hairline: var(--hairline);
 }
 
 :root {
-  --radius: 0.625rem;
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.129 0.042 264.695);
+  --radius: 0.5rem;
+  --background: oklch(0.993 0.002 106);
+  --foreground: oklch(0.24 0.006 265);
   --card: oklch(1 0 0);
-  --card-foreground: oklch(0.129 0.042 264.695);
+  --card-foreground: oklch(0.24 0.006 265);
   --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.129 0.042 264.695);
-  --primary: oklch(0.208 0.042 265.755);
-  --primary-foreground: oklch(0.984 0.003 247.858);
-  --secondary: oklch(0.968 0.007 247.896);
-  --secondary-foreground: oklch(0.208 0.042 265.755);
-  --muted: oklch(0.968 0.007 247.896);
-  --muted-foreground: oklch(0.554 0.046 257.417);
-  --accent: oklch(0.968 0.007 247.896);
-  --accent-foreground: oklch(0.208 0.042 265.755);
-  --destructive: oklch(0.577 0.245 27.325);
-  --destructive-foreground: oklch(0.984 0.003 247.858);
-  --border: oklch(0.929 0.013 255.508);
-  --input: oklch(0.929 0.013 255.508);
-  --ring: oklch(0.704 0.04 256.788);
+  --popover-foreground: oklch(0.24 0.006 265);
+  --primary: oklch(0.26 0.008 265);
+  --primary-foreground: oklch(0.985 0.002 106);
+  --secondary: oklch(0.968 0.003 106);
+  --secondary-foreground: oklch(0.3 0.008 265);
+  --muted: oklch(0.966 0.003 106);
+  --muted-foreground: oklch(0.55 0.008 265);
+  --accent: oklch(0.958 0.004 106);
+  --accent-foreground: oklch(0.26 0.008 265);
+  --destructive: oklch(0.55 0.17 25);
+  --destructive-foreground: oklch(0.985 0.002 106);
+  --border: oklch(0.912 0.003 106);
+  --input: oklch(0.9 0.003 106);
+  --ring: oklch(0.72 0.02 265);
+  --surface: oklch(1 0 0);
+  --hairline: oklch(0.936 0.003 106);
+  --ready: oklch(0.5 0.11 152);
+  --ready-soft: oklch(0.955 0.03 152);
+  --warn: oklch(0.55 0.12 72);
+  --warn-soft: oklch(0.962 0.035 82);
+  --blocked: oklch(0.53 0.16 25);
+  --blocked-soft: oklch(0.962 0.025 25);
+  --info: oklch(0.52 0.11 250);
+  --info-soft: oklch(0.962 0.02 250);
   --chart-1: oklch(0.646 0.222 41.116);
   --chart-2: oklch(0.6 0.118 184.704);
   --chart-3: oklch(0.398 0.07 227.392);
   --chart-4: oklch(0.828 0.189 84.429);
   --chart-5: oklch(0.769 0.188 70.08);
   --sidebar: oklch(0.984 0.003 247.858);
-  --sidebar-foreground: oklch(0.129 0.042 264.695);
+  --sidebar-foreground: oklch(0.24 0.006 265);
   --sidebar-primary: oklch(0.208 0.042 265.755);
   --sidebar-primary-foreground: oklch(0.984 0.003 247.858);
   --sidebar-accent: oklch(0.968 0.007 247.896);
@@ -100,6 +123,16 @@
 .dark {
   --background: oklch(0.129 0.042 264.695);
   --foreground: oklch(0.984 0.003 247.858);
+  --surface: oklch(0.19 0.02 265);
+  --hairline: oklch(1 0 0 / 10%);
+  --ready: oklch(0.75 0.14 152);
+  --ready-soft: oklch(0.28 0.05 152);
+  --warn: oklch(0.8 0.13 82);
+  --warn-soft: oklch(0.3 0.05 82);
+  --blocked: oklch(0.72 0.16 25);
+  --blocked-soft: oklch(0.3 0.06 25);
+  --info: oklch(0.75 0.11 250);
+  --info-soft: oklch(0.28 0.05 250);
   --card: oklch(0.208 0.042 265.755);
   --card-foreground: oklch(0.984 0.003 247.858);
   --popover: oklch(0.208 0.042 265.755);
@@ -140,5 +173,26 @@
   body {
     background-color: var(--color-background);
     color: var(--color-foreground);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
   }
+
+  h1,
+  h2,
+  h3 {
+    font-weight: 500;
+    letter-spacing: -0.015em;
+  }
+}
+
+@utility hairline {
+  border-color: var(--color-hairline);
+}
+
+@utility label-caps {
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-muted-foreground);
 }
