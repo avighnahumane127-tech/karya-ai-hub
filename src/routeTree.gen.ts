@@ -10,33 +10,73 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as HandoffsRouteImport } from './routes/handoffs'
+import { Route as QuestionsRouteImport } from './routes/questions'
+import { Route as TemplatesRouteImport } from './routes/templates'
+import { Route as WorkIndexRouteImport } from './routes/work.index'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const HandoffsRoute = HandoffsRouteImport.update({
+  id: '/handoffs',
+  path: '/handoffs',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const QuestionsRoute = QuestionsRouteImport.update({
+  id: '/questions',
+  path: '/questions',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TemplatesRoute = TemplatesRouteImport.update({
+  id: '/templates',
+  path: '/templates',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const WorkIndexRoute = WorkIndexRouteImport.update({
+  id: '/work/',
+  path: '/work/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/handoffs': typeof HandoffsRoute
+  '/questions': typeof QuestionsRoute
+  '/templates': typeof TemplatesRoute
+  '/work/': typeof WorkIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/handoffs': typeof HandoffsRoute
+  '/questions': typeof QuestionsRoute
+  '/templates': typeof TemplatesRoute
+  '/work': typeof WorkIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/handoffs': typeof HandoffsRoute
+  '/questions': typeof QuestionsRoute
+  '/templates': typeof TemplatesRoute
+  '/work/': typeof WorkIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths: '/' | '/handoffs' | '/questions' | '/templates' | '/work/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to: '/' | '/handoffs' | '/questions' | '/templates' | '/work'
+  id: '__root__' | '/' | '/handoffs' | '/questions' | '/templates' | '/work/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  HandoffsRoute: typeof HandoffsRoute
+  QuestionsRoute: typeof QuestionsRoute
+  TemplatesRoute: typeof TemplatesRoute
+  WorkIndexRoute: typeof WorkIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +88,43 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/handoffs': {
+      id: '/handoffs'
+      path: '/handoffs'
+      fullPath: '/handoffs'
+      preLoaderRoute: typeof HandoffsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/questions': {
+      id: '/questions'
+      path: '/questions'
+      fullPath: '/questions'
+      preLoaderRoute: typeof QuestionsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/templates': {
+      id: '/templates'
+      path: '/templates'
+      fullPath: '/templates'
+      preLoaderRoute: typeof TemplatesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/work/': {
+      id: '/work/'
+      path: '/work'
+      fullPath: '/work/'
+      preLoaderRoute: typeof WorkIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  HandoffsRoute: HandoffsRoute,
+  QuestionsRoute: QuestionsRoute,
+  TemplatesRoute: TemplatesRoute,
+  WorkIndexRoute: WorkIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
