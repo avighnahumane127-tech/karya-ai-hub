@@ -9,202 +9,27 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as IndexRouteImport } from './routes/index'
-import { Route as AddRouteImport } from './routes/add'
-import { Route as HandoffsRouteImport } from './routes/handoffs'
-import { Route as QuestionsRouteImport } from './routes/questions'
-import { Route as SettingsRouteImport } from './routes/settings'
-import { Route as TemplatesRouteImport } from './routes/templates'
-import { Route as WorkIndexRouteImport } from './routes/work.index'
-import { Route as WorkWorkIdRouteImport } from './routes/work.$workId'
 
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AddRoute = AddRouteImport.update({
-  id: '/add',
-  path: '/add',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const HandoffsRoute = HandoffsRouteImport.update({
-  id: '/handoffs',
-  path: '/handoffs',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const QuestionsRoute = QuestionsRouteImport.update({
-  id: '/questions',
-  path: '/questions',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const SettingsRoute = SettingsRouteImport.update({
-  id: '/settings',
-  path: '/settings',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const TemplatesRoute = TemplatesRouteImport.update({
-  id: '/templates',
-  path: '/templates',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const WorkIndexRoute = WorkIndexRouteImport.update({
-  id: '/work/',
-  path: '/work/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const WorkWorkIdRoute = WorkWorkIdRouteImport.update({
-  id: '/work/$workId',
-  path: '/work/$workId',
-  getParentRoute: () => rootRouteImport,
-} as any)
-
-export interface FileRoutesByFullPath {
-  '/': typeof IndexRoute
-  '/add': typeof AddRoute
-  '/handoffs': typeof HandoffsRoute
-  '/questions': typeof QuestionsRoute
-  '/settings': typeof SettingsRoute
-  '/templates': typeof TemplatesRoute
-  '/work/$workId': typeof WorkWorkIdRoute
-  '/work/': typeof WorkIndexRoute
-}
-export interface FileRoutesByTo {
-  '/': typeof IndexRoute
-  '/add': typeof AddRoute
-  '/handoffs': typeof HandoffsRoute
-  '/questions': typeof QuestionsRoute
-  '/settings': typeof SettingsRoute
-  '/templates': typeof TemplatesRoute
-  '/work/$workId': typeof WorkWorkIdRoute
-  '/work': typeof WorkIndexRoute
-}
+export interface FileRoutesByFullPath {}
+export interface FileRoutesByTo {}
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
-  '/': typeof IndexRoute
-  '/add': typeof AddRoute
-  '/handoffs': typeof HandoffsRoute
-  '/questions': typeof QuestionsRoute
-  '/settings': typeof SettingsRoute
-  '/templates': typeof TemplatesRoute
-  '/work/$workId': typeof WorkWorkIdRoute
-  '/work/': typeof WorkIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths:
-    | '/'
-    | '/add'
-    | '/handoffs'
-    | '/questions'
-    | '/settings'
-    | '/templates'
-    | '/work/$workId'
-    | '/work/'
+  fullPaths: never
   fileRoutesByTo: FileRoutesByTo
-  to:
-    | '/'
-    | '/add'
-    | '/handoffs'
-    | '/questions'
-    | '/settings'
-    | '/templates'
-    | '/work/$workId'
-    | '/work'
-  id:
-    | '__root__'
-    | '/'
-    | '/add'
-    | '/handoffs'
-    | '/questions'
-    | '/settings'
-    | '/templates'
-    | '/work/$workId'
-    | '/work/'
+  to: never
+  id: '__root__'
   fileRoutesById: FileRoutesById
 }
-export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute
-  AddRoute: typeof AddRoute
-  HandoffsRoute: typeof HandoffsRoute
-  QuestionsRoute: typeof QuestionsRoute
-  SettingsRoute: typeof SettingsRoute
-  TemplatesRoute: typeof TemplatesRoute
-  WorkWorkIdRoute: typeof WorkWorkIdRoute
-  WorkIndexRoute: typeof WorkIndexRoute
-}
+export interface RootRouteChildren {}
 
 declare module '@tanstack/react-router' {
-  interface FileRoutesByPath {
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/add': {
-      id: '/add'
-      path: '/add'
-      fullPath: '/add'
-      preLoaderRoute: typeof AddRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/handoffs': {
-      id: '/handoffs'
-      path: '/handoffs'
-      fullPath: '/handoffs'
-      preLoaderRoute: typeof HandoffsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/questions': {
-      id: '/questions'
-      path: '/questions'
-      fullPath: '/questions'
-      preLoaderRoute: typeof QuestionsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/settings': {
-      id: '/settings'
-      path: '/settings'
-      fullPath: '/settings'
-      preLoaderRoute: typeof SettingsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/templates': {
-      id: '/templates'
-      path: '/templates'
-      fullPath: '/templates'
-      preLoaderRoute: typeof TemplatesRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/work/': {
-      id: '/work/'
-      path: '/work'
-      fullPath: '/work/'
-      preLoaderRoute: typeof WorkIndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/work/$workId': {
-      id: '/work/$workId'
-      path: '/work/$workId'
-      fullPath: '/work/$workId'
-      preLoaderRoute: typeof WorkWorkIdRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-  }
+  interface FileRoutesByPath {}
 }
 
-const rootRouteChildren: RootRouteChildren = {
-  IndexRoute: IndexRoute,
-  AddRoute: AddRoute,
-  HandoffsRoute: HandoffsRoute,
-  QuestionsRoute: QuestionsRoute,
-  SettingsRoute: SettingsRoute,
-  TemplatesRoute: TemplatesRoute,
-  WorkWorkIdRoute: WorkWorkIdRoute,
-  WorkIndexRoute: WorkIndexRoute,
-}
+const rootRouteChildren: RootRouteChildren = {}
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
