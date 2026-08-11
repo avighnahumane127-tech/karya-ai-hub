@@ -119,7 +119,7 @@ export function PublicFooter() {
     <footer className="border-t border-hairline">
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-4 px-5 py-8 sm:flex-row sm:items-center sm:justify-between md:px-8">
         <div className="space-y-0.5">
-          <p className="text-sm text-muted-foreground">© 2026 AUSPPA</p>
+          <p className="text-sm text-muted-foreground">© 2026 AUSSPA</p>
           <p className="text-xs text-muted-foreground/60">Built for learners, by learners</p>
         </div>
         <nav className="flex flex-wrap items-center gap-5 text-sm text-muted-foreground">
