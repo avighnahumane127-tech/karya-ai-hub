@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as AddRouteImport } from './routes/add'
 import { Route as HandoffsRouteImport } from './routes/handoffs'
 import { Route as HomeRouteImport } from './routes/home'
+import { Route as InsightsRouteImport } from './routes/insights'
 import { Route as QuestionsRouteImport } from './routes/questions'
 import { Route as TemplatesRouteImport } from './routes/templates'
 import { Route as WorkIndexRouteImport } from './routes/work.index'
@@ -30,6 +31,11 @@ const HandoffsRoute = HandoffsRouteImport.update({
 const HomeRoute = HomeRouteImport.update({
   id: '/home',
   path: '/home',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const InsightsRoute = InsightsRouteImport.update({
+  id: '/insights',
+  path: '/insights',
   getParentRoute: () => rootRouteImport,
 } as any)
 const QuestionsRoute = QuestionsRouteImport.update({
@@ -57,6 +63,7 @@ export interface FileRoutesByFullPath {
   '/add': typeof AddRoute
   '/handoffs': typeof HandoffsRoute
   '/home': typeof HomeRoute
+  '/insights': typeof InsightsRoute
   '/questions': typeof QuestionsRoute
   '/templates': typeof TemplatesRoute
   '/work/$workId': typeof WorkWorkIdRoute
@@ -66,6 +73,7 @@ export interface FileRoutesByTo {
   '/add': typeof AddRoute
   '/handoffs': typeof HandoffsRoute
   '/home': typeof HomeRoute
+  '/insights': typeof InsightsRoute
   '/questions': typeof QuestionsRoute
   '/templates': typeof TemplatesRoute
   '/work/$workId': typeof WorkWorkIdRoute
@@ -76,6 +84,7 @@ export interface FileRoutesById {
   '/add': typeof AddRoute
   '/handoffs': typeof HandoffsRoute
   '/home': typeof HomeRoute
+  '/insights': typeof InsightsRoute
   '/questions': typeof QuestionsRoute
   '/templates': typeof TemplatesRoute
   '/work/$workId': typeof WorkWorkIdRoute
@@ -87,6 +96,7 @@ export interface FileRouteTypes {
     | '/add'
     | '/handoffs'
     | '/home'
+    | '/insights'
     | '/questions'
     | '/templates'
     | '/work/$workId'
@@ -96,6 +106,7 @@ export interface FileRouteTypes {
     | '/add'
     | '/handoffs'
     | '/home'
+    | '/insights'
     | '/questions'
     | '/templates'
     | '/work/$workId'
@@ -105,6 +116,7 @@ export interface FileRouteTypes {
     | '/add'
     | '/handoffs'
     | '/home'
+    | '/insights'
     | '/questions'
     | '/templates'
     | '/work/$workId'
@@ -115,6 +127,7 @@ export interface RootRouteChildren {
   AddRoute: typeof AddRoute
   HandoffsRoute: typeof HandoffsRoute
   HomeRoute: typeof HomeRoute
+  InsightsRoute: typeof InsightsRoute
   QuestionsRoute: typeof QuestionsRoute
   TemplatesRoute: typeof TemplatesRoute
   WorkWorkIdRoute: typeof WorkWorkIdRoute
@@ -142,6 +155,13 @@ declare module '@tanstack/react-router' {
       path: '/home'
       fullPath: '/home'
       preLoaderRoute: typeof HomeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/insights': {
+      id: '/insights'
+      path: '/insights'
+      fullPath: '/insights'
+      preLoaderRoute: typeof InsightsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/questions': {
@@ -179,6 +199,7 @@ const rootRouteChildren: RootRouteChildren = {
   AddRoute: AddRoute,
   HandoffsRoute: HandoffsRoute,
   HomeRoute: HomeRoute,
+  InsightsRoute: InsightsRoute,
   QuestionsRoute: QuestionsRoute,
   TemplatesRoute: TemplatesRoute,
   WorkWorkIdRoute: WorkWorkIdRoute,
