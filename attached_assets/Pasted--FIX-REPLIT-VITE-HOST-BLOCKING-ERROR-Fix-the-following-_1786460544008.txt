@@ -1,0 +1,51 @@
+# FIX REPLIT VITE HOST BLOCKING ERROR
+
+Fix the following error in the application:
+
+> Blocked request. This host ("731852f5-1377-4667-8e23-7d36494e0bf7-00-2034d4do3zgk9.sisko.replit.dev") is not allowed.
+
+The application is running through a Replit-hosted Vite development/preview server, and Vite is rejecting the Replit hostname because it is not included in `server.allowedHosts`.
+
+## REQUIRED FIX
+
+Inspect the existing Vite configuration, including:
+
+* `vite.config.js`
+* `vite.config.ts`
+* Any other Vite configuration actually used by the project
+
+Update the configuration so that the application works correctly when accessed through Replit's generated `.replit.dev` preview hostname.
+
+Do NOT hardcode only the current hostname:
+
+`731852f5-1377-4667-8e23-7d36494e0bf7-00-2034d4do3zgk9.sisko.replit.dev`
+
+Replit preview hostnames can change.
+
+Instead, configure Vite in a way that safely supports Replit's dynamic preview environment.
+
+For example, use an appropriate `allowedHosts` configuration that permits the required Replit development/preview hostnames without unnecessarily allowing arbitrary hosts.
+
+## IMPORTANT
+
+* Do not remove Vite host protection entirely unless absolutely necessary.
+* Do not use a random `allowedHosts: true` configuration just to hide the error.
+* Preserve the existing Vite configuration.
+* Do not break the production build.
+* Do not change the application's UI or functionality.
+* Do not create duplicate Vite configuration files.
+* Do not modify unrelated dependencies.
+
+## AFTER FIXING
+
+Verify that:
+
+1. The Vite server starts successfully.
+2. The Replit preview URL loads without the "Blocked request" error.
+3. Hot reload/development mode still works.
+4. The production build still works.
+5. No unrelated application functionality is changed.
+
+If the project uses an existing Replit-specific Vite configuration or environment variable for the preview hostname, use that mechanism instead of hardcoding the current hostname.
+
+Fix the root cause rather than simply hiding the error.

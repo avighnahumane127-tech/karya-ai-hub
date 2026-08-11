@@ -1,0 +1,1271 @@
+WORKREADY — COMPLETELY REDESIGN THE LANDING PAGE EXPERIENCE
+
+The current landing page is too plain, text-heavy, static, and difficult to understand.
+
+Do not simply add more paragraphs.
+
+Rework the landing page so that a visitor can understand WorkReady in approximately 10 seconds by looking at the page, even before reading everything.
+
+The landing page needs to communicate the actual product visually.
+
+The core idea is:
+
+WorkReady takes messy work instructions and turns them into a clear, verified path to completion.
+
+The visitor must visually understand:
+
+Messy request → WorkReady understands it → finds what's missing → creates the work plan → verifies the finished result
+
+This transformation is the central story of the landing page.
+
+1. OVERALL DESIGN DIRECTION
+
+Make the landing page feel like a premium modern AI product, not a documentation page.
+
+The current problem is:
+
+Too much plain text
+
+Not enough visual storytelling
+
+No meaningful product animations
+
+Weak visual hierarchy
+
+Features are not demonstrated
+
+The core concept is difficult to understand
+
+Sections feel disconnected
+
+Too much empty/unused visual space
+
+No strong product UI demonstrations
+
+Fix all of these.
+
+The landing page should feel:
+
+Modern
+
+Interactive
+
+Visual
+
+Premium
+
+Intelligent
+
+Clear
+
+Dynamic
+
+Minimal but not empty
+
+Sophisticated without being complicated
+
+Think product storytelling, not a collection of marketing sections.
+
+2. IMPORTANT — DO NOT USE RANDOM DECORATIVE ANIMATIONS
+
+Animations must explain the product.
+
+Do NOT add random floating blobs, meaningless gradient animations, or decorative effects just to make the page move.
+
+Every major animation should communicate something about WorkReady.
+
+For example:
+
+A messy assignment enters the system.
+
+↓
+
+Requirements are extracted.
+
+↓
+
+Missing information gets highlighted.
+
+↓
+
+A work plan is generated.
+
+↓
+
+The completed work is checked.
+
+This is the product.
+
+Animate THAT.
+
+3. HERO — SHOW THE PRODUCT, DON'T JUST DESCRIBE IT
+
+The hero should not consist primarily of a headline and paragraph.
+
+Create a large interactive visual demonstration directly beneath/next to the headline.
+
+Headline
+
+Know what the work requires before you start.
+
+Supporting text
+
+WorkReady turns messy assignments, briefs, documents, and instructions into a clear work plan — identifying what’s missing, what needs clarification, what must happen next, and whether the finished work actually meets the request.
+
+CTA:
+
+Try WorkReady
+
+Secondary:
+
+Log in
+
+4. HERO PRODUCT DEMONSTRATION
+
+This is extremely important.
+
+Create a large animated product visualization.
+
+The visitor should see something like:
+
+LEFT SIDE
+
+A messy request:
+
+"Please review the three supplier proposals and prepare a recommendation for management by Friday."
+
+Below it:
+
+3 proposal files
+
+Email instructions
+
+Previous notes
+
+These should appear as realistic document/file UI elements.
+
+CENTER
+
+A visual transformation:
+
+WorkReady
+
+with an animated processing state.
+
+Show subtle animated lines flowing from the source material into the WorkReady analysis.
+
+RIGHT SIDE
+
+The result appears progressively:
+
+WorkReady found:
+
+Deliverables
+
+Comparison
+
+Recommendation
+
+Management summary
+
+Missing
+
+Evaluation criteria
+
+Budget ceiling
+
+Needs clarification
+
+Price vs delivery priority
+
+Required presentation format
+
+Status
+
+Needs clarification
+
+Animate these elements appearing one after another.
+
+This single visual should immediately explain the product better than several paragraphs.
+
+5. HERO SCROLL ANIMATION
+
+When the user scrolls:
+
+The hero demonstration should subtly transform.
+
+For example:
+
+Stage 1
+
+Messy request
+
+↓
+
+Stage 2
+
+Requirements extracted
+
+↓
+
+Stage 3
+
+Missing information detected
+
+↓
+
+Stage 4
+
+Work plan created
+
+↓
+
+Stage 5
+
+Final work verified
+
+Use scroll-driven transitions where appropriate.
+
+Do not make it nauseating.
+
+The animation should be smooth and premium.
+
+6. "WHAT DOES WORKREADY ACTUALLY DO?" SECTION
+
+Immediately after the hero, explain the concept in extremely simple language.
+
+Large heading:
+
+Work doesn't usually fail because people can't do it.
+
+It fails because the work wasn't clear enough to begin with.
+
+Then visually show:
+
+BEFORE WORKREADY
+
+"Prepare the report."
+
+Problems appear around the instruction:
+
+What report?
+
+For whom?
+
+Which data?
+
+Which format?
+
+What deadline?
+
+What does "done" mean?
+
+Then transition into:
+
+WITH WORKREADY
+
+Objective
+
+Prepare a management report.
+
+Inputs
+
+3 supplier proposals
+Budget information
+Evaluation criteria
+
+Requirements
+
+Compare all suppliers
+Explain recommendation
+Include risks
+
+Questions
+
+What matters more: price or delivery?
+
+Completion test
+
+Every supplier compared using the same criteria.
+
+This section must visually demonstrate the transformation.
+
+7. THE CORE PRODUCT LOOP
+
+Create a major visual section explaining the entire WorkReady system.
+
+Use a horizontal/vertical animated flow:
+
+01 — GIVE IT THE WORK
+
+Paste or upload:
+
+Assignment
+
+Brief
+
+PDF
+
+DOCX
+
+Email
+
+Image
+
+Folder
+
+Later: voice/video
+
+↓
+
+02 — UNDERSTAND
+
+WorkReady extracts:
+
+Objective
+
+Deliverables
+
+Requirements
+
+Deadline
+
+Stakeholders
+
+Inputs
+
+↓
+
+03 — FIND WHAT'S MISSING
+
+Detect:
+
+Missing files
+
+Missing information
+
+Ambiguity
+
+Conflicting instructions
+
+Dependencies
+
+Risky assumptions
+
+↓
+
+04 — PLAN THE WORK
+
+Create:
+
+Ordered tasks
+
+Dependencies
+
+Expected outputs
+
+Questions
+
+Evidence requirements
+
+↓
+
+05 — DO THE WORK
+
+The user executes the actual work.
+
+WorkReady does not pretend to replace the worker.
+
+↓
+
+06 — VERIFY
+
+Upload the finished result.
+
+WorkReady checks:
+
+Requirements
+
+Evidence
+
+Consistency
+
+Missing deliverables
+
+Unsupported claims
+
+Attachments
+
+Assumptions
+
+↓
+
+07 — HANDOFF
+
+Generate a clear handoff:
+
+What was completed
+
+What remains
+
+Important files
+
+Open decisions
+
+Risks
+
+Next steps
+
+Make this entire sequence visually compelling.
+
+8. SHOW THE "REQUIREMENT → EVIDENCE" CONCEPT
+
+This is one of the most important differentiators.
+
+Do NOT explain this only with text.
+
+Create a large interactive visual.
+
+Example:
+
+REQUIREMENT
+
+Compare all 3 suppliers
+
+↓
+
+EVIDENCE
+
+Proposal A
+Proposal B
+Proposal C
+
+↓
+
+STATUS
+
+Complete
+
+Then show:
+
+REQUIREMENT
+
+Include vendor references
+
+↓
+
+EVIDENCE
+
+No references found
+
+↓
+
+STATUS
+
+Missing
+
+Then:
+
+REQUIREMENT
+
+Submit by Friday
+
+↓
+
+EVIDENCE
+
+Two conflicting deadlines
+
+↓
+
+STATUS
+
+Clarification needed
+
+Animate the evidence connections.
+
+The user should visually understand:
+
+WorkReady doesn't just create a checklist. It connects each requirement to evidence proving whether it has actually been satisfied.
+
+9. READINESS SYSTEM
+
+Create a visually rich section around WorkReady's readiness states.
+
+Show five large states:
+
+READY
+
+Everything required is available.
+
+READY WITH WARNINGS
+
+Work can begin, but assumptions exist.
+
+BLOCKED
+
+A required input is missing.
+
+NEEDS CLARIFICATION
+
+The instructions are ambiguous or conflicting.
+
+REVIEW REQUIRED
+
+The output exists but has unresolved issues.
+
+Make each state transition smoothly when scrolling.
+
+Do NOT use fake percentages such as "87% ready."
+
+The point is that WorkReady explains why.
+
+10. AMBIGUITY DETECTOR — VISUAL DEMO
+
+Create an interactive-looking example.
+
+Start with:
+
+"Make the presentation professional."
+
+WorkReady highlights:
+
+Professional for whom?
+
+Which template?
+
+How many slides?
+
+What audience?
+
+What deadline?
+
+Then show:
+
+Suggested question
+
+"Which audience will receive the presentation: executives, technical staff, or customers?"
+
+Show the transformation:
+
+Vague instruction → precise question
+
+This makes the value immediately understandable.
+
+11. MISSING INFORMATION DETECTION
+
+Create another visual demonstration.
+
+Show a project brief with files:
+
+Brief.pdf
+
+Brand-guidelines.pdf
+
+logo.png
+
+homepage-copy.docx
+
+Then show WorkReady detecting:
+
+Missing
+
+About page copy
+
+Services page copy
+
+Vector logo
+
+Contact form destination
+
+Product photography
+
+Then:
+
+Generate request
+
+And display a polished clarification message preview.
+
+This demonstrates a real workflow instead of simply saying "WorkReady detects missing information."
+
+12. DEPENDENCY VISUALIZATION
+
+Create an animated dependency graph.
+
+Example:
+
+Final product photos
+
+↓
+
+Approve images
+
+↓
+
+Design product pages
+
+↓
+
+Mobile review
+
+↓
+
+Publish website
+
+If something is missing, visually show the downstream steps becoming blocked.
+
+This communicates that WorkReady understands what must happen before what.
+
+13. ASSUMPTION REGISTER
+
+Show an example:
+
+Assumption
+
+"final copy" refers to website-copy-v3.docx
+
+Risk
+
+Medium
+
+Action
+
+Confirm before publishing.
+
+Show this as part of the visual product UI.
+
+Explain:
+
+WorkReady makes invisible assumptions visible before they become problems.
+
+14. FINAL VERIFICATION — MAKE THIS A MAJOR SECTION
+
+This should be one of the strongest sections on the landing page.
+
+Show:
+
+ORIGINAL REQUEST
+
+Create a 10-slide supplier recommendation presentation.
+
+↓
+
+FINAL FILE
+
+supplier-recommendation.pptx
+
+↓
+
+WORKREADY VERIFICATION
+
+8 / 10 requirements satisfied
+
+But do NOT represent this as a generic score.
+
+Instead show:
+
+✓ 10 slides present
+
+✓ All suppliers compared
+
+✓ Recommendation included
+
+⚠ Executive summary conflicts with table
+
+✕ Required appendix missing
+
+✕ Delivery-cost evidence missing
+
+Then:
+
+Review before submission
+
+The visual message should be:
+
+WorkReady checks whether the work is actually finished — not whether someone clicked "Done."
+
+15. HANDOFF SECTION
+
+Show a messy folder transforming into a clean handoff packet.
+
+BEFORE
+
+25 files
+
+final2.pdf
+
+final-final.pptx
+
+notes.txt
+
+old-logo.png
+
+comments.docx
+
+random screenshots
+
+↓
+
+AFTER
+
+WORKREADY HANDOFF
+
+Completed
+
+Supplier comparison
+Recommendation
+Management presentation
+
+Open
+
+Delivery cost confirmation
+
+Authoritative files
+
+3 files
+
+Risks
+
+1 unresolved assumption
+
+Next action
+
+Management review
+
+This makes the handoff feature understandable immediately.
+
+16. FEATURE ARCHITECTURE
+
+Do not dump 20+ features into a boring grid.
+
+Group them around the actual workflow.
+
+UNDERSTAND
+
+Request extraction
+
+Deliverable extraction
+
+Requirement extraction
+
+Stakeholder detection
+
+Deadline detection
+
+PREPARE
+
+Missing information detection
+
+Ambiguity detection
+
+Dependency detection
+
+Risk detection
+
+Version conflict detection
+
+Assumption register
+
+EXECUTE
+
+Ordered work plan
+
+Task dependencies
+
+Evidence requirements
+
+Questions
+
+Clarification messages
+
+VERIFY
+
+Requirement verification
+
+Evidence mapping
+
+Missing deliverables
+
+Unsupported claims
+
+Inconsistent numbers
+
+Completion tests
+
+HANDOFF
+
+Handoff packet
+
+Open issues
+
+Decisions
+
+Authoritative files
+
+Next steps
+
+Use animated visual examples for each group.
+
+17. "NOT ANOTHER TASK MANAGER"
+
+Create a comparison-style section.
+
+Traditional task tools
+
+"What do I need to do?"
+
+WorkReady
+
+"What exactly am I supposed to produce?"
+
+"Do I have everything I need?"
+
+"What is unclear?"
+
+"What needs to happen first?"
+
+"What proves this is complete?"
+
+Make the difference immediately obvious.
+
+Do not attack competitors by name.
+
+18. MULTI-FORMAT INPUT VISUAL
+
+Create a beautiful animated input area showing different types of work flowing into WorkReady:
+
+PDF
+
+DOCX
+
+Email
+
+Message
+
+Image
+
+Folder
+
+Brief
+
+Voice
+
+Video
+
+They should visually converge into one WorkReady workspace.
+
+This should communicate:
+
+One place for messy work, regardless of where it came from.
+
+19. USE CASES
+
+Instead of huge blocks of text, create an interactive use-case switcher.
+
+Tabs:
+
+Office
+
+Client Work
+
+Research
+
+Design
+
+Websites
+
+Reports
+
+Data
+
+Handoffs
+
+When the user changes the tab, the product demonstration changes.
+
+For example:
+
+Client Work
+
+Input:
+
+Client brief + assets
+
+WorkReady finds:
+
+Missing logo
+Missing copy
+Conflicting brand colors
+Unclear mobile requirements
+
+This is much more effective than listing eight use cases.
+
+20. PRODUCT UI SHOWCASE
+
+Include multiple large, realistic UI mockups throughout the landing page.
+
+Show:
+
+Work analysis
+
+Readiness report
+
+Requirements
+
+Dependency plan
+
+Questions
+
+Evidence mapping
+
+Final verification
+
+Handoff
+
+These should look like actual WorkReady screens.
+
+Use subtle parallax/scroll movement.
+
+Do not use fake user statistics.
+
+These are product demonstrations, not fabricated customer data.
+
+21. SCROLL STORYTELLING
+
+The entire page should tell one continuous story:
+
+HERO
+
+Messy work enters.
+
+↓
+
+PROBLEM
+
+Most requests are incomplete.
+
+↓
+
+UNDERSTAND
+
+WorkReady extracts what is actually required.
+
+↓
+
+PREPARE
+
+It finds what is missing and what is unclear.
+
+↓
+
+PLAN
+
+It determines what must happen and in what order.
+
+↓
+
+EXECUTE
+
+You do the work.
+
+↓
+
+VERIFY
+
+WorkReady checks the result against the original request.
+
+↓
+
+HANDOFF
+
+The finished work becomes easy to pass forward.
+
+↓
+
+CTA
+
+Start with clarity. Finish with confidence.
+
+This narrative should be obvious simply by scrolling.
+
+22. ANIMATION REQUIREMENTS
+
+Add meaningful animations throughout.
+
+Use:
+
+Scroll reveal
+
+Staggered component entrance
+
+Document-to-analysis transitions
+
+Requirement highlighting
+
+Animated dependency lines
+
+Evidence connection animations
+
+Progression between workflow stages
+
+Subtle parallax
+
+Product UI transitions
+
+Card expansion
+
+Tab transitions
+
+Smooth hover states
+
+Button micro-interactions
+
+Number/count animations ONLY where based on static product demonstrations
+
+Avoid:
+
+Constant movement
+
+Excessive bouncing
+
+Flashing
+
+Distracting particles
+
+Random floating shapes
+
+Excessive blur
+
+Animation on every element
+
+Animations must remain smooth and professional.
+
+Respect prefers-reduced-motion.
+
+23. IMAGERY
+
+The landing page currently has insufficient imagery.
+
+Fix this aggressively.
+
+But do NOT use generic stock photography.
+
+Use:
+
+Product UI mockups
+
+Interface screenshots
+
+Document visualizations
+
+Workflow diagrams
+
+Requirement/evidence diagrams
+
+Dependency graphs
+
+File stacks
+
+Abstract representations of messy work becoming structured
+
+Subtle 3D visual elements where they improve understanding
+
+The visuals should explain the product.
+
+A visitor should be able to scroll through the page and understand WorkReady largely from the visual demonstrations.
+
+24. TYPOGRAPHY AND LAYOUT
+
+Do not place everything in centered paragraphs.
+
+Use varied composition:
+
+Large editorial headlines
+
+Split-screen demonstrations
+
+Full-width product showcases
+
+Horizontal workflows
+
+Interactive cards
+
+Before/after layouts
+
+Diagrams
+
+Floating UI panels
+
+Side-by-side comparisons
+
+Large visual callouts
+
+Use whitespace strategically.
+
+Do not make the page feel empty.
+
+Do not make it feel crowded.
+
+25. IMPORTANT PRODUCT-MESSAGING RULE
+
+Never describe a feature without showing what it actually does.
+
+Bad:
+
+"Powerful AI-powered requirement analysis."
+
+Better:
+
+Show:
+
+REQUEST
+
+"Prepare the supplier recommendation."
+
+↓
+
+REQUIREMENTS FOUND
+
+Compare 3 suppliers
+Include risks
+Recommend 1 vendor
+
+↓
+
+MISSING
+
+Evaluation criteria
+
+↓
+
+QUESTION
+
+"Should delivery time be weighted equally with price?"
+
+The visitor understands the feature without needing marketing jargon.
+
+26. FINAL LANDING PAGE STRUCTURE
+
+Use approximately this order:
+
+Hero + animated product demonstration
+
+What WorkReady does
+
+The messy-work problem
+
+Before WorkReady / After WorkReady
+
+Core workflow
+
+Requirement → Evidence
+
+Missing information + ambiguity
+
+Dependency planning
+
+Readiness states
+
+Final verification
+
+Handoff
+
+Use cases
+
+Complete product UI showcase
+
+Privacy / trust
+
+Final CTA
+
+Footer
+
+Do not make every section enormous.
+
+Use visual variety so the page feels dynamic.
+
+27. MOST IMPORTANT REQUIREMENT
+
+The landing page must answer these questions without forcing the visitor to figure them out:
+
+What is WorkReady?
+
+An AI preflight and verification system for work.
+
+What do I give it?
+
+Assignments, briefs, PDFs, documents, files, emails, messages, and other work instructions.
+
+What does it do?
+
+It understands the request, finds missing information and ambiguity, creates an execution plan, and defines what completion requires.
+
+What happens after I do the work?
+
+Upload the result and WorkReady checks it against the original request.
+
+Why is that useful?
+
+Because people often start work without knowing exactly what is required — and finish work without knowing whether it actually satisfies the request.
+
+What makes it different?
+
+It maintains the chain:
+
+Request → Deliverable → Requirement → Evidence → Verification
+
+That chain is the core product concept.
+
+28. DO NOT FABRICATE
+
+Do not add:
+
+Fake testimonials
+
+Fake customers
+
+Fake logos
+
+Fake statistics
+
+Fake reviews
+
+Fake usage numbers
+
+Fake activity
+
+Fake accounts
+
+Fake projects
+
+Fake notifications
+
+Static product demonstrations are allowed and encouraged, but they must clearly function as illustrative UI examples, not claims about real users.
+
+29. FINAL QUALITY TEST
+
+After implementation, ask:
+
+If someone who has never heard of WorkReady lands on this page, can they understand the product within 10 seconds?
+
+If the answer is no, improve the visual storytelling.
+
+The landing page should not rely on visitors reading every paragraph.
+
+The combination of:
+
+headline + visual demonstration + animation + before/after + workflow + product UI
+
+should make the concept immediately understandable.
+
+The goal is NOT:
+
+"Make the landing page prettier."
+
+The goal is:
+
+"Make WorkReady visually understandable."
+
+The final result should feel like a polished, serious, modern AI product with a clear point of view—not a generic SaaS template filled with text.
+
+
+Again, the app is Karya AI not workready

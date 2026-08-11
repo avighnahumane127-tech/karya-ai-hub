@@ -1,13 +1,24 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
-import { Menu } from "lucide-react";
+import { ArrowRight, Menu, X } from "lucide-react";
 import { useState } from "react";
 
 import mark from "@/assets/karya-mark.png";
 import {
+  AmbiguityDemo,
+  AssumptionRegister,
+  BeforeAfter,
+  ComparisonSection,
+  CoreWorkflow,
+  DependencyGraph,
   EvidenceChain,
-  FlowStep,
-  Panel,
-  ReadinessPreview,
+  FeatureArchitecture,
+  HandoffTransform,
+  HeroDemo,
+  MissingInfoDemo,
+  MultiFormatInput,
+  ReadinessStates,
+  UseCaseSwitcher,
+  VerificationPanel,
 } from "@/components/landing-visuals";
 import { Reveal } from "@/components/reveal";
 import { Button } from "@/components/ui/button";
@@ -31,75 +42,7 @@ export const Route = createFileRoute("/")({
   component: Landing,
 });
 
-const messy = [
-  "Prepare the report.",
-  "Update the website.",
-  "Compare these suppliers.",
-  "Finish the presentation.",
-];
-
-const discovers = [
-  "Missing inputs",
-  "Ambiguity",
-  "Dependencies",
-  "Conflicting instructions",
-  "Required evidence",
-  "Completion criteria",
-];
-
-const features = [
-  {
-    name: "Understand",
-    text: "Extract objectives, deliverables, requirements, deadlines and stakeholders.",
-  },
-  { name: "Detect", text: "Find missing information, ambiguity, risks, conflicts and dependencies." },
-  { name: "Plan", text: "Create an ordered execution plan based on prerequisites." },
-  { name: "Track", text: "Connect requirements to evidence and decisions." },
-  { name: "Verify", text: "Compare finished work against the original request." },
-  {
-    name: "Handoff",
-    text: "Create a clean handoff with completed work, unresolved issues, files, risks and next steps.",
-  },
-];
-
-const readinessStates = [
-  { label: "Ready", tone: "bg-ready-soft text-ready" },
-  { label: "Ready with warnings", tone: "bg-warn-soft text-warn" },
-  { label: "Blocked", tone: "bg-blocked-soft text-blocked" },
-  { label: "Needs clarification", tone: "bg-info-soft text-info" },
-  { label: "Review required", tone: "bg-muted text-muted-foreground" },
-];
-
-const verificationFindings = [
-  "Requirement satisfied",
-  "Missing attachment",
-  "Unsupported claim",
-  "Conflicting number",
-  "Unresolved assumption",
-];
-
-const useCases = [
-  {
-    name: "Office assignments",
-    text: "Turn a two-line request into a defined deliverable before you start.",
-  },
-  { name: "Client projects", text: "Catch missing scope, inputs and approvals early." },
-  { name: "Research", text: "Define the question, the sources and what counts as evidence." },
-  { name: "Reports", text: "Know the required sections, audience and supporting numbers." },
-  { name: "Presentations", text: "Tie every slide back to the decision it supports." },
-  { name: "Websites", text: "Confirm pages in scope, assets needed and who signs off." },
-  { name: "Data work", text: "Record method, assumptions and the dataset you actually had." },
-  { name: "Handoffs", text: "Pass work on without losing context or open issues." },
-];
-
-const workflow = [
-  { step: "1", name: "Give Karya AI the request", text: "Text, PDF, DOCX, folder, email." },
-  { step: "2", name: "It understands it", text: "Requirements, deliverables, dependencies." },
-  { step: "3", name: "Resolve what is unclear", text: "Questions, missing information, assumptions." },
-  { step: "4", name: "Execute", text: "An ordered work plan." },
-  { step: "5", name: "Verify", text: "Compare the output against the original request." },
-  { step: "6", name: "Handoff", text: "Deliver a clean, understandable work packet." },
-];
+// ── Nav ────────────────────────────────────────────────────────────────────────
 
 function Nav() {
   const [open, setOpen] = useState(false);
@@ -120,6 +63,9 @@ function Nav() {
           <a href="#verify" className="transition-colors hover:text-foreground">
             Verification
           </a>
+          <a href="#usecases" className="transition-colors hover:text-foreground">
+            Use cases
+          </a>
         </nav>
         <div className="flex shrink-0 items-center gap-2">
           <Button variant="ghost" size="sm" asChild className="hidden sm:inline-flex">
@@ -135,7 +81,7 @@ function Nav() {
             aria-label="Menu"
             onClick={() => setOpen((v) => !v)}
           >
-            <Menu className="h-4 w-4" />
+            {open ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
           </Button>
         </div>
       </div>
@@ -150,6 +96,9 @@ function Nav() {
           <a href="#verify" onClick={() => setOpen(false)} className="block py-1.5">
             Verification
           </a>
+          <a href="#usecases" onClick={() => setOpen(false)} className="block py-1.5">
+            Use cases
+          </a>
           <Link to="/login" onClick={() => setOpen(false)} className="block py-1.5">
             Log in
           </Link>
@@ -159,153 +108,144 @@ function Nav() {
   );
 }
 
+// ── Section helpers ────────────────────────────────────────────────────────────
+
 function SectionHeading({
   eyebrow,
   title: heading,
   text,
+  center,
 }: {
   eyebrow: string;
   title: string;
   text?: string;
+  center?: boolean;
 }) {
   return (
-    <div className="max-w-2xl">
+    <div className={cn("max-w-2xl", center && "mx-auto text-center")}>
       <p className="label-caps">{eyebrow}</p>
       <h2 className="mt-3 text-2xl tracking-tight sm:text-3xl">{heading}</h2>
-      {text ? <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{text}</p> : null}
+      {text ? (
+        <p className={cn("mt-3 text-sm leading-relaxed text-muted-foreground", center && "mx-auto")}>
+          {text}
+        </p>
+      ) : null}
     </div>
   );
 }
+
+// ── Landing ────────────────────────────────────────────────────────────────────
 
 function Landing() {
   return (
     <div className="min-h-screen bg-background">
       <Nav />
 
-      {/* Hero */}
+      {/* ── 1. HERO ──────────────────────────────────────────────────────────── */}
       <section className="relative overflow-hidden border-b border-hairline">
         <div className="pointer-events-none absolute inset-0 grid-backdrop opacity-60" />
-        <div className="relative mx-auto grid w-full max-w-6xl gap-12 px-5 py-20 md:px-8 md:py-28 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)] lg:items-center">
-          <div>
+        <div className="relative mx-auto w-full max-w-6xl px-5 py-16 md:px-8 md:py-24">
+          {/* Headline block */}
+          <div className="mx-auto max-w-3xl text-center">
             <p
-              className="rise label-caps inline-flex items-center gap-2 rounded-full border border-hairline bg-surface px-2.5 py-1"
-              style={{ animationDelay: "60ms" }}
+              className="rise label-caps inline-flex items-center gap-2 rounded-full border border-hairline bg-surface px-3 py-1"
+              style={{ animationDelay: "40ms" }}
             >
-              Work preflight
+              Work preflight · AI-powered
             </p>
             <h1
-              className="rise mt-6 text-[2.1rem] leading-[1.1] tracking-tight sm:text-5xl"
-              style={{ animationDelay: "160ms" }}
+              className="rise mt-6 text-[2.4rem] leading-[1.08] tracking-tight sm:text-5xl lg:text-6xl"
+              style={{ animationDelay: "140ms" }}
             >
-              Know what the work requires before you start.
+              Know what the work requires
+              <br />
+              <span className="text-muted-foreground">before you start.</span>
             </h1>
             <p
-              className="rise mt-5 max-w-xl text-base leading-relaxed text-muted-foreground"
-              style={{ animationDelay: "260ms" }}
+              className="rise mx-auto mt-5 max-w-xl text-base leading-relaxed text-muted-foreground"
+              style={{ animationDelay: "240ms" }}
             >
               Karya AI turns messy assignments, briefs, documents and instructions into a clear work
-              plan — while finding missing information, ambiguities, dependencies, and what needs to
-              be verified before the work is finished.
+              plan — finding missing information, ambiguities, dependencies, and what must be
+              verified before the work is finished.
             </p>
-            <div className="rise mt-8 flex flex-wrap gap-2.5" style={{ animationDelay: "360ms" }}>
-              <Button asChild>
-                <Link to="/home">Try Karya AI</Link>
+            <div
+              className="rise mt-8 flex flex-wrap justify-center gap-2.5"
+              style={{ animationDelay: "340ms" }}
+            >
+              <Button asChild size="lg">
+                <Link to="/home">
+                  Try Karya AI
+                  <ArrowRight className="ml-1.5 h-4 w-4" />
+                </Link>
               </Button>
-              <Button variant="outline" asChild>
+              <Button variant="outline" size="lg" asChild>
                 <Link to="/login">Log in</Link>
               </Button>
             </div>
           </div>
-          <div className="rise" style={{ animationDelay: "460ms" }}>
-            <ReadinessPreview />
+
+          {/* Hero product demo */}
+          <div className="rise mt-14" style={{ animationDelay: "480ms" }}>
+            <HeroDemo />
           </div>
         </div>
       </section>
 
-      {/* Flow */}
-      <section id="how" className="border-b border-hairline">
+      {/* ── 2. WHAT WORKREADY DOES ───────────────────────────────────────────── */}
+      <section className="border-b border-hairline">
+        <div className="mx-auto w-full max-w-6xl px-5 py-20 md:px-8 md:py-24">
+          <Reveal>
+            <div className="max-w-3xl">
+              <p className="label-caps">The core problem</p>
+              <h2 className="mt-3 text-2xl tracking-tight sm:text-3xl lg:text-4xl">
+                Work doesn't fail because people can't do it.
+                <br />
+                <span className="text-muted-foreground">
+                  It fails because the work wasn't clear enough to begin with.
+                </span>
+              </h2>
+              <p className="mt-4 max-w-2xl text-sm leading-relaxed text-muted-foreground">
+                Most assignments arrive incomplete. Requirements are missing. Files aren't attached.
+                Deadlines conflict. What "done" means is never written down. Karya AI catches all of
+                this before the work starts — and verifies the result when it finishes.
+              </p>
+            </div>
+          </Reveal>
+
+          <Reveal delay={140} className="mt-10">
+            <BeforeAfter />
+          </Reveal>
+        </div>
+      </section>
+
+      {/* ── 3. CORE WORKFLOW ─────────────────────────────────────────────────── */}
+      <section id="how" className="border-b border-hairline bg-muted/30">
         <div className="mx-auto w-full max-w-6xl px-5 py-20 md:px-8 md:py-24">
           <Reveal>
             <SectionHeading
-              eyebrow="Where it sits"
-              title="Between receiving work and calling it finished."
+              eyebrow="The workflow"
+              title="From messy request to clean handoff."
+              text="Karya AI sits between receiving work and calling it finished — catching everything that would otherwise be discovered too late."
             />
           </Reveal>
-          <Reveal delay={120} className="mt-9 -mx-5 overflow-x-auto px-5 md:mx-0 md:px-0">
-            <div className="flex min-w-max items-center gap-3">
-              {["Messy work", "Understand", "Check", "Plan", "Verify"].map((s, i, arr) => (
-                <FlowStep key={s} label={s} last={i === arr.length - 1} />
-              ))}
-            </div>
+          <Reveal delay={120} className="mt-10">
+            <CoreWorkflow />
           </Reveal>
         </div>
       </section>
 
-      {/* Problem */}
-      <section className="border-b border-hairline bg-muted/30">
-        <div className="mx-auto grid w-full max-w-6xl gap-10 px-5 py-20 md:px-8 md:py-24 lg:grid-cols-2">
-          <Reveal>
-            <SectionHeading eyebrow="The problem" title="Most work starts with too little." />
-            <ul className="mt-7 space-y-2.5">
-              {messy.map((m) => (
-                <li
-                  key={m}
-                  className="rounded-lg border border-hairline bg-surface px-4 py-3 text-sm text-muted-foreground"
-                >
-                  “{m}”
-                </li>
-              ))}
-            </ul>
-          </Reveal>
-          <Reveal delay={140}>
-            <p className="label-caps">What Karya AI finds</p>
-            <div className="mt-4 grid gap-2.5 sm:grid-cols-2">
-              {discovers.map((d) => (
-                <div
-                  key={d}
-                  className="rounded-lg border border-hairline bg-surface px-4 py-3.5 text-sm"
-                >
-                  {d}
-                </div>
-              ))}
-            </div>
-          </Reveal>
-        </div>
-      </section>
-
-      {/* Features */}
-      <section id="features" className="border-b border-hairline">
-        <div className="mx-auto w-full max-w-6xl px-5 py-20 md:px-8 md:py-24">
-          <Reveal>
-            <SectionHeading
-              eyebrow="Capabilities"
-              title="Six things it does with every piece of work."
-            />
-          </Reveal>
-          <div className="mt-10 grid gap-x-10 gap-y-8 sm:grid-cols-2 lg:grid-cols-3">
-            {features.map((f, i) => (
-              <Reveal key={f.name} delay={i * 70}>
-                <div className="border-t border-hairline pt-5">
-                  <h3 className="text-sm font-medium">{f.name}</h3>
-                  <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{f.text}</p>
-                </div>
-              </Reveal>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Requirement → evidence */}
-      <section className="border-b border-hairline bg-muted/30">
+      {/* ── 4. REQUIREMENT → EVIDENCE ────────────────────────────────────────── */}
+      <section className="border-b border-hairline">
         <div className="mx-auto w-full max-w-6xl px-5 py-20 md:px-8 md:py-24">
           <Reveal>
             <SectionHeading
               eyebrow="Requirement to evidence"
               title="Every requirement is tied to something real."
-              text="Karya AI does not mark work complete because it looks finished. It looks for the evidence behind each requirement."
+              text="Karya AI doesn't mark work complete because it looks finished. It looks for the evidence behind each requirement — and explains what's missing when it isn't there."
             />
           </Reveal>
-          <div className="mt-10 grid gap-4 sm:grid-cols-2">
+          <div className="mt-10 grid gap-4 sm:grid-cols-3">
             <Reveal>
               <EvidenceChain
                 requirement="Compare all three suppliers"
@@ -313,127 +253,255 @@ function Landing() {
                 status="Complete"
               />
             </Reveal>
-            <Reveal delay={120}>
+            <Reveal delay={100}>
               <EvidenceChain
                 requirement="Include vendor references"
-                evidence={["No references found"]}
+                evidence={["No references found in any proposal"]}
                 status="Missing"
+              />
+            </Reveal>
+            <Reveal delay={200}>
+              <EvidenceChain
+                requirement="Submit by Friday"
+                evidence={["Brief says Friday 5pm", "Email says Monday morning"]}
+                status="Conflict"
               />
             </Reveal>
           </div>
         </div>
       </section>
 
-      {/* Readiness */}
+      {/* ── 5. AMBIGUITY DETECTOR ────────────────────────────────────────────── */}
+      <section className="border-b border-hairline bg-muted/30">
+        <div className="mx-auto w-full max-w-6xl px-5 py-20 md:px-8 md:py-24">
+          <Reveal>
+            <SectionHeading
+              eyebrow="Ambiguity detection"
+              title="Vague instructions become precise questions."
+              text="Karya AI identifies every point of ambiguity in the work instructions and generates clear, specific questions that resolve them — before the work begins."
+            />
+          </Reveal>
+          <Reveal delay={120} className="mt-10">
+            <AmbiguityDemo />
+          </Reveal>
+        </div>
+      </section>
+
+      {/* ── 6. MISSING INFORMATION ───────────────────────────────────────────── */}
+      <section className="border-b border-hairline">
+        <div className="mx-auto w-full max-w-6xl px-5 py-20 md:px-8 md:py-24">
+          <Reveal>
+            <SectionHeading
+              eyebrow="Missing information"
+              title="Find what's missing before it blocks you."
+              text="Karya AI compares what you have against what the work actually requires — and generates a precise request for everything that's absent."
+            />
+          </Reveal>
+          <Reveal delay={120} className="mt-10">
+            <MissingInfoDemo />
+          </Reveal>
+        </div>
+      </section>
+
+      {/* ── 7. DEPENDENCY PLANNING ───────────────────────────────────────────── */}
+      <section className="border-b border-hairline bg-muted/30">
+        <div className="mx-auto grid w-full max-w-6xl gap-10 px-5 py-20 md:px-8 md:py-24 lg:grid-cols-[minmax(0,1fr)_minmax(0,22rem)] lg:items-center">
+          <Reveal>
+            <SectionHeading
+              eyebrow="Dependency planning"
+              title="Understand what must happen before what."
+              text="Karya AI builds an ordered plan that accounts for dependencies. When a required input is missing, you see exactly which downstream steps become blocked — before you've wasted time on them."
+            />
+          </Reveal>
+          <Reveal delay={140}>
+            <DependencyGraph />
+          </Reveal>
+        </div>
+      </section>
+
+      {/* ── 8. READINESS STATES ──────────────────────────────────────────────── */}
       <section className="border-b border-hairline">
         <div className="mx-auto w-full max-w-6xl px-5 py-20 md:px-8 md:py-24">
           <Reveal>
             <SectionHeading
               eyebrow="Readiness"
               title="No arbitrary percentage. A reason."
-              text="Karya AI does not invent a score. It states which state the work is in and explains exactly why."
+              text="Karya AI doesn't invent a score. It states which state the work is in and explains exactly why — so you know what to resolve, not just that something is wrong."
             />
           </Reveal>
-          <Reveal delay={120} className="mt-9 flex flex-wrap gap-2.5">
-            {readinessStates.map((s) => (
-              <span
-                key={s.label}
-                className={cn("rounded-full px-3 py-1 text-xs font-medium", s.tone)}
-              >
-                {s.label}
-              </span>
-            ))}
+          <Reveal delay={120} className="mt-10">
+            <ReadinessStates />
           </Reveal>
         </div>
       </section>
 
-      {/* Verification */}
-      <section id="verify" className="border-b border-hairline bg-muted/30">
-        <div className="mx-auto grid w-full max-w-6xl gap-10 px-5 py-20 md:px-8 md:py-24 lg:grid-cols-[minmax(0,1fr)_minmax(0,26rem)] lg:items-center">
+      {/* ── 9. ASSUMPTION REGISTER ───────────────────────────────────────────── */}
+      <section className="border-b border-hairline bg-muted/30">
+        <div className="mx-auto grid w-full max-w-6xl gap-10 px-5 py-20 md:px-8 md:py-24 lg:grid-cols-2 lg:items-center">
+          <Reveal>
+            <SectionHeading
+              eyebrow="Assumptions"
+              title="Invisible assumptions become visible risks."
+              text="Every piece of work contains hidden assumptions — 'final' means v3, the budget hasn't changed, the client approved verbally. Karya AI surfaces them before they become problems."
+            />
+          </Reveal>
+          <Reveal delay={140}>
+            <AssumptionRegister />
+          </Reveal>
+        </div>
+      </section>
+
+      {/* ── 10. FINAL VERIFICATION ───────────────────────────────────────────── */}
+      <section id="verify" className="border-b border-hairline">
+        <div className="mx-auto w-full max-w-6xl px-5 py-20 md:px-8 md:py-24">
           <Reveal>
             <SectionHeading
               eyebrow="Final verification"
-              title="Don't just finish the work. Know that it is finished correctly."
-              text="The original request is compared against the completed work, requirement by requirement."
+              title="Don't just finish the work. Know it's finished correctly."
+              text="Upload the completed result. Karya AI compares it against the original request, requirement by requirement — and shows exactly what's satisfied, what's missing, and what conflicts."
             />
-            <div className="mt-8 flex flex-wrap items-center gap-3">
-              {["Original request", "Completed work", "Verification"].map((s, i, arr) => (
-                <FlowStep key={s} label={s} last={i === arr.length - 1} />
-              ))}
-            </div>
           </Reveal>
-          <Reveal delay={140}>
-            <Panel>
-              <p className="label-caps">Example findings</p>
-              <ul className="mt-4 divide-y divide-hairline">
-                {verificationFindings.map((f) => (
-                  <li key={f} className="py-2.5 text-sm">
-                    {f}
-                  </li>
-                ))}
-              </ul>
-              <p className="mt-4 text-xs text-muted-foreground">
-                Illustration of the verification output.
-              </p>
-            </Panel>
+          <Reveal delay={140} className="mt-10">
+            <VerificationPanel />
           </Reveal>
         </div>
       </section>
 
-      {/* Use cases */}
-      <section className="border-b border-hairline">
-        <div className="mx-auto w-full max-w-6xl px-5 py-20 md:px-8 md:py-24">
-          <Reveal>
-            <SectionHeading eyebrow="Where it fits" title="Any work that arrives unclear." />
-          </Reveal>
-          <div className="mt-9 grid gap-x-10 gap-y-6 sm:grid-cols-2 lg:grid-cols-4">
-            {useCases.map((u, i) => (
-              <Reveal key={u.name} delay={i * 50}>
-                <h3 className="text-sm font-medium">{u.name}</h3>
-                <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">{u.text}</p>
-              </Reveal>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Workflow */}
+      {/* ── 11. HANDOFF ──────────────────────────────────────────────────────── */}
       <section className="border-b border-hairline bg-muted/30">
         <div className="mx-auto w-full max-w-6xl px-5 py-20 md:px-8 md:py-24">
           <Reveal>
-            <SectionHeading eyebrow="The workflow" title="From request to handoff." />
+            <SectionHeading
+              eyebrow="Handoff"
+              title="25 files become one clear packet."
+              text="When work is done, Karya AI generates a structured handoff: what was completed, what remains open, which files are authoritative, and what the next action is."
+            />
           </Reveal>
-          <ol className="mt-10 space-y-0 divide-y divide-hairline border-y border-hairline">
-            {workflow.map((w, i) => (
-              <Reveal as="li" key={w.step} delay={i * 60}>
-                <div className="grid grid-cols-[auto_minmax(0,1fr)] gap-5 py-5">
-                  <span className="font-mono text-xs text-muted-foreground">{w.step}</span>
-                  <div className="min-w-0">
-                    <p className="text-sm font-medium">{w.name}</p>
-                    <p className="mt-1 text-sm text-muted-foreground">{w.text}</p>
-                  </div>
-                </div>
-              </Reveal>
-            ))}
-          </ol>
+          <Reveal delay={120} className="mt-10">
+            <HandoffTransform />
+          </Reveal>
         </div>
       </section>
 
-      {/* Final CTA */}
+      {/* ── 12. NOT A TASK MANAGER ───────────────────────────────────────────── */}
+      <section className="border-b border-hairline">
+        <div className="mx-auto w-full max-w-6xl px-5 py-20 md:px-8 md:py-24">
+          <Reveal>
+            <SectionHeading
+              eyebrow="A different category"
+              title="Not another task manager."
+              text="Task managers tell you what to do. Karya AI tells you what the work actually requires — before you start, and whether it's actually finished."
+            />
+          </Reveal>
+          <Reveal delay={120} className="mt-10">
+            <ComparisonSection />
+          </Reveal>
+        </div>
+      </section>
+
+      {/* ── 13. FEATURE ARCHITECTURE ─────────────────────────────────────────── */}
+      <section id="features" className="border-b border-hairline bg-muted/30">
+        <div className="mx-auto w-full max-w-6xl px-5 py-20 md:px-8 md:py-24">
+          <Reveal>
+            <SectionHeading
+              eyebrow="Capabilities"
+              title="Organized around the actual workflow."
+              text="Every capability maps to a stage of work — from understanding the request to generating the handoff."
+            />
+          </Reveal>
+          <Reveal delay={120} className="mt-10">
+            <FeatureArchitecture />
+          </Reveal>
+        </div>
+      </section>
+
+      {/* ── 14. MULTI-FORMAT INPUT ───────────────────────────────────────────── */}
+      <section className="border-b border-hairline">
+        <div className="mx-auto w-full max-w-6xl px-5 py-20 md:px-8 md:py-24">
+          <Reveal>
+            <SectionHeading
+              eyebrow="Any format"
+              title="One place for messy work, regardless of where it came from."
+              text="Paste text, upload a PDF, drop in a DOCX, forward an email, attach an image, or describe the work in plain language. Karya AI works with whatever you have."
+            />
+          </Reveal>
+          <Reveal delay={120} className="mt-10">
+            <MultiFormatInput />
+          </Reveal>
+        </div>
+      </section>
+
+      {/* ── 15. USE CASES ────────────────────────────────────────────────────── */}
+      <section id="usecases" className="border-b border-hairline bg-muted/30">
+        <div className="mx-auto w-full max-w-6xl px-5 py-20 md:px-8 md:py-24">
+          <Reveal>
+            <SectionHeading
+              eyebrow="Where it fits"
+              title="Any work that arrives unclear."
+              text="Switch between scenarios to see how Karya AI adapts to the type of work."
+            />
+          </Reveal>
+          <Reveal delay={120} className="mt-10">
+            <UseCaseSwitcher />
+          </Reveal>
+        </div>
+      </section>
+
+      {/* ── 16. CHAIN CALLOUT ────────────────────────────────────────────────── */}
+      <section className="border-b border-hairline">
+        <div className="mx-auto w-full max-w-6xl px-5 py-20 md:px-8 md:py-24">
+          <Reveal>
+            <div className="rounded-2xl border border-hairline bg-muted/30 px-8 py-10 md:px-12">
+              <p className="label-caps text-center">The chain Karya AI maintains</p>
+              <div className="mt-8 flex flex-wrap items-center justify-center gap-2 text-sm">
+                {[
+                  "Request",
+                  "Deliverable",
+                  "Requirement",
+                  "Evidence",
+                  "Verification",
+                ].map((label, i, arr) => (
+                  <div key={label} className="flex items-center gap-2">
+                    <span className="rounded-md border border-hairline bg-surface px-3 py-1.5 text-sm">
+                      {label}
+                    </span>
+                    {i < arr.length - 1 && (
+                      <span className="text-muted-foreground">→</span>
+                    )}
+                  </div>
+                ))}
+              </div>
+              <p className="mx-auto mt-8 max-w-2xl text-center text-sm leading-relaxed text-muted-foreground">
+                This chain is the core concept. Karya AI ensures every requirement has a deliverable,
+                every deliverable has evidence, and every piece of evidence is verified against the
+                original request.
+              </p>
+            </div>
+          </Reveal>
+        </div>
+      </section>
+
+      {/* ── 17. FINAL CTA ────────────────────────────────────────────────────── */}
       <section className="border-b border-hairline">
         <div className="mx-auto w-full max-w-3xl px-5 py-24 text-center md:px-8 md:py-32">
           <Reveal>
-            <h2 className="text-3xl tracking-tight sm:text-4xl">
-              Start with clarity. Finish with confidence.
+            <h2 className="text-3xl tracking-tight sm:text-4xl lg:text-5xl">
+              Start with clarity.
+              <br />
+              Finish with confidence.
             </h2>
-            <p className="mx-auto mt-4 max-w-xl text-sm leading-relaxed text-muted-foreground">
-              Give Karya AI the work. Find out what it requires before you begin.
+            <p className="mx-auto mt-5 max-w-xl text-sm leading-relaxed text-muted-foreground">
+              Give Karya AI the work. Find out what it requires before you begin — and know whether
+              it's truly finished when you're done.
             </p>
             <div className="mt-8 flex flex-wrap justify-center gap-2.5">
-              <Button asChild>
-                <Link to="/home">Try Karya AI</Link>
+              <Button asChild size="lg">
+                <Link to="/home">
+                  Try Karya AI
+                  <ArrowRight className="ml-1.5 h-4 w-4" />
+                </Link>
               </Button>
-              <Button variant="outline" asChild>
+              <Button variant="outline" size="lg" asChild>
                 <Link to="/login">Log in</Link>
               </Button>
             </div>
@@ -441,6 +509,7 @@ function Landing() {
         </div>
       </section>
 
+      {/* ── FOOTER ───────────────────────────────────────────────────────────── */}
       <footer className="mx-auto w-full max-w-6xl px-5 py-10 md:px-8">
         <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-4 sm:flex sm:justify-between">
           <div className="flex min-w-0 items-center gap-2">
@@ -452,10 +521,10 @@ function Landing() {
               Product
             </a>
             <a href="#verify" className="hover:text-foreground">
-              Privacy
+              Verification
             </a>
-            <a href="#how" className="hover:text-foreground">
-              Terms
+            <a href="#usecases" className="hover:text-foreground">
+              Use cases
             </a>
             <a href="mailto:hello@karya.ai" className="hover:text-foreground">
               Contact
