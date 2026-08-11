@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as AddRouteImport } from './routes/add'
 import { Route as HomeRouteImport } from './routes/home'
+import { Route as QuestionsRouteImport } from './routes/questions'
 import { Route as WorkIndexRouteImport } from './routes/work.index'
 import { Route as WorkWorkIdRouteImport } from './routes/work.$workId'
 
@@ -22,6 +23,11 @@ const AddRoute = AddRouteImport.update({
 const HomeRoute = HomeRouteImport.update({
   id: '/home',
   path: '/home',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const QuestionsRoute = QuestionsRouteImport.update({
+  id: '/questions',
+  path: '/questions',
   getParentRoute: () => rootRouteImport,
 } as any)
 const WorkIndexRoute = WorkIndexRouteImport.update({
@@ -38,12 +44,14 @@ const WorkWorkIdRoute = WorkWorkIdRouteImport.update({
 export interface FileRoutesByFullPath {
   '/add': typeof AddRoute
   '/home': typeof HomeRoute
+  '/questions': typeof QuestionsRoute
   '/work/$workId': typeof WorkWorkIdRoute
   '/work/': typeof WorkIndexRoute
 }
 export interface FileRoutesByTo {
   '/add': typeof AddRoute
   '/home': typeof HomeRoute
+  '/questions': typeof QuestionsRoute
   '/work/$workId': typeof WorkWorkIdRoute
   '/work': typeof WorkIndexRoute
 }
@@ -51,20 +59,22 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/add': typeof AddRoute
   '/home': typeof HomeRoute
+  '/questions': typeof QuestionsRoute
   '/work/$workId': typeof WorkWorkIdRoute
   '/work/': typeof WorkIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/add' | '/home' | '/work/$workId' | '/work/'
+  fullPaths: '/add' | '/home' | '/questions' | '/work/$workId' | '/work/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/add' | '/home' | '/work/$workId' | '/work'
-  id: '__root__' | '/add' | '/home' | '/work/$workId' | '/work/'
+  to: '/add' | '/home' | '/questions' | '/work/$workId' | '/work'
+  id: '__root__' | '/add' | '/home' | '/questions' | '/work/$workId' | '/work/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   AddRoute: typeof AddRoute
   HomeRoute: typeof HomeRoute
+  QuestionsRoute: typeof QuestionsRoute
   WorkWorkIdRoute: typeof WorkWorkIdRoute
   WorkIndexRoute: typeof WorkIndexRoute
 }
@@ -83,6 +93,13 @@ declare module '@tanstack/react-router' {
       path: '/home'
       fullPath: '/home'
       preLoaderRoute: typeof HomeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/questions': {
+      id: '/questions'
+      path: '/questions'
+      fullPath: '/questions'
+      preLoaderRoute: typeof QuestionsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/work/': {
@@ -105,6 +122,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   AddRoute: AddRoute,
   HomeRoute: HomeRoute,
+  QuestionsRoute: QuestionsRoute,
   WorkWorkIdRoute: WorkWorkIdRoute,
   WorkIndexRoute: WorkIndexRoute,
 }
