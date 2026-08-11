@@ -15,7 +15,7 @@ import {
   WorkQuestions,
 } from "@/components/work-tabs";
 import { WorkChat } from "@/components/work-chat";
-import { getWork } from "@/lib/mock-data";
+import { getWork, type WorkItem } from "@/lib/mock-data";
 import { stateTone } from "@/routes/work.index";
 import { cn } from "@/lib/utils";
 
@@ -32,7 +32,7 @@ type Tab = (typeof tabs)[number];
 
 export const Route = createFileRoute("/work/$workId")({
   validateSearch: (search: Record<string, unknown>): { tab?: Tab } => {
-    const tab = search.tab;
+    const tab = search['tab'];
     return typeof tab === "string" && (tabs as readonly string[]).includes(tab)
       ? { tab: tab as Tab }
       : {};
@@ -60,7 +60,7 @@ export const Route = createFileRoute("/work/$workId")({
 });
 
 function WorkDetail() {
-  const { work } = Route.useLoaderData();
+  const { work } = Route.useLoaderData() as { work: WorkItem };
   const search = Route.useSearch();
   const [tab, setTab] = useState<Tab>(search.tab ?? "overview");
   const [chatOpen, setChatOpen] = useState(false);
