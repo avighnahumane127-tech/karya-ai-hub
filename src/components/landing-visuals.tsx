@@ -48,175 +48,244 @@ export function Panel({
   );
 }
 
-// ── Hero Demonstration ─────────────────────────────────────────────────────────
+// ── Interactive Hero Demonstration ────────────────────────────────────────────
 
-const heroStages = [
-  {
-    label: "Messy request",
-    rightLabel: "Analysing…",
-    findings: [] as string[],
-    missing: [] as string[],
-    status: null as string | null,
-  },
-  {
-    label: "Extracting requirements",
-    rightLabel: "Requirements found",
-    findings: ["Compare 3 suppliers", "Include risks", "Recommend 1 vendor", "Management summary"],
-    missing: [] as string[],
-    status: null as string | null,
-  },
-  {
-    label: "Detecting gaps",
-    rightLabel: "Missing information",
-    findings: ["Compare 3 suppliers", "Include risks", "Recommend 1 vendor", "Management summary"],
-    missing: ["Evaluation criteria", "Budget ceiling"],
-    status: null as string | null,
-  },
-  {
-    label: "Readiness assessment",
-    rightLabel: "Work readiness",
-    findings: ["Compare 3 suppliers", "Include risks", "Recommend 1 vendor", "Management summary"],
-    missing: ["Evaluation criteria", "Budget ceiling"],
-    status: "Needs clarification",
-  },
-];
+type HeroPhase = "Understand" | "Prepare" | "Plan" | "Verify" | "Handoff";
+const heroPhaseTabs: HeroPhase[] = ["Understand", "Prepare", "Plan", "Verify", "Handoff"];
 
-export function HeroDemo() {
-  const [stage, setStage] = useState(0);
-  const [processing, setProcessing] = useState(false);
+function HeroPhaseContent({ phase }: { phase: HeroPhase }) {
+  if (phase === "Understand") {
+    return (
+      <div className="space-y-4 text-sm">
+        <Row label="Objective" value="Prepare a supplier recommendation for management." />
+        <div>
+          <p className="label-caps mb-2">Deliverables</p>
+          {["Supplier comparison", "Recommendation", "Risk analysis", "Management summary"].map((d) => (
+            <div key={d} className="flex items-center gap-2 py-0.5 text-xs">
+              <Check className="h-3 w-3 shrink-0 text-ready" strokeWidth={2.2} />{d}
+            </div>
+          ))}
+        </div>
+        <div>
+          <p className="label-caps mb-2">Requirements</p>
+          {["Compare all suppliers", "Include delivery cost", "Provide evidence", "Submit by Friday"].map((r) => (
+            <div key={r} className="flex items-center gap-2 py-0.5 text-xs text-muted-foreground">
+              <Circle className="h-1.5 w-1.5 shrink-0 fill-current opacity-40" />{r}
+            </div>
+          ))}
+        </div>
+        <div className="flex gap-6 text-xs">
+          <Row label="Deadline" value="Friday" inline />
+          <Row label="Stakeholders" value="Management team" inline />
+        </div>
+      </div>
+    );
+  }
+  if (phase === "Prepare") {
+    return (
+      <div className="space-y-3 text-sm">
+        <div className="inline-flex items-center gap-1.5 rounded-full bg-info-soft px-2.5 py-0.5 text-xs font-medium text-info">
+          <HelpCircle className="h-3 w-3" strokeWidth={2} />
+          Needs clarification · 3 issues
+        </div>
+        <div className="space-y-2">
+          <p className="label-caps">Missing</p>
+          {["Evaluation criteria", "Budget ceiling"].map((m) => (
+            <div key={m} className="flex items-center gap-2 rounded-md bg-blocked-soft/50 px-2.5 py-1.5 text-xs text-blocked">
+              <X className="h-3 w-3 shrink-0" strokeWidth={2.2} />{m}
+            </div>
+          ))}
+        </div>
+        <div className="space-y-2">
+          <p className="label-caps">Ambiguity</p>
+          <div className="flex items-center gap-2 rounded-md bg-warn-soft/50 px-2.5 py-1.5 text-xs text-warn">
+            <HelpCircle className="h-3 w-3 shrink-0" strokeWidth={2} />
+            Price vs delivery priority
+          </div>
+        </div>
+        <div className="space-y-2">
+          <p className="label-caps">Dependency</p>
+          <div className="text-xs text-muted-foreground">Evaluation criteria → supplier ranking</div>
+        </div>
+        <div className="space-y-2">
+          <p className="label-caps">Assumption</p>
+          <div className="text-xs text-muted-foreground">"Final" refers to Proposal-C-v2</div>
+        </div>
+      </div>
+    );
+  }
+  if (phase === "Plan") {
+    return (
+      <div className="space-y-1.5 text-sm">
+        <p className="label-caps mb-3">Execution plan</p>
+        {[
+          { n: "1", label: "Confirm evaluation criteria", status: "Blocked", cls: "text-blocked" },
+          { n: "2", label: "Compare all 3 suppliers", status: "Waiting", cls: "text-warn" },
+          { n: "3", label: "Write recommendation", status: "Not started", cls: "text-muted-foreground" },
+          { n: "4", label: "Prepare management summary", status: "Not started", cls: "text-muted-foreground" },
+          { n: "5", label: "Final review", status: "Not started", cls: "text-muted-foreground" },
+        ].map((step, i, arr) => (
+          <div key={step.n}>
+            <div className="flex items-center justify-between rounded-md border border-hairline bg-surface px-3 py-2">
+              <div className="flex items-center gap-2.5 text-xs">
+                <span className="font-mono text-muted-foreground">{step.n}</span>
+                <span>{step.label}</span>
+              </div>
+              <span className={cn("label-caps shrink-0", step.cls)}>{step.status}</span>
+            </div>
+            {i < arr.length - 1 && (
+              <div className="flex justify-center py-0.5">
+                <ArrowDown className="h-3 w-3 text-muted-foreground/40" strokeWidth={1.8} />
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+    );
+  }
+  if (phase === "Verify") {
+    return (
+      <div className="space-y-2 text-sm">
+        <p className="label-caps mb-3">Verification — supplier-recommendation.pptx</p>
+        {[
+          { icon: Check, label: "10 slides present", cls: "text-ready", bg: "bg-ready-soft/60" },
+          { icon: Check, label: "All suppliers compared", cls: "text-ready", bg: "bg-ready-soft/60" },
+          { icon: Check, label: "Recommendation included", cls: "text-ready", bg: "bg-ready-soft/60" },
+          { icon: AlertTriangle, label: "Executive summary conflicts with table", cls: "text-warn", bg: "bg-warn-soft/60" },
+          { icon: X, label: "Appendix missing", cls: "text-blocked", bg: "bg-blocked-soft/50" },
+          { icon: X, label: "Delivery-cost evidence missing", cls: "text-blocked", bg: "bg-blocked-soft/50" },
+        ].map(({ icon: Icon, label, cls, bg }) => (
+          <div key={label} className={cn("flex items-center gap-2.5 rounded-md px-3 py-2 text-xs", bg)}>
+            <Icon className={cn("h-3 w-3 shrink-0", cls)} strokeWidth={2.2} />
+            {label}
+          </div>
+        ))}
+        <div className="mt-3 flex items-center gap-2">
+          <span className="rounded-full bg-warn-soft px-2.5 py-0.5 text-xs font-medium text-warn">Review required</span>
+        </div>
+      </div>
+    );
+  }
+  // Handoff
+  return (
+    <div className="space-y-3 text-sm">
+      <p className="label-caps mb-3 text-ready">Handoff packet</p>
+      <div>
+        <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Completed</p>
+        {["Supplier comparison", "Recommendation", "Management presentation"].map((item) => (
+          <div key={item} className="flex items-center gap-2 py-1 text-xs">
+            <Check className="h-3 w-3 text-ready" strokeWidth={2.2} />{item}
+          </div>
+        ))}
+      </div>
+      <div>
+        <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Open</p>
+        <div className="flex items-center gap-2 py-1 text-xs text-muted-foreground">
+          <Minus className="h-3 w-3 text-warn" strokeWidth={2.2} />Delivery cost confirmation
+        </div>
+      </div>
+      <div className="flex gap-6 text-xs text-muted-foreground">
+        <div><p className="text-[10px] uppercase tracking-wider">Risks</p><p>1 unresolved assumption</p></div>
+        <div><p className="text-[10px] uppercase tracking-wider">Files</p><p>3 authoritative</p></div>
+      </div>
+      <div>
+        <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Next action</p>
+        <p className="mt-1 text-xs font-medium">Management review</p>
+      </div>
+    </div>
+  );
+}
 
-  useEffect(() => {
-    const cycle = () => {
-      setProcessing(true);
-      setTimeout(() => {
-        setStage((s) => (s + 1) % heroStages.length);
-        setProcessing(false);
-      }, 900);
-    };
-    const t = setInterval(cycle, 3200);
-    return () => clearInterval(t);
-  }, []);
+function Row({
+  label, value, inline,
+}: {
+  label: string; value: string; inline?: boolean;
+}) {
+  if (inline) {
+    return (
+      <div>
+        <p className="label-caps">{label}</p>
+        <p className="mt-0.5 text-xs">{value}</p>
+      </div>
+    );
+  }
+  return (
+    <div>
+      <p className="label-caps mb-1">{label}</p>
+      <p className="text-xs leading-relaxed text-muted-foreground">{value}</p>
+    </div>
+  );
+}
 
-  // stage is always in-bounds: useState(0) and setStage uses modulo on heroStages.length
-  const current = heroStages[stage]!;
+const phaseColors: Record<HeroPhase, string> = {
+  Understand: "text-info",
+  Prepare: "text-warn",
+  Plan: "text-ready",
+  Verify: "text-blocked",
+  Handoff: "text-muted-foreground",
+};
+
+export function InteractiveHeroDemo() {
+  const [phase, setPhase] = useState<HeroPhase>("Understand");
 
   return (
-    <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-start gap-3">
-      {/* LEFT – messy request */}
-      <Panel className="space-y-3 p-4">
+    <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.6fr)]">
+      {/* LEFT – inputs */}
+      <Panel className="space-y-3 p-5">
         <DemoTag />
-        <p className="label-caps">Request</p>
-        <p className="rounded-lg border border-hairline bg-muted/50 px-3 py-2.5 text-[13px] leading-relaxed text-muted-foreground">
-          "Review the three supplier proposals and prepare a recommendation for management by
-          Friday."
+        <p className="label-caps">Incoming work</p>
+        <p className="rounded-lg border border-hairline bg-muted/40 px-3 py-2.5 text-[13px] leading-relaxed text-muted-foreground">
+          "Review the three supplier proposals and prepare a recommendation for management by Friday."
         </p>
         <div className="space-y-1.5">
           {[
+            { icon: Mail, name: "Assignment email" },
             { icon: FileText, name: "Proposal-A.pdf" },
             { icon: FileText, name: "Proposal-B.pdf" },
             { icon: FileText, name: "Proposal-C.pdf" },
-            { icon: Mail, name: "Email instructions" },
-            { icon: FileText, name: "Previous notes" },
+            { icon: FileText, name: "Previous-notes.docx" },
           ].map(({ icon: Icon, name }) => (
-            <div
-              key={name}
-              className="flex items-center gap-2 rounded-md border border-hairline bg-surface px-2.5 py-1.5"
-            >
+            <div key={name} className="flex items-center gap-2 rounded-md border border-hairline bg-surface px-2.5 py-1.5">
               <Icon className="h-3.5 w-3.5 shrink-0 text-muted-foreground" strokeWidth={1.7} />
               <span className="truncate text-xs">{name}</span>
             </div>
           ))}
         </div>
+        <div className="flex items-center gap-2 rounded-lg border border-hairline bg-muted/30 px-3 py-2 text-xs text-muted-foreground">
+          <Zap className="h-3.5 w-3.5 shrink-0 text-primary" strokeWidth={2} />
+          Karya AI is processing…
+        </div>
       </Panel>
 
-      {/* CENTER – processing indicator */}
-      <div className="flex flex-col items-center gap-1.5 pt-10">
-        <div
-          className={cn(
-            "flex h-8 w-8 items-center justify-center rounded-full border border-hairline bg-surface transition-all duration-500",
-            processing && "border-primary/40 bg-primary/5",
-          )}
-        >
-          <Zap
-            className={cn(
-              "h-3.5 w-3.5 transition-colors duration-500",
-              processing ? "text-primary" : "text-muted-foreground",
-            )}
-            strokeWidth={1.8}
-          />
+      {/* RIGHT – tabbed output */}
+      <Panel className="flex flex-col p-0 overflow-hidden">
+        {/* Phase tabs */}
+        <div className="flex border-b border-hairline">
+          {heroPhaseTabs.map((tab) => (
+            <button
+              key={tab}
+              onClick={() => setPhase(tab)}
+              className={cn(
+                "flex-1 px-2 py-3 text-[11px] font-medium transition-colors",
+                phase === tab
+                  ? cn("border-b-2 border-primary bg-surface", phaseColors[tab])
+                  : "text-muted-foreground hover:text-foreground hover:bg-muted/30",
+              )}
+            >
+              {tab}
+            </button>
+          ))}
         </div>
-        <div className="h-8 w-px bg-hairline" />
-        <ArrowRight className="h-3.5 w-3.5 text-muted-foreground" strokeWidth={1.8} />
-      </div>
-
-      {/* RIGHT – progressive results */}
-      <Panel className="min-h-[240px] p-4">
-        <p className="label-caps">{current.rightLabel}</p>
-
-        {current.findings.length > 0 && (
-          <div className="mt-3 space-y-1.5">
-            <p className="text-[10px] uppercase tracking-wider text-muted-foreground">
-              Deliverables
-            </p>
-            {current.findings.map((f) => (
-              <div key={f} className="flex items-center gap-2 text-xs">
-                <Check
-                  className="h-3 w-3 shrink-0 text-ready"
-                  strokeWidth={2.2}
-                />
-                <span>{f}</span>
-              </div>
-            ))}
-          </div>
-        )}
-
-        {current.missing.length > 0 && (
-          <div className="mt-3 space-y-1.5">
-            <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Missing</p>
-            {current.missing.map((m) => (
-              <div key={m} className="flex items-center gap-2 text-xs">
-                <X className="h-3 w-3 shrink-0 text-blocked" strokeWidth={2.2} />
-                <span className="text-muted-foreground">{m}</span>
-              </div>
-            ))}
-          </div>
-        )}
-
-        {current.status && (
-          <div className="mt-4 border-t border-hairline pt-4">
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-info-soft px-2.5 py-0.5 text-[11px] font-medium text-info">
-              <HelpCircle className="h-3 w-3" strokeWidth={2} />
-              {current.status}
-            </span>
-          </div>
-        )}
-
-        {current.findings.length === 0 && (
-          <div className="mt-4 flex items-center gap-2">
-            <div
-              className={cn(
-                "h-1.5 w-1.5 rounded-full bg-muted-foreground/40 transition-all duration-300",
-                processing && "animate-pulse bg-primary",
-              )}
-            />
-            <div
-              className={cn(
-                "h-1.5 w-1.5 rounded-full bg-muted-foreground/40 transition-all duration-500",
-                processing && "animate-pulse bg-primary",
-              )}
-            />
-            <div
-              className={cn(
-                "h-1.5 w-1.5 rounded-full bg-muted-foreground/40 transition-all duration-700",
-                processing && "animate-pulse bg-primary",
-              )}
-            />
-          </div>
-        )}
+        <div className="flex-1 overflow-auto p-5">
+          <HeroPhaseContent phase={phase} />
+        </div>
       </Panel>
     </div>
   );
 }
+
+// Legacy HeroDemo kept for any existing references
+export { InteractiveHeroDemo as HeroDemo };
 
 // ── Before / After ─────────────────────────────────────────────────────────────
 
@@ -833,81 +902,115 @@ export function HandoffTransform() {
 
 const featureGroups = [
   {
+    num: "01",
     phase: "Understand",
     color: "text-info",
     bg: "bg-info-soft",
     features: [
-      "Request extraction",
+      "AI Work Chat",
+      "Multi-format input",
+      "Objective extraction",
       "Deliverable extraction",
       "Requirement extraction",
-      "Stakeholder detection",
       "Deadline detection",
+      "Stakeholder detection",
+      "Source-backed findings",
     ],
   },
   {
+    num: "02",
     phase: "Prepare",
     color: "text-warn",
     bg: "bg-warn-soft",
     features: [
+      "Readiness check",
       "Missing information detection",
       "Ambiguity detection",
-      "Dependency detection",
       "Risk detection",
       "Assumption register",
+      "Version conflict detection",
+      "Outdated file detection",
+      "Authoritative file detection",
     ],
   },
   {
-    phase: "Execute",
+    num: "03",
+    phase: "Plan",
     color: "text-ready",
     bg: "bg-ready-soft",
     features: [
       "Ordered work plan",
-      "Task dependencies",
+      "Dependency detection",
+      "Dependency graph",
+      "Expected outputs",
       "Evidence requirements",
-      "Questions",
-      "Clarification messages",
+      "AI recommendations",
+      "Scope / change tracking",
     ],
   },
   {
+    num: "04",
+    phase: "Uncertainty",
+    color: "text-warn",
+    bg: "bg-warn-soft",
+    features: [
+      "Question generator",
+      "Clarification message generator",
+      "Ask Boss / Ask Client mode",
+      "Decision log",
+      "Requirement changes",
+      "Source-backed AI",
+    ],
+  },
+  {
+    num: "05",
     phase: "Verify",
     color: "text-blocked",
     bg: "bg-blocked-soft",
     features: [
       "Requirement verification",
       "Evidence mapping",
-      "Missing deliverables",
-      "Unsupported claims",
-      "Completion tests",
+      "Completion test",
+      "Missing deliverable detection",
+      "Unsupported claim detection",
+      "Number consistency checking",
+      "Source-backed verification",
     ],
   },
   {
+    num: "06",
     phase: "Handoff",
     color: "text-muted-foreground",
     bg: "bg-muted",
     features: [
       "Handoff packet",
-      "Open issues",
-      "Decisions",
+      "Completed work summary",
+      "Remaining issues",
       "Authoritative files",
-      "Next steps",
+      "Open decisions",
+      "Requirement history",
+      "Decision history",
     ],
   },
 ];
 
 export function FeatureArchitecture() {
   return (
-    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+    <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
       {featureGroups.map((group) => (
-        <div key={group.phase} className="space-y-2">
-          <span
-            className={cn(
-              "inline-block rounded-full px-2.5 py-0.5 text-xs font-medium",
-              group.bg,
-              group.color,
-            )}
-          >
-            {group.phase}
-          </span>
+        <div key={group.phase} className="space-y-3 rounded-xl border border-hairline p-5">
+          <div className="flex items-center gap-2">
+            <span className="font-mono text-xs text-muted-foreground">{group.num}</span>
+            <span
+              className={cn(
+                "rounded-full px-2.5 py-0.5 text-xs font-medium",
+                group.bg,
+                group.color,
+              )}
+            >
+              {group.phase}
+            </span>
+          </div>
           <ul className="space-y-1.5">
             {group.features.map((f) => (
               <li key={f} className="flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
@@ -1181,6 +1284,299 @@ export function FlowStep({ label, last }: { label: string; last?: boolean }) {
       {last ? null : (
         <ArrowRight className="h-3.5 w-3.5 shrink-0 text-muted-foreground" strokeWidth={1.8} />
       )}
+    </div>
+  );
+}
+
+// ── AI Work Chat Demo ─────────────────────────────────────────────────────────
+
+export function AIChatDemo() {
+  return (
+    <Panel className="p-0 overflow-hidden">
+      <DemoTag />
+      <div className="border-b border-hairline px-5 py-3">
+        <p className="label-caps">AI Work Chat</p>
+        <p className="mt-0.5 text-xs text-muted-foreground">
+          Understands current work, files, requirements, decisions, and history.
+        </p>
+      </div>
+      <div className="space-y-4 p-5">
+        {/* User message */}
+        <div className="flex justify-end">
+          <div className="max-w-xs rounded-2xl rounded-tr-sm bg-primary px-4 py-2.5 text-sm text-primary-foreground">
+            Can I start this?
+          </div>
+        </div>
+        {/* AI response */}
+        <div className="flex gap-3">
+          <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-hairline bg-surface">
+            <Zap className="h-3.5 w-3.5 text-primary" strokeWidth={2} />
+          </div>
+          <div className="max-w-sm space-y-2.5 rounded-2xl rounded-tl-sm border border-hairline bg-muted/30 px-4 py-3">
+            <p className="text-sm font-medium text-blocked">Not yet.</p>
+            <p className="text-sm leading-relaxed">Two required inputs are missing:</p>
+            <div className="space-y-1.5">
+              {["Evaluation criteria", "Budget ceiling"].map((item) => (
+                <div key={item} className="flex items-center gap-2 text-xs text-muted-foreground">
+                  <X className="h-3 w-3 text-blocked" strokeWidth={2.2} />
+                  {item}
+                </div>
+              ))}
+            </div>
+            <p className="text-xs leading-relaxed text-muted-foreground">
+              You can compare the proposals provisionally, but a reliable recommendation cannot be
+              made until these are confirmed.
+            </p>
+            <div className="border-t border-hairline pt-2.5">
+              <p className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                Source
+              </p>
+              <p className="mt-1 text-xs text-muted-foreground">
+                Based on requirements extracted from the assignment email and Proposal-A.pdf.
+              </p>
+            </div>
+          </div>
+        </div>
+        {/* Follow-up */}
+        <div className="flex justify-end">
+          <div className="max-w-xs rounded-2xl rounded-tr-sm bg-primary px-4 py-2.5 text-sm text-primary-foreground">
+            Generate a message asking for the missing information.
+          </div>
+        </div>
+        {/* Generated message */}
+        <div className="flex gap-3">
+          <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-hairline bg-surface">
+            <Zap className="h-3.5 w-3.5 text-primary" strokeWidth={2} />
+          </div>
+          <div className="max-w-sm rounded-2xl rounded-tl-sm border border-ready/30 bg-ready-soft/30 px-4 py-3">
+            <p className="text-[10px] uppercase tracking-wider text-ready">Clarification message generated</p>
+            <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
+              "To complete the supplier recommendation, I need two things: (1) the evaluation
+              criteria used to rank suppliers, and (2) the budget ceiling for the selected
+              vendor. Could you confirm both before Friday?"
+            </p>
+          </div>
+        </div>
+      </div>
+    </Panel>
+  );
+}
+
+// ── Requirement Table ─────────────────────────────────────────────────────────
+
+export function RequirementTable() {
+  const rows = [
+    {
+      req: "Compare 3 suppliers",
+      evidence: "3 proposal files",
+      status: "Complete" as const,
+      source: "Assignment email",
+    },
+    {
+      req: "Include vendor references",
+      evidence: "None found",
+      status: "Missing" as const,
+      source: "Proposal-A.pdf · p.4",
+    },
+    {
+      req: "Submit by Friday",
+      evidence: "Two conflicting dates",
+      status: "Conflict" as const,
+      source: "Email + Brief",
+    },
+  ];
+
+  const statusCfg = {
+    Complete: { cls: "bg-ready-soft text-ready", label: "Complete" },
+    Missing: { cls: "bg-blocked-soft text-blocked", label: "Missing" },
+    Conflict: { cls: "bg-warn-soft text-warn", label: "Clarification needed" },
+  };
+
+  return (
+    <Panel className="overflow-hidden p-0">
+      <DemoTag />
+      <div className="overflow-x-auto">
+        <table className="w-full text-xs">
+          <thead>
+            <tr className="border-b border-hairline bg-muted/30">
+              <th className="px-4 py-3 text-left label-caps">Requirement</th>
+              <th className="px-4 py-3 text-left label-caps">Evidence</th>
+              <th className="px-4 py-3 text-left label-caps">Source</th>
+              <th className="px-4 py-3 text-left label-caps">Status</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-hairline">
+            {rows.map((row) => (
+              <tr key={row.req} className="hover:bg-muted/20">
+                <td className="px-4 py-3 font-medium">{row.req}</td>
+                <td className="px-4 py-3 text-muted-foreground">{row.evidence}</td>
+                <td className="px-4 py-3 text-muted-foreground">{row.source}</td>
+                <td className="px-4 py-3">
+                  <span
+                    className={cn(
+                      "inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium",
+                      statusCfg[row.status].cls,
+                    )}
+                  >
+                    {statusCfg[row.status].label}
+                  </span>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </Panel>
+  );
+}
+
+// ── Source-Backed Callout ─────────────────────────────────────────────────────
+
+export function SourceBackedDemo() {
+  return (
+    <div className="grid gap-4 sm:grid-cols-2">
+      <Panel className="space-y-3 p-5">
+        <p className="label-caps">Finding</p>
+        <p className="text-sm">"Delivery required by Friday."</p>
+        <div className="border-t border-hairline pt-3">
+          <p className="label-caps text-ready">Source</p>
+          <div className="mt-2 space-y-1">
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <FileText className="h-3.5 w-3.5 shrink-0" strokeWidth={1.7} />
+              Email · August 10
+            </div>
+            <p className="ml-5 text-xs italic text-muted-foreground">
+              "Delivery required by Friday"
+            </p>
+          </div>
+        </div>
+      </Panel>
+      <Panel className="space-y-3 p-5">
+        <p className="label-caps">Finding</p>
+        <p className="text-sm">"Budget ceiling not specified."</p>
+        <div className="border-t border-hairline pt-3">
+          <p className="label-caps text-blocked">No source found</p>
+          <p className="mt-2 text-xs text-muted-foreground">
+            Budget was not mentioned in the assignment email, any proposal, or the brief. This is
+            flagged as missing information.
+          </p>
+        </div>
+      </Panel>
+    </div>
+  );
+}
+
+// ── Workspace Section ─────────────────────────────────────────────────────────
+
+export function WorkspaceSection() {
+  return (
+    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      {[
+        {
+          title: "My Work",
+          desc: "Active, blocked, waiting, completed, and needs-attention views — organized around readiness, not a generic kanban.",
+          items: ["Active", "Blocked", "Waiting", "Completed", "Needs attention"],
+          color: "text-info",
+          bg: "bg-info-soft",
+        },
+        {
+          title: "Templates",
+          desc: "Reusable workflows for recurring work types that carry structure, questions, and evidence requirements.",
+          items: ["Reports", "Research", "Presentations", "Websites", "Client work", "Data tasks"],
+          color: "text-ready",
+          bg: "bg-ready-soft",
+        },
+        {
+          title: "Work History",
+          desc: "The full evolution of a work item — every requirement change, decision, and clarification is preserved.",
+          items: [
+            "Original request",
+            "Requirement added",
+            "Question answered",
+            "Decision recorded",
+            "Final verification",
+          ],
+          color: "text-muted-foreground",
+          bg: "bg-muted",
+        },
+      ].map((card) => (
+        <Panel key={card.title} className="space-y-3 p-5">
+          <span className={cn("inline-block rounded-full px-2.5 py-0.5 text-xs font-medium", card.bg, card.color)}>
+            {card.title}
+          </span>
+          <p className="text-xs leading-relaxed text-muted-foreground">{card.desc}</p>
+          <ul className="space-y-1.5">
+            {card.items.map((item) => (
+              <li key={item} className="flex items-center gap-2 text-xs">
+                <div className="h-1 w-1 rounded-full bg-muted-foreground/40" />
+                {item}
+              </li>
+            ))}
+          </ul>
+        </Panel>
+      ))}
+    </div>
+  );
+}
+
+// ── Privacy Section ───────────────────────────────────────────────────────────
+
+export function PrivacySection() {
+  return (
+    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      {[
+        {
+          title: "Temporary processing",
+          desc: "Files are processed to extract structure and evidence. They are not stored beyond what you explicitly save.",
+        },
+        {
+          title: "Deletion controls",
+          desc: "You can delete uploaded files and extracted data at any time.",
+        },
+        {
+          title: "Retention settings",
+          desc: "Configure how long your work data is retained.",
+        },
+        {
+          title: "Your files, your control",
+          desc: "Karya AI does not claim ownership of your work or use it to train models.",
+        },
+      ].map((item) => (
+        <div key={item.title} className="space-y-2">
+          <div className="flex items-center gap-2">
+            <Lock className="h-3.5 w-3.5 shrink-0 text-muted-foreground" strokeWidth={1.8} />
+            <p className="text-sm font-medium">{item.title}</p>
+          </div>
+          <p className="text-xs leading-relaxed text-muted-foreground">{item.desc}</p>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// ── Integrations Section ──────────────────────────────────────────────────────
+
+export function IntegrationsSection() {
+  const planned = [
+    "Gmail", "Outlook", "Google Drive", "OneDrive",
+    "Dropbox", "Slack", "Teams", "Notion", "Jira",
+  ];
+  return (
+    <div className="space-y-4">
+      <p className="label-caps text-muted-foreground">Planned integrations</p>
+      <div className="flex flex-wrap gap-2">
+        {planned.map((name) => (
+          <span
+            key={name}
+            className="rounded-full border border-hairline bg-surface px-3 py-1 text-xs text-muted-foreground"
+          >
+            {name}
+          </span>
+        ))}
+      </div>
+      <p className="text-xs text-muted-foreground">
+        These integrations are in development. They do not currently exist in the product.
+      </p>
     </div>
   );
 }

@@ -1,0 +1,1006 @@
+# KARYA AI — FIX THE HERO AND PRODUCT POSITIONING
+
+The current hero is too narrow.
+
+Do NOT position Karya AI primarily as:
+
+> "Know what to do before you work."
+
+That describes only one part of the product.
+
+Karya AI is a much broader **AI work understanding, readiness, planning, verification, and handoff system**.
+
+The hero must communicate that Karya AI understands work from beginning to end.
+
+---
+
+# CORE PRODUCT DEFINITION
+
+Use this as the conceptual foundation of the entire landing page:
+
+> **Karya AI understands the work, prepares it for execution, helps you navigate what needs to happen, and verifies whether the finished result actually satisfies the original request.**
+
+The core lifecycle is:
+
+**Understand → Prepare → Plan → Execute → Verify → Handoff**
+
+The product is not simply:
+
+**"AI that creates tasks."**
+
+It is not simply:
+
+**"AI that tells you what to do."**
+
+It is not simply:
+
+**"AI document analysis."**
+
+It is an intelligent layer between **receiving work and completing work**.
+
+---
+
+# HERO HEADLINE
+
+Replace the current headline with a more descriptive product-level headline.
+
+Use:
+
+## **AI that understands your work from request to completion.**
+
+Supporting copy:
+
+> **Give Karya AI an assignment, brief, email, document, image, folder, or other work instruction. It understands what is required, finds what's missing or unclear, builds the path forward, and verifies the finished result against the original request.**
+
+This should be the primary hero messaging.
+
+---
+
+# HERO SUPPORTING CONCEPT
+
+Under the main description, add a concise visual/product statement:
+
+**Understand. Prepare. Plan. Verify. Handoff.**
+
+Then show the transformation visually:
+
+**Messy work**
+
+↓
+
+**Karya AI**
+
+↓
+
+**Requirements**
+
+**Missing information**
+
+**Questions**
+
+**Dependencies**
+
+**Risks**
+
+↓
+
+**Work plan**
+
+↓
+
+**Finished work**
+
+↓
+
+**Verification**
+
+↓
+
+**Handoff**
+
+The visitor should understand the entire product without reading the feature list.
+
+---
+
+# HERO PRODUCT DEMONSTRATION
+
+The hero must contain a large, highly polished interactive product visualization.
+
+Do NOT use a generic dashboard screenshot.
+
+Show Karya AI actually working.
+
+## INPUT
+
+Display multiple inputs entering Karya AI:
+
+**Assignment**
+
+**Email**
+
+**Proposal-A.pdf**
+
+**Proposal-B.pdf**
+
+**Proposal-C.pdf**
+
+**Previous notes**
+
+The UI should visually communicate that Karya AI can understand work regardless of where it originated.
+
+---
+
+## ANALYSIS
+
+Animate the inputs flowing into the AI Work Chat / Work Understanding interface.
+
+Show Karya AI extracting:
+
+### Objective
+
+Prepare a supplier recommendation for management.
+
+### Deliverables
+
+* Supplier comparison
+* Recommendation
+* Risk analysis
+* Management summary
+
+### Requirements
+
+* Compare all suppliers
+* Include delivery cost
+* Provide evidence
+* Submit by Friday
+
+Then reveal:
+
+### Missing
+
+Evaluation criteria
+
+Budget ceiling
+
+### Ambiguity
+
+Price vs delivery priority
+
+### Dependency
+
+Evaluation criteria → supplier ranking
+
+### Status
+
+**Needs clarification**
+
+The animation should demonstrate multiple capabilities simultaneously.
+
+---
+
+# HERO INTERACTION
+
+Make the hero product visualization interactive if practical.
+
+For example, allow the visitor to switch between:
+
+**Understand**
+
+**Prepare**
+
+**Plan**
+
+**Verify**
+
+**Handoff**
+
+When each is selected, the product visualization changes.
+
+### Understand
+
+Shows:
+
+* Objective
+* Deliverables
+* Requirements
+* Deadline
+* Stakeholders
+
+### Prepare
+
+Shows:
+
+* Missing information
+* Ambiguities
+* Risks
+* Assumptions
+* Version conflicts
+
+### Plan
+
+Shows:
+
+* Ordered steps
+* Dependencies
+* Expected outputs
+* Questions
+* Evidence requirements
+
+### Verify
+
+Shows:
+
+* Requirement status
+* Evidence
+* Missing deliverables
+* Conflicting information
+* Unsupported claims
+
+### Handoff
+
+Shows:
+
+* Completed work
+* Remaining issues
+* Authoritative files
+* Decisions
+* Risks
+* Next steps
+
+This makes the breadth of Karya AI immediately visible.
+
+---
+
+# HERO TAGLINE / CATEGORY
+
+Add a small category label above the headline:
+
+**AI WORK INTELLIGENCE**
+
+or:
+
+**AI WORK UNDERSTANDING & VERIFICATION**
+
+Do not call it simply an:
+
+**AI task manager**
+
+or
+
+**AI productivity assistant**
+
+because that inaccurately narrows the product.
+
+---
+
+# FEATURE ARCHITECTURE
+
+The landing page should organize the large feature set into **six major product capabilities**, rather than displaying 30+ disconnected features.
+
+---
+
+# 01 — UNDERSTAND THE WORK
+
+Karya AI understands incoming work.
+
+Features:
+
+* AI Work Chat
+* Multi-format input
+* Text understanding
+* PDF understanding
+* DOCX understanding
+* Image understanding
+* ZIP/folder understanding
+* Email/chat understanding
+* Objective extraction
+* Deliverable extraction
+* Requirement extraction
+* Deadline detection
+* Stakeholder detection
+* Source-backed findings
+
+Visual demonstration:
+
+Show a messy email + PDF + image + notes becoming:
+
+**Objective**
+
+**Deliverables**
+
+**Requirements**
+
+**Deadline**
+
+**Stakeholders**
+
+**Inputs**
+
+---
+
+# 02 — PREPARE THE WORK
+
+Before execution, Karya AI determines whether the work is actually ready to begin.
+
+Features:
+
+* Readiness check
+* Ready
+* Ready with warnings
+* Blocked
+* Needs clarification
+* Review required
+* Missing-information detection
+* Ambiguity detection
+* Risk detection
+* Assumption register
+* Version/file analysis
+* Duplicate detection
+* Outdated-file detection
+* Conflicting-version detection
+* Authoritative-file detection
+
+Create a large visual readiness interface.
+
+Example:
+
+### NEEDS CLARIFICATION
+
+**3 issues found**
+
+Missing evaluation criteria
+
+Conflicting deadlines
+
+Audience unspecified
+
+**Next action**
+
+Resolve 3 questions before execution.
+
+---
+
+# 03 — PLAN THE WORK
+
+Karya AI converts understanding into an executable structure.
+
+Features:
+
+* Work planning
+* Ordered steps
+* Dependency detection
+* Dependency graph
+* Expected outputs
+* Evidence requirements
+* AI recommendations
+* Next-best-action suggestions
+* Scope/change tracking
+* Recurring work
+
+Visual:
+
+Show:
+
+**Request**
+
+↓
+
+**Requirement**
+
+↓
+
+**Dependency**
+
+↓
+
+**Task**
+
+↓
+
+**Expected output**
+
+↓
+
+**Evidence**
+
+This should look like a sophisticated work graph rather than a conventional task list.
+
+---
+
+# 04 — MANAGE UNCERTAINTY
+
+This is a major differentiator and deserves its own visual treatment.
+
+Features:
+
+* Question generator
+* Clarification message generator
+* Ask Boss mode
+* Ask Client mode
+* Assumption register
+* Decision log
+* Risk detection
+* Scope/change tracking
+* Requirement changes
+* Source-backed AI
+
+Demonstrate:
+
+### UNCLEAR
+
+> "Make the presentation professional."
+
+↓
+
+### KARYA AI
+
+**Question generated**
+
+> Which audience will receive the presentation: executives, technical staff, or customers?
+
+↓
+
+### DECISION
+
+Customer-facing presentation
+
+↓
+
+### DECISION LOG
+
+Audience confirmed by client.
+
+This demonstrates that Karya AI does not silently guess.
+
+---
+
+# 05 — VERIFY THE WORK
+
+This should be one of the most prominent sections on the landing page.
+
+Features:
+
+* Requirement tracking
+* Evidence mapping
+* Completion test
+* Final verification
+* Quality checking
+* Missing requirement detection
+* Unsupported claim detection
+* Number consistency checking
+* Missing attachment detection
+* Source-backed verification
+* Evidence-based progress
+
+Create a large before/after verification UI.
+
+### ORIGINAL REQUEST
+
+Create a 10-slide supplier recommendation presentation.
+
+### FINAL OUTPUT
+
+supplier-recommendation.pptx
+
+### VERIFICATION
+
+✓ 10 slides
+
+✓ All suppliers compared
+
+✓ Recommendation included
+
+⚠ Executive summary conflicts with table
+
+✕ Appendix missing
+
+✕ Delivery-cost evidence missing
+
+### RESULT
+
+**Review required**
+
+The visual message must be:
+
+> **"Done" is not a checkbox. It is a claim that needs evidence.**
+
+---
+
+# 06 — HANDOFF THE WORK
+
+Features:
+
+* Handoff generator
+* Completed work summary
+* Remaining issues
+* Authoritative files
+* Risks
+* Open decisions
+* Next steps
+* Work history
+* Requirement history
+* Decision history
+* Change history
+
+Show:
+
+### BEFORE
+
+25 confusing files
+
+↓
+
+### KARYA AI
+
+Organizes them
+
+↓
+
+### HANDOFF
+
+**Completed**
+
+Supplier comparison
+
+Recommendation
+
+Management presentation
+
+**Open**
+
+Delivery cost confirmation
+
+**Risks**
+
+1 unresolved assumption
+
+**Authoritative files**
+
+3 files
+
+**Next**
+
+Management review
+
+This should visually communicate the final stage of the product.
+
+---
+
+# SECONDARY PRODUCT FEATURES
+
+After explaining the six core capabilities, introduce the supporting workspace features.
+
+## My Work
+
+Show:
+
+* Active
+* Blocked
+* Waiting
+* Completed
+* Needs attention
+
+Do not make this look like a generic project-management dashboard.
+
+---
+
+## Templates
+
+Show reusable workflows for:
+
+* Reports
+* Research
+* Presentations
+* Websites
+* Client work
+* Data tasks
+* Supplier comparison
+* Other recurring workflows
+
+---
+
+## Global Search
+
+Search across:
+
+* Work
+* Requirements
+* Files
+* Questions
+* Evidence
+* Handoffs
+* Decisions
+* History
+
+---
+
+## Work History
+
+Show the evolution of a work item:
+
+**Original request**
+
+↓
+
+**Requirement added**
+
+↓
+
+**Question answered**
+
+↓
+
+**Decision recorded**
+
+↓
+
+**Scope changed**
+
+↓
+
+**Final verification**
+
+This is important because Karya AI should preserve the evolution of work, not just the final state.
+
+---
+
+## Recurring Work
+
+Show:
+
+**Previous workflow**
+
+↓
+
+**New request**
+
+↓
+
+**Karya AI detects changes**
+
+For example:
+
+**Previous**
+
+5 deliverables
+
+**Current**
+
+6 deliverables
+
+**Change detected**
+
+New compliance document required.
+
+This demonstrates that recurring work is not simply copied blindly.
+
+---
+
+## Process Insights
+
+Show insights such as:
+
+**Most common blocker**
+
+Missing client assets
+
+**Most common ambiguity**
+
+Undefined audience
+
+**Most frequent rework cause**
+
+Unclear acceptance criteria
+
+Only show these when real data exists.
+
+Never fabricate user statistics.
+
+For the landing page, use clearly labelled **illustrative product examples**.
+
+---
+
+# AI WORK CHAT
+
+The AI Work Chat should be positioned as the **interface through which users interact with the work**, not as a generic chatbot.
+
+It should understand:
+
+* Current work
+* Files
+* Requirements
+* Evidence
+* Questions
+* Decisions
+* History
+* Dependencies
+
+Example:
+
+User:
+
+> "Can I start this?"
+
+Karya AI:
+
+> **Not yet.**
+>
+> Two required inputs are missing:
+>
+> * Evaluation criteria
+> * Budget ceiling
+>
+> You can compare the proposals provisionally, but a reliable recommendation cannot be made until these are confirmed.
+
+This demonstrates contextual intelligence.
+
+---
+
+# MULTI-FORMAT INPUT
+
+Show that Karya AI can accept:
+
+* Text
+* PDF
+* DOCX
+* Images
+* ZIP files
+* Email
+* Chat
+* Spreadsheets
+* Briefs
+* Later: Voice
+* Later: Video
+
+Visually animate all of these entering one workspace.
+
+---
+
+# REQUIREMENT TRACKING
+
+Create a dedicated visual demonstration.
+
+Show:
+
+| Requirement               | Evidence          | Status        |
+| ------------------------- | ----------------- | ------------- |
+| Compare 3 suppliers       | 3 proposal files  | Complete      |
+| Include vendor references | None found        | Missing       |
+| Submit Friday             | Conflicting dates | Clarification |
+
+The interface should emphasize that every requirement has a state and supporting evidence.
+
+---
+
+# SOURCE-BACKED AI
+
+This should be prominently communicated.
+
+Whenever Karya AI identifies something, show:
+
+**Source**
+
+Proposal-B.pdf
+Page 7
+
+or:
+
+**Source**
+
+Email
+August 10
+"Delivery required by Friday"
+
+The product should visually communicate:
+
+> **Karya AI should be able to show where it got the information.**
+
+Do not imply perfect accuracy.
+
+---
+
+# PRIVACY
+
+Show the privacy model clearly but without making it dominate the landing page.
+
+Communicate:
+
+* Temporary file processing
+* Deletion controls
+* Retention settings
+* User control over files
+
+Do not make unsupported security claims.
+
+---
+
+# FUTURE INTEGRATIONS
+
+Keep integrations as a small "Coming later" section rather than pretending they already exist.
+
+Potential future integrations:
+
+* Gmail
+* Outlook
+* Google Drive
+* OneDrive
+* Dropbox
+* Slack
+* Teams
+* Notion
+* Jira
+
+Clearly label these as:
+
+**Planned integrations**
+
+Do not imply that they currently work.
+
+---
+
+# LANDING PAGE NARRATIVE
+
+The final page should follow this structure:
+
+## HERO
+
+**AI that understands your work from request to completion.**
+
+Visual:
+
+Messy inputs → Karya AI → structured work intelligence
+
+↓
+
+## THE PROBLEM
+
+Work arrives fragmented and unclear.
+
+↓
+
+## UNDERSTAND
+
+Karya AI figures out what was actually requested.
+
+↓
+
+## PREPARE
+
+It identifies missing information, ambiguity, risks, assumptions, and conflicting files.
+
+↓
+
+## PLAN
+
+It determines dependencies, ordered steps, questions, and evidence requirements.
+
+↓
+
+## EXECUTE
+
+You do the work.
+
+↓
+
+## VERIFY
+
+Karya AI checks the finished result against the original request.
+
+↓
+
+## HANDOFF
+
+It turns the completed work into a clean, traceable handoff.
+
+↓
+
+## WORKSPACE
+
+My Work
+Templates
+Search
+History
+Recurring work
+Insights
+
+↓
+
+## CORE DIFFERENTIATOR
+
+**Request → Deliverable → Requirement → Evidence → Verification**
+
+↓
+
+## FINAL CTA
+
+**Understand the work. Execute with clarity. Verify the result.**
+
+---
+
+# HERO COPY — FINAL VERSION
+
+Use this as the primary hero:
+
+### **AI that understands your work from request to completion.**
+
+**Give Karya AI an assignment, brief, email, document, image, folder, or other work instruction. It understands what you're being asked to produce, finds what's missing or unclear, builds the path forward, and verifies whether the finished work actually satisfies the original request.**
+
+CTA:
+
+**Try Karya AI**
+
+Secondary:
+
+**Log in**
+
+Small supporting line:
+
+**Understand · Prepare · Plan · Verify · Handoff**
+
+---
+
+# IMPORTANT POSITIONING RULE
+
+Do not reduce Karya AI to any single feature.
+
+The landing page should NOT make visitors think:
+
+**"It's an AI task generator."**
+
+or:
+
+**"It's a document analyzer."**
+
+or:
+
+**"It's a project manager."**
+
+or:
+
+**"It's a chatbot."**
+
+or:
+
+**"It's a checklist app."**
+
+The visitor should understand:
+
+> **Karya AI is an AI system for understanding, preparing, planning, verifying, and handing off real-world work.**
+
+The central product loop is:
+
+# REQUEST
+
+↓
+
+# UNDERSTAND
+
+↓
+
+# PREPARE
+
+↓
+
+# PLAN
+
+↓
+
+# EXECUTE
+
+↓
+
+# VERIFY
+
+↓
+
+# HANDOFF
+
+And the central data chain is:
+
+# REQUEST → DELIVERABLE → REQUIREMENT → EVIDENCE → VERIFICATION
+
+These two concepts should visually define the entire landing page.
+
+Do not add more generic marketing copy.
+
+Make the product itself explain the product.

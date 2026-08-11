@@ -1,0 +1,1040 @@
+# KARYA AI — REDESIGN THE LANDING PAGE USING THE EXISTING CONTENT
+
+The landing page already contains the core product information and feature explanations.
+
+**Do not rewrite the product concept or invent additional claims.**
+
+The problem is that the current page presents too much information as plain text. It feels like documentation rather than a polished modern AI product.
+
+The goal is to transform the existing content into a **highly visual, interactive, animated product experience** while preserving the information already present.
+
+Do not simply add more paragraphs.
+
+---
+
+# CORE OBJECTIVE
+
+A new visitor should understand Karya AI within approximately 10 seconds.
+
+They should immediately understand:
+
+> **Karya AI takes unclear work → figures out what is actually required → finds what's missing → creates a plan → verifies the finished result.**
+
+The page should visually demonstrate this instead of relying on text to explain it.
+
+---
+
+# 1. HERO — MAKE THE PRODUCT VISUALLY OBVIOUS
+
+Keep the existing headline:
+
+**Know what the work requires before you start.**
+
+Keep the existing supporting explanation, but shorten the amount of text visually displayed at once.
+
+Use the headline and short description on the left.
+
+On the right, create a **large animated Karya AI product visualization**.
+
+Do NOT show just a generic dashboard screenshot.
+
+Create a realistic product interaction.
+
+### Visual sequence
+
+Show an incoming messy assignment:
+
+> "Review the three supplier proposals and prepare a recommendation for management by Friday."
+
+Around it, show:
+
+**Proposal-A.pdf**
+
+**Proposal-B.pdf**
+
+**Proposal-C.pdf**
+
+**Email instructions**
+
+**Previous notes**
+
+These should look like actual files/documents entering Karya AI.
+
+Then animate them flowing into a Karya AI analysis panel.
+
+The analysis should progressively reveal:
+
+### Deliverables
+
+✓ Compare 3 suppliers
+✓ Include risks
+✓ Recommend 1 vendor
+✓ Management summary
+
+### Missing
+
+⚠ Evaluation criteria
+⚠ Budget ceiling
+
+### Status
+
+**Needs clarification**
+
+The animation should make the transformation obvious:
+
+**Messy input → structured understanding**
+
+---
+
+# 2. ADD A VISUAL "HOW IT WORKS" STRIP DIRECTLY UNDER HERO
+
+Immediately below the hero, create a compact visual sequence:
+
+**01 Give it the work**
+
+→
+
+**02 Understand**
+
+→
+
+**03 Find what's missing**
+
+→
+
+**04 Plan**
+
+→
+
+**05 Execute**
+
+→
+
+**06 Verify**
+
+→
+
+**07 Handoff**
+
+Each step should have a small icon/visual.
+
+When scrolling, the active step can subtly highlight.
+
+This gives visitors the entire product concept immediately.
+
+---
+
+# 3. REPLACE TEXT-HEAVY PROBLEM SECTION WITH BEFORE / AFTER VISUAL
+
+Keep the existing message:
+
+**Work doesn't fail because people can't do it. It fails because the work wasn't clear enough to begin with.**
+
+But do not present the following content as plain paragraphs.
+
+Create a large split-screen visual.
+
+## LEFT
+
+### Before Karya AI
+
+Show a messy instruction:
+
+> "Prepare the report."
+
+Then animate questions appearing around it:
+
+**Which report?**
+
+**For whom?**
+
+**Which data?**
+
+**Which format?**
+
+**What deadline?**
+
+**What does "done" mean?**
+
+Make this look like uncertainty accumulating around the task.
+
+## RIGHT
+
+### With Karya AI
+
+Show a structured WorkReady/Karya AI analysis:
+
+**Objective**
+
+Prepare a management report comparing 3 suppliers.
+
+**Inputs**
+
+3 proposals
+Budget information
+Evaluation criteria
+
+**Requirements**
+
+Compare all suppliers
+Explain recommendation
+Include risks
+
+**Question**
+
+What matters more: price or delivery time?
+
+**Completion test**
+
+Every supplier compared using the same criteria.
+
+Animate the left side transforming into the right side.
+
+This should be one of the strongest visual sections on the page.
+
+---
+
+# 4. MAKE THE WORKFLOW A LARGE VISUAL JOURNEY
+
+The current "From messy request to clean handoff" section contains excellent information.
+
+Keep the seven stages:
+
+1. Give Karya AI the request
+2. Understand
+3. Find what's missing
+4. Plan the work
+5. Execute
+6. Verify
+7. Handoff
+
+But do NOT display them as seven large blocks of text.
+
+Create an animated workflow.
+
+As the user scrolls:
+
+### STAGE 1
+
+Files and instructions enter the system.
+
+### STAGE 2
+
+Text is extracted into:
+
+Objective
+Deliverables
+Requirements
+Deadline
+Stakeholders
+
+### STAGE 3
+
+Missing information and ambiguities become highlighted.
+
+### STAGE 4
+
+Requirements transform into an ordered dependency graph.
+
+### STAGE 5
+
+The user executes the work.
+
+### STAGE 6
+
+The final document enters the verification system.
+
+### STAGE 7
+
+Everything becomes a clean handoff packet.
+
+The page should visually tell this story.
+
+---
+
+# 5. REQUIREMENT → EVIDENCE SHOULD BE A MAJOR INTERACTIVE DEMO
+
+The current content is excellent but too static.
+
+Create a large interactive product UI.
+
+Show three requirement cards.
+
+### Requirement 1
+
+**Compare all three suppliers**
+
+Evidence:
+
+Proposal A
+Proposal B
+Proposal C
+
+Status:
+
+**Complete**
+
+Animate lines connecting the requirement to the evidence.
+
+---
+
+### Requirement 2
+
+**Include vendor references**
+
+Evidence:
+
+**No references found**
+
+Status:
+
+**Missing**
+
+---
+
+### Requirement 3
+
+**Submit by Friday**
+
+Evidence:
+
+Brief says Friday 5 PM
+
+Email says Monday morning
+
+Status:
+
+**Clarification needed**
+
+Make the visitor understand:
+
+> Karya AI does not simply check boxes. It asks what evidence proves that a requirement has actually been satisfied.
+
+This is a core differentiator and deserves a major visual treatment.
+
+---
+
+# 6. AMBIGUITY DETECTION — TURN IT INTO AN INTERACTIVE DEMO
+
+Use the existing example:
+
+> "Make the presentation professional."
+
+Show the sentence.
+
+Then animate specific words/meaning becoming highlighted.
+
+Reveal:
+
+**Professional for whom?**
+
+**Which template?**
+
+**How many slides?**
+
+**What audience?**
+
+Then transform it into:
+
+### Suggested question
+
+> "Which audience will receive this presentation: executives, technical staff, or customers?"
+
+Use a visual "AI analysis" transition.
+
+Do not explain this only through paragraphs.
+
+---
+
+# 7. MISSING INFORMATION — USE A FILE WORKSPACE VISUAL
+
+Use the existing files:
+
+**Brief.pdf**
+
+**Brand-guidelines.pdf**
+
+**logo.png**
+
+**homepage-copy.docx**
+
+Show them as a realistic file workspace.
+
+Then have Karya AI scan them.
+
+Reveal:
+
+### Missing
+
+✕ About page copy
+✕ Services page copy
+✕ Vector logo
+✕ Contact form destination
+✕ Product photography
+
+Then show:
+
+**Generate request message**
+
+Clicking/animating this can reveal a clean clarification message preview.
+
+The visual should communicate:
+
+**Karya AI knows what you have AND what you still need.**
+
+---
+
+# 8. DEPENDENCY PLANNING — ANIMATED GRAPH
+
+Use the existing dependency example:
+
+Final product photos
+
+↓
+
+Approve images
+
+↓
+
+Design product pages
+
+↓
+
+Mobile review
+
+↓
+
+Publish website
+
+Create this as a proper dependency graph.
+
+When "Final product photos" is missing:
+
+Animate the blocked state propagating down the graph.
+
+Show:
+
+**Blocked**
+
+on downstream steps.
+
+Then explain with one short sentence:
+
+> One missing dependency can block everything downstream. Karya AI makes this visible before work starts.
+
+This should look like an actual product feature, not a text diagram.
+
+---
+
+# 9. READINESS — MAKE THE STATES VISUAL
+
+Keep the five existing states:
+
+**Ready**
+
+**Ready with warnings**
+
+**Blocked**
+
+**Needs clarification**
+
+**Review required**
+
+Present them as a single interactive readiness component.
+
+When a state is selected, the central UI changes.
+
+For example:
+
+### Blocked
+
+**A required input is missing.**
+
+**Missing**
+
+Evaluation criteria
+
+**Why it matters**
+
+Supplier ranking cannot be determined reliably.
+
+**Next action**
+
+Request evaluation criteria.
+
+This is much more useful than simply listing five statuses.
+
+---
+
+# 10. ASSUMPTIONS — SHOW THE ASSUMPTION REGISTER AS REAL UI
+
+Use the existing examples:
+
+> "final copy" refers to website-copy-v3.docx
+
+Risk:
+
+**Medium**
+
+Action:
+
+**Confirm before publishing**
+
+And:
+
+> "Brand colors from 2023 guidelines are current"
+
+Risk:
+
+**Low**
+
+Action:
+
+**Verify with client**
+
+Display these inside a realistic assumption-register interface.
+
+Add subtle animations when each assumption is detected.
+
+The message should be:
+
+> Invisible assumptions become visible risks.
+
+---
+
+# 11. FINAL VERIFICATION — MAKE THIS ONE OF THE HERO FEATURES
+
+This section should be visually large.
+
+Show:
+
+### ORIGINAL REQUEST
+
+Create a 10-slide supplier recommendation presentation.
+
+↓
+
+### SUBMITTED FILE
+
+supplier-recommendation.pptx
+
+↓
+
+### KARYA AI VERIFICATION
+
+Show the requirements appearing one by one.
+
+✓ 10 slides present
+
+✓ All suppliers compared
+
+✓ Recommendation included
+
+⚠ Executive summary conflicts with table
+
+✕ Required appendix missing
+
+✕ Delivery-cost evidence missing
+
+Then show:
+
+**Review before submission**
+
+This should visually demonstrate the entire reason Karya AI exists.
+
+---
+
+# 12. HANDOFF — VISUAL BEFORE / AFTER
+
+Use the existing:
+
+**25 files**
+
+final2.pdf
+final-final.pptx
+notes.txt
+old-logo.png
+comments.docx
+screenshots
+draft_v3.docx
+...
+
+Transform them visually into:
+
+### KARYA AI HANDOFF
+
+**Completed**
+
+Supplier comparison
+Recommendation
+Management presentation
+
+**Open**
+
+Delivery cost confirmation
+
+**Authoritative files**
+
+3 files
+
+**Risks**
+
+1 unresolved assumption
+
+**Next action**
+
+Management review
+
+Use an animated file-collapsing/organization effect.
+
+The message:
+
+> **25 messy files → one clear handoff**
+
+should be visually obvious.
+
+---
+
+# 13. "NOT ANOTHER TASK MANAGER" — USE VISUAL COMPARISON
+
+Keep this section, but redesign it.
+
+Instead of paragraphs:
+
+### Traditional task manager
+
+**Task**
+
+"Compare suppliers"
+
+Then show:
+
+☐ Compare suppliers
+
+That's it.
+
+### Karya AI
+
+**Request**
+
+Compare three suppliers.
+
+↓
+
+**Requirements**
+
+Compare all three
+Include delivery cost
+Identify risks
+Recommend one
+
+↓
+
+**Evidence**
+
+Proposal A
+Proposal B
+Proposal C
+
+↓
+
+**Verification**
+
+Complete / Missing / Clarification
+
+This makes the category difference immediately obvious.
+
+---
+
+# 14. CAPABILITIES — DON'T USE A HUGE FEATURE GRID
+
+The current capability list is useful but should not appear as a giant wall of bullet points.
+
+Group it into five visual stages:
+
+### UNDERSTAND
+
+Request extraction
+Deliverable extraction
+Requirement extraction
+Stakeholder detection
+Deadline detection
+
+### PREPARE
+
+Missing information
+Ambiguity
+Dependencies
+Risks
+Assumptions
+
+### EXECUTE
+
+Work plan
+Dependencies
+Evidence requirements
+Questions
+Clarification messages
+
+### VERIFY
+
+Requirement verification
+Evidence mapping
+Missing deliverables
+Unsupported claims
+Completion tests
+
+### HANDOFF
+
+Handoff packet
+Open issues
+Decisions
+Authoritative files
+Next steps
+
+Use five large visual sections/cards with animated product UI previews.
+
+---
+
+# 15. INPUT FORMATS — MAKE THEM VISUAL
+
+Keep:
+
+PDF
+DOCX
+Email
+Brief
+Image
+Folder
+Message
+Spreadsheet
+
+But don't just show them as text.
+
+Create small animated file/document objects.
+
+For example:
+
+**PDF** → **DOCX** → **EMAIL** → **IMAGE** → **FOLDER**
+
+All flow toward:
+
+### Karya AI
+
+↓
+
+**One structured work packet**
+
+This should communicate the idea instantly.
+
+---
+
+# 16. USE CASES — INTERACTIVE SWITCHER
+
+Keep:
+
+Office
+Client Work
+Research
+Reports
+Websites
+Handoffs
+
+Add:
+
+**Design**
+
+**Data**
+
+Instead of showing all of them simultaneously, create an interactive selector.
+
+When a user clicks a category, change the example UI.
+
+Example:
+
+### Office
+
+Input:
+
+Two-line assignment from manager.
+
+Karya AI finds:
+
+Missing deadline
+Undefined format
+No audience
+
+Result:
+
+**Clear deliverable before work begins**
+
+---
+
+# 17. THE CORE CHAIN — MAKE IT A SIGNATURE VISUAL
+
+The existing:
+
+**Request → Deliverable → Requirement → Evidence → Verification**
+
+should become one of the signature visual elements of the website.
+
+Create a beautiful horizontal animated chain.
+
+When scrolling, each node activates.
+
+### Request
+
+What was asked?
+
+↓
+
+### Deliverable
+
+What must exist?
+
+↓
+
+### Requirement
+
+What must it satisfy?
+
+↓
+
+### Evidence
+
+What proves it?
+
+↓
+
+### Verification
+
+Is it actually complete?
+
+Then show a short sentence:
+
+> **This is the chain Karya AI maintains from beginning to end.**
+
+This should be visually memorable.
+
+---
+
+# 18. LANDING PAGE IMAGERY
+
+The current page has almost no meaningful imagery.
+
+Add substantial visual content.
+
+However:
+
+**DO NOT use generic stock photos of office workers.**
+
+Use product-oriented imagery:
+
+* UI mockups
+* Animated document stacks
+* File previews
+* Requirement graphs
+* Dependency graphs
+* Evidence connections
+* Verification interfaces
+* Handoff packets
+* Abstract representations of messy work becoming structured
+* Subtle 3D objects representing documents/files where appropriate
+
+The visuals must explain the product.
+
+---
+
+# 19. SCROLL REVEAL
+
+Implement high-quality scroll animations throughout the page.
+
+Examples:
+
+* Hero UI elements stagger into view.
+* Files physically move into the analysis interface.
+* Requirements appear one by one.
+* Missing information gets highlighted.
+* Dependency lines draw themselves.
+* Evidence connects to requirements.
+* Verification results appear sequentially.
+* Files collapse into a handoff packet.
+* The core chain activates node by node.
+
+Use smooth transitions.
+
+Use subtle parallax where useful.
+
+Respect `prefers-reduced-motion`.
+
+Do not animate every paragraph.
+
+---
+
+# 20. SECTION TRANSITIONS
+
+The current sections feel like disconnected blocks.
+
+Create visual continuity between them.
+
+For example:
+
+**Messy files**
+
+flow into
+
+**Understanding**
+
+which flows into
+
+**Requirements**
+
+which flows into
+
+**Dependencies**
+
+which flows into
+
+**Verification**
+
+which flows into
+
+**Handoff**
+
+Use subtle lines, particles, file movement, or interface transitions to make the entire landing page feel like one continuous product story.
+
+---
+
+# 21. KEEP THE EXISTING CONTENT — CHANGE HOW IT IS PRESENTED
+
+Do NOT delete the important product information currently present.
+
+Instead:
+
+* Convert paragraphs into visual explanations.
+* Convert lists into product UI.
+* Convert examples into interactive demonstrations.
+* Convert workflows into animated diagrams.
+* Convert comparisons into before/after interfaces.
+* Convert feature lists into grouped visual capabilities.
+* Convert the requirement/evidence concept into a central interactive component.
+
+The landing page should contain **less visible text at any one moment**, while still preserving the full product explanation through the visual structure.
+
+---
+
+# 22. HERO-TO-CTA STORY
+
+The entire landing page should communicate this story:
+
+**Something unclear arrives.**
+
+↓
+
+**Karya AI understands it.**
+
+↓
+
+**Karya AI discovers what is missing.**
+
+↓
+
+**Karya AI asks the right questions.**
+
+↓
+
+**Karya AI determines what must happen first.**
+
+↓
+
+**You do the work.**
+
+↓
+
+**Karya AI verifies the result.**
+
+↓
+
+**Karya AI creates a clean handoff.**
+
+↓
+
+**You know the work is actually ready.**
+
+This is the landing page's narrative.
+
+---
+
+# 23. FINAL CTA
+
+Keep:
+
+## Start with clarity. Finish with confidence.
+
+But place it inside a visually strong final section.
+
+Show a subtle animated transformation:
+
+**Messy request**
+
+↓
+
+**Karya AI**
+
+↓
+
+**Verified work**
+
+Then:
+
+**Try Karya AI**
+
+**Log in**
+
+---
+
+# 24. CRITICAL QUALITY REQUIREMENT
+
+After redesigning the page, it should NOT feel like:
+
+* A long documentation page
+* A generic AI landing page
+* A collection of text sections
+* A template with random gradients
+* A dashboard pasted onto a marketing page
+
+It should feel like:
+
+> **An interactive explanation of a new product category.**
+
+The visitor should be able to understand Karya AI by **watching the interface demonstrate what it does**.
+
+The most important visual transformation is:
+
+# MESSY WORK
+
+↓
+
+# KARYA AI
+
+↓
+
+# CLEAR REQUIREMENTS
+
+↓
+
+# EXECUTION PLAN
+
+↓
+
+# VERIFIED RESULT
+
+↓
+
+# CLEAN HANDOFF
+
+Make that transformation the visual backbone of the entire landing page.
+
+Do not solve this by adding more text.
+
+Solve it through **layout, product demonstrations, visual hierarchy, animation, interaction, diagrams, and realistic UI mockups.**
