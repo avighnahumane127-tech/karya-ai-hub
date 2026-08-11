@@ -13,6 +13,7 @@ import { Route as AddRouteImport } from './routes/add'
 import { Route as HandoffsRouteImport } from './routes/handoffs'
 import { Route as HomeRouteImport } from './routes/home'
 import { Route as InsightsRouteImport } from './routes/insights'
+import { Route as LoginRouteImport } from './routes/login'
 import { Route as QuestionsRouteImport } from './routes/questions'
 import { Route as SearchRouteImport } from './routes/search'
 import { Route as SettingsRouteImport } from './routes/settings'
@@ -38,6 +39,11 @@ const HomeRoute = HomeRouteImport.update({
 const InsightsRoute = InsightsRouteImport.update({
   id: '/insights',
   path: '/insights',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
 const QuestionsRoute = QuestionsRouteImport.update({
@@ -76,6 +82,7 @@ export interface FileRoutesByFullPath {
   '/handoffs': typeof HandoffsRoute
   '/home': typeof HomeRoute
   '/insights': typeof InsightsRoute
+  '/login': typeof LoginRoute
   '/questions': typeof QuestionsRoute
   '/search': typeof SearchRoute
   '/settings': typeof SettingsRoute
@@ -88,6 +95,7 @@ export interface FileRoutesByTo {
   '/handoffs': typeof HandoffsRoute
   '/home': typeof HomeRoute
   '/insights': typeof InsightsRoute
+  '/login': typeof LoginRoute
   '/questions': typeof QuestionsRoute
   '/search': typeof SearchRoute
   '/settings': typeof SettingsRoute
@@ -101,6 +109,7 @@ export interface FileRoutesById {
   '/handoffs': typeof HandoffsRoute
   '/home': typeof HomeRoute
   '/insights': typeof InsightsRoute
+  '/login': typeof LoginRoute
   '/questions': typeof QuestionsRoute
   '/search': typeof SearchRoute
   '/settings': typeof SettingsRoute
@@ -115,6 +124,7 @@ export interface FileRouteTypes {
     | '/handoffs'
     | '/home'
     | '/insights'
+    | '/login'
     | '/questions'
     | '/search'
     | '/settings'
@@ -127,6 +137,7 @@ export interface FileRouteTypes {
     | '/handoffs'
     | '/home'
     | '/insights'
+    | '/login'
     | '/questions'
     | '/search'
     | '/settings'
@@ -139,6 +150,7 @@ export interface FileRouteTypes {
     | '/handoffs'
     | '/home'
     | '/insights'
+    | '/login'
     | '/questions'
     | '/search'
     | '/settings'
@@ -152,6 +164,7 @@ export interface RootRouteChildren {
   HandoffsRoute: typeof HandoffsRoute
   HomeRoute: typeof HomeRoute
   InsightsRoute: typeof InsightsRoute
+  LoginRoute: typeof LoginRoute
   QuestionsRoute: typeof QuestionsRoute
   SearchRoute: typeof SearchRoute
   SettingsRoute: typeof SettingsRoute
@@ -188,6 +201,13 @@ declare module '@tanstack/react-router' {
       path: '/insights'
       fullPath: '/insights'
       preLoaderRoute: typeof InsightsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/questions': {
@@ -240,6 +260,7 @@ const rootRouteChildren: RootRouteChildren = {
   HandoffsRoute: HandoffsRoute,
   HomeRoute: HomeRoute,
   InsightsRoute: InsightsRoute,
+  LoginRoute: LoginRoute,
   QuestionsRoute: QuestionsRoute,
   SearchRoute: SearchRoute,
   SettingsRoute: SettingsRoute,
