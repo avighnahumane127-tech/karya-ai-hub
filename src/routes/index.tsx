@@ -15,7 +15,7 @@ import { cn } from "@/lib/utils";
 
 const title = "Karya AI — AI that understands your work from request to completion";
 const description =
-  "Karya AI understands messy assignments, briefs, emails, and files — then finds what is missing, plans what needs to happen, and verifies whether the finished work actually meets the request.";
+  "Karya AI turns unclear work into a clear, actionable plan — understanding assignments, briefs, emails, and files, finding missing information and unclear requirements, organizing what needs to happen next, and checking the final result to make sure it meets the original request.";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -86,9 +86,10 @@ function Landing() {
               className="rise mx-auto mt-5 max-w-2xl text-base leading-relaxed text-muted-foreground"
               style={{ animationDelay: "240ms" }}
             >
-              Karya AI understands messy assignments, briefs, emails, and files — then finds what
-              is missing, plans what needs to happen, and verifies whether the finished work
-              actually meets the request.
+              Karya AI turns unclear work into a clear, actionable plan — understanding assignments,
+              briefs, emails, and files, finding missing information and unclear requirements,
+              organizing what needs to happen next, and checking the final result to make sure it
+              meets the original request.
             </p>
             <div
               className="rise mt-7 flex flex-wrap justify-center gap-2.5"
