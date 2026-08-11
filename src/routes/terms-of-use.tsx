@@ -1,7 +1,6 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
-import { ArrowLeft } from "lucide-react";
 
-import mark from "@/assets/karya-mark.png";
+import { PublicFooter, PublicNav } from "@/components/public-layout";
 
 export const Route = createFileRoute("/terms-of-use")({
   head: () => ({
@@ -16,24 +15,8 @@ export const Route = createFileRoute("/terms-of-use")({
 function TermsOfUse() {
   return (
     <div className="min-h-screen bg-background">
-      {/* Nav */}
-      <header className="sticky top-0 z-40 border-b border-hairline bg-background/80 backdrop-blur">
-        <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-4 px-5 py-3.5 md:px-8">
-          <Link to="/" className="flex min-w-0 items-center gap-2">
-            <img src={mark} alt="" width={22} height={22} className="h-5 w-5 shrink-0" />
-            <span className="truncate text-sm font-medium tracking-tight">Karya AI</span>
-          </Link>
-          <Link
-            to="/"
-            className="flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
-          >
-            <ArrowLeft className="h-3.5 w-3.5" strokeWidth={1.8} />
-            Back
-          </Link>
-        </div>
-      </header>
+      <PublicNav backTo="/" />
 
-      {/* Content */}
       <main className="mx-auto w-full max-w-2xl px-5 py-14 md:px-8 md:py-20">
         {/* Title block */}
         <div className="mb-10 border-b border-hairline pb-10">
@@ -42,9 +25,9 @@ function TermsOfUse() {
             <strong>Last updated:</strong> [Date]
           </p>
           <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
-            These Terms of Use govern your access to and use of Karya AI and its related services.
-            By accessing or using Karya AI, you agree to these Terms. If you do not agree with
-            them, do not use the service.
+            These Terms of Use govern your access to and use of Karya AI and its related
+            services. By accessing or using Karya AI, you agree to these Terms. If you do not
+            agree with them, do not use the service.
           </p>
         </div>
 
@@ -229,9 +212,7 @@ function TermsOfUse() {
               Terms do not grant you ownership of or other rights to Karya AI's intellectual
               property.
             </p>
-            <p className="notice">
-              [AI-generated output ownership terms to be finalized.]
-            </p>
+            <p className="notice">[AI-generated output ownership terms to be finalized.]</p>
           </section>
 
           <section id="section-9">
@@ -290,31 +271,29 @@ function TermsOfUse() {
               <li>A verification result will guarantee that work is correct.</li>
               <li>The service will always be available or error-free.</li>
             </ul>
-            <p>
-              You remain responsible for reviewing important information and decisions.
-            </p>
+            <p>You remain responsible for reviewing important information and decisions.</p>
           </section>
 
           <section id="section-13">
             <h2>13. Limitation of Liability</h2>
             <p>
-              To the maximum extent permitted by applicable law, Karya AI and its affiliates will
-              not be liable for indirect, incidental, special, consequential, or punitive damages,
-              or for loss of profits, data, business opportunities, or goodwill arising from or
-              related to your use of the service.
+              To the maximum extent permitted by applicable law, Karya AI and its affiliates
+              will not be liable for indirect, incidental, special, consequential, or punitive
+              damages, or for loss of profits, data, business opportunities, or goodwill arising
+              from or related to your use of the service.
             </p>
             <p className="notice">
-              [Specific liability limitations, exclusions, exceptions, and jurisdiction-dependent
-              provisions require legal review before publication.]
+              [Specific liability limitations, exclusions, exceptions, and
+              jurisdiction-dependent provisions require legal review before publication.]
             </p>
           </section>
 
           <section id="section-14">
             <h2>14. Indemnification</h2>
             <p>
-              To the extent permitted by applicable law, you agree to indemnify and hold Karya AI
-              harmless from claims, damages, losses, liabilities, and reasonable expenses arising
-              from:
+              To the extent permitted by applicable law, you agree to indemnify and hold Karya
+              AI harmless from claims, damages, losses, liabilities, and reasonable expenses
+              arising from:
             </p>
             <ul>
               <li>Your misuse of Karya AI.</li>
@@ -333,16 +312,14 @@ function TermsOfUse() {
           <section id="section-15">
             <h2>15. Governing Law</h2>
             <p className="notice">
-              [Governing law and jurisdiction to be finalized based on the applicable legal entity
-              and jurisdiction.]
+              [Governing law and jurisdiction to be finalized based on the applicable legal
+              entity and jurisdiction.]
             </p>
           </section>
 
           <section id="section-16">
             <h2>16. Changes to These Terms</h2>
-            <p>
-              We may update these Terms from time to time as Karya AI develops.
-            </p>
+            <p>We may update these Terms from time to time as Karya AI develops.</p>
             <p>
               When we make changes, we will update the <strong>Last updated</strong> date.
             </p>
@@ -368,38 +345,15 @@ function TermsOfUse() {
           <div className="border-t border-hairline pt-8 text-xs text-muted-foreground">
             <p className="font-medium">Karya AI</p>
             <div className="mt-1 flex flex-wrap gap-3">
-              <Link to="/privacy-policy" className="hover:text-foreground">
-                Privacy Policy
-              </Link>
+              <Link to="/privacy-policy" className="hover:text-foreground">Privacy Policy</Link>
               <span>·</span>
-              <Link to="/terms-of-use" className="hover:text-foreground">
-                Terms of Use
-              </Link>
+              <Link to="/terms-of-use" className="hover:text-foreground">Terms of Use</Link>
             </div>
           </div>
         </div>
       </main>
 
-      {/* Footer */}
-      <footer className="border-t border-hairline">
-        <div className="mx-auto flex w-full max-w-6xl flex-col gap-4 px-5 py-8 sm:flex-row sm:items-center sm:justify-between md:px-8">
-          <div className="space-y-0.5">
-            <p className="text-sm text-muted-foreground">© 2026 AUSPPA</p>
-            <p className="text-xs text-muted-foreground/60">Built for learners, by learners</p>
-          </div>
-          <nav className="flex items-center gap-5 text-sm text-muted-foreground">
-            <Link to="/terms-of-use" className="transition-colors hover:text-foreground">
-              Terms of Use
-            </Link>
-            <Link to="/privacy-policy" className="transition-colors hover:text-foreground">
-              Privacy Policy
-            </Link>
-            <a href="mailto:hello@karya.ai" className="transition-colors hover:text-foreground">
-              Contact
-            </a>
-          </nav>
-        </div>
-      </footer>
+      <PublicFooter />
     </div>
   );
 }

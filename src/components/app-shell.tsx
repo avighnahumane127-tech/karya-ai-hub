@@ -15,7 +15,7 @@ import {
 } from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
 
-import mark from "@/assets/karya-mark.png";
+import logo from "@/assets/karya-logo.png";
 import { Button } from "@/components/ui/button";
 import {
   CommandDialog,
@@ -54,7 +54,16 @@ const navGroups: { label: string; items: { label: string; to: string; icon: type
 ];
 
 /** Routes rendered outside the app chrome. */
-const publicRoutes = ["/", "/login", "/privacy-policy", "/terms-of-use"];
+const publicRoutes = [
+  "/",
+  "/login",
+  "/privacy-policy",
+  "/terms-of-use",
+  "/product",
+  "/how-it-works",
+  "/verification",
+  "/use-cases",
+];
 
 function usePathname() {
   return useRouterState({ select: (s) => s.location.pathname });
@@ -98,9 +107,8 @@ function NavList({ onNavigate }: { onNavigate?: () => void }) {
 
 function Wordmark() {
   return (
-    <Link to="/home" className="flex items-center gap-2">
-      <img src={mark} alt="" width={20} height={20} className="h-5 w-5" />
-      <span className="text-sm font-medium tracking-tight">Karya AI</span>
+    <Link to="/home">
+      <img src={logo} alt="Karya AI" className="h-7 w-auto" style={{ filter: "invert(1)" }} />
     </Link>
   );
 }

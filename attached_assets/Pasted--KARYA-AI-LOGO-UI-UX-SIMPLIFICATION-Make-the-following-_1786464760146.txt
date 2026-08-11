@@ -1,0 +1,578 @@
+# KARYA AI — LOGO + UI/UX SIMPLIFICATION
+
+Make the following changes to the existing Karya AI application. **Do not change the core functionality or remove any existing features. This is primarily a branding, navigation, and UI/UX restructuring task.**
+
+## 1. REPLACE THE CURRENT KARYA AI LOGO
+
+I am providing a new logo asset.
+
+**Replace the current Karya AI logo everywhere with the logo I provide.**
+
+Use the provided logo as-is.
+
+Apply it consistently across:
+
+* Landing page
+* Application header
+* Login page
+* Signup page
+* Dashboard
+* Sidebar/navigation where applicable
+* Loading states
+* Favicon/app icon where technically appropriate
+* Any other location where the current Karya AI logo appears
+
+### Important
+
+* Do not redesign the provided logo.
+* Do not add effects to it.
+* Do not modify its proportions.
+* Do not stretch or distort it.
+* Preserve its aspect ratio.
+* Use appropriate sizing for each context.
+* If both a symbol and wordmark are included in the provided asset, use them appropriately.
+* Make sure the logo remains crisp on desktop and mobile.
+
+Remove the old Karya AI logo completely so there are no inconsistent versions of the branding.
+
+---
+
+# 2. MAJOR UI/UX PROBLEM — SIMPLIFY THE ENTIRE EXPERIENCE
+
+The current UI feels **too large, complex, crowded, and scattered**.
+
+It currently feels like too many features have been placed on screens at once.
+
+Redesign the interface so that Karya AI feels:
+
+* Minimal
+* Clean
+* Calm
+* Modern
+* Premium
+* Intelligent
+* Easy to understand
+* Spacious
+* Fast to navigate
+* Visually organized
+
+The goal is **not to remove functionality**.
+
+The goal is to make the functionality feel simple.
+
+A user should never look at a screen and think:
+
+> "There are too many things here. What am I supposed to click?"
+
+Every screen should have one obvious primary purpose.
+
+---
+
+# 3. STOP USING THE LANDING PAGE AS ONE GIANT SCROLLING PRODUCT PAGE
+
+This is extremely important.
+
+Currently, clicking items in the landing-page header navigates/scrolls to different sections of the same giant landing page.
+
+**Change this behavior.**
+
+The landing page should remain a **short, focused homepage**.
+
+Navigation items that represent separate product concepts should open **separate pages/routes**, not scroll to sections on the homepage.
+
+For example:
+
+* Product → dedicated Product page
+* Verification → dedicated Verification page
+* Use Cases → dedicated Use Cases page
+* Other substantial informational sections → their own pages where appropriate
+
+Do not create a single enormous landing page containing every explanation.
+
+---
+
+# 4. LANDING PAGE — MAKE IT SHORT AND POWERFUL
+
+The main landing page should explain Karya AI quickly.
+
+It should NOT contain the entire product documentation.
+
+The homepage should communicate:
+
+### Hero
+
+Clearly explain what Karya AI actually does.
+
+The hero should be descriptive enough that a new visitor understands the product immediately.
+
+Do not use an overly vague headline such as:
+
+> "Know what the work requires before you start."
+
+Instead communicate the actual workflow:
+
+**Karya AI understands messy assignments, briefs, emails, and files — then finds what is missing, plans what needs to happen, and verifies whether the finished work actually meets the request.**
+
+Use a concise supporting explanation.
+
+Have one primary CTA:
+
+**Try Karya AI**
+
+and one secondary CTA:
+
+**See how it works**
+
+The hero should include a **visual product demonstration**, not just text.
+
+For example, show a polished miniature Karya AI interface transforming:
+
+**Messy request → Missing information → Work plan → Verification**
+
+This should look like a real product visualization, not a generic stock illustration.
+
+---
+
+# 5. USE VISUALS AND ANIMATIONS
+
+The landing page currently feels too text-heavy.
+
+Fix this.
+
+Use carefully designed:
+
+* Product mockups
+* UI previews
+* Animated transitions
+* Small diagrams
+* Visual workflows
+* Cards
+* Requirement/evidence visualizations
+* Before/after comparisons
+* Subtle scroll-reveal animations
+
+Animations should be:
+
+* Smooth
+* Fast
+* Subtle
+* Purposeful
+
+Do NOT add animations simply for decoration.
+
+Avoid:
+
+* Excessive floating elements
+* Constant movement
+* Huge animated backgrounds
+* Distracting parallax
+* Overly flashy AI effects
+* Random gradients everywhere
+
+The visual system should communicate **clarity and organization**.
+
+---
+
+# 6. LANDING PAGE CONTENT STRUCTURE
+
+Keep the homepage relatively short.
+
+Suggested structure:
+
+### 1. Hero
+
+What Karya AI is + product visualization + CTA.
+
+### 2. The problem
+
+A very short explanation:
+
+Messy instructions create missing requirements, unclear expectations, blocked work, and rework.
+
+Show a simple visual example.
+
+### 3. How Karya AI works
+
+Use a simple 4-step visual:
+
+**Understand → Prepare → Execute → Verify**
+
+Do not write huge paragraphs.
+
+### 4. Product visualization
+
+Show an interactive-looking mockup demonstrating:
+
+Request
+
+↓
+
+Requirements
+
+↓
+
+Missing information
+
+↓
+
+Work plan
+
+↓
+
+Verification
+
+This should visually explain the product.
+
+### 5. Key capabilities
+
+Show only the most important capabilities in a compact grid.
+
+For example:
+
+* Missing information
+* Ambiguity detection
+* Dependencies
+* Evidence mapping
+* Work planning
+* Final verification
+
+Do not list every feature on the homepage.
+
+### 6. Verification
+
+Show the strongest differentiator:
+
+**Karya AI compares finished work against the original request.**
+
+Use a visual example showing:
+
+Requirement → Evidence → Status
+
+### 7. Use cases
+
+Briefly show:
+
+* Office work
+* Client work
+* Research
+* Reports
+* Websites
+* Handoffs
+
+Each should be visually represented.
+
+### 8. Final CTA
+
+Short:
+
+**Turn unclear work into clear, verifiable work.**
+
+CTA:
+
+**Try Karya AI**
+
+### 9. Minimal footer
+
+Keep the footer clean and simple.
+
+---
+
+# 7. MOVE DETAILED INFORMATION TO SEPARATE PAGES
+
+Do not remove the detailed information.
+
+Move it out of the homepage.
+
+Create dedicated pages such as:
+
+### `/product`
+
+Explain the complete Karya AI workflow and major capabilities.
+
+### `/verification`
+
+Focus specifically on:
+
+* Requirement tracking
+* Evidence mapping
+* Completion tests
+* Final verification
+* Quality checking
+
+### `/use-cases`
+
+Show detailed examples for:
+
+* Office work
+* Client projects
+* Research
+* Reports
+* Websites
+* Handoffs
+
+### `/how-it-works`
+
+Explain:
+
+**Understand → Prepare → Execute → Verify → Handoff**
+
+If these pages already exist, redesign them instead of creating duplicates.
+
+---
+
+# 8. NAVIGATION
+
+The navigation should be extremely simple.
+
+Do not put every feature into the public website header.
+
+A good structure is:
+
+**Karya AI logo**
+
+**Product**
+
+**How it works**
+
+**Use cases**
+
+**Verification**
+
+**Try Karya AI**
+
+**Log in**
+
+Avoid 8–12 navigation links.
+
+The header should not feel like a dashboard.
+
+---
+
+# 9. APPLICATION UI
+
+The actual Karya AI application should also be simplified.
+
+Do not display every feature as a giant collection of sidebar buttons.
+
+Group related functionality logically.
+
+The user should primarily think:
+
+**Add work → Understand → Work → Verify → Handoff**
+
+Existing capabilities such as:
+
+* Questions
+* Requirements
+* Evidence
+* Risks
+* Assumptions
+* Dependencies
+* Decisions
+* Version analysis
+* Completion tests
+* Handoffs
+* Insights
+* Search
+* Templates
+
+should remain available, but should be **progressively revealed within the relevant workflow** rather than competing for attention simultaneously.
+
+For example:
+
+A user analyzing a piece of work should see the most important information first:
+
+**Readiness**
+
+**What you're being asked to produce**
+
+**What's missing**
+
+**What needs clarification**
+
+**What to do next**
+
+Then allow deeper details to be opened when needed.
+
+---
+
+# 10. REDUCE VISUAL SIZE
+
+The current interface feels oversized.
+
+Reduce:
+
+* Excessively large headings
+* Giant cards
+* Huge buttons
+* Excessive padding
+* Oversized icons
+* Excessive whitespace between related information
+* Large dashboard blocks
+
+But do NOT make the interface cramped.
+
+The target is:
+
+**compact + breathable**
+
+rather than:
+
+**huge + empty**
+
+---
+
+# 11. INFORMATION HIERARCHY
+
+Every screen should have a clear hierarchy:
+
+### Primary
+
+What does the user need to understand or do right now?
+
+### Secondary
+
+What information supports that decision?
+
+### Tertiary
+
+Advanced details that can be expanded when needed.
+
+Do not show all three levels with equal visual importance.
+
+Use:
+
+* Progressive disclosure
+* Expandable sections
+* Tabs only where genuinely useful
+* Collapsible details
+* Tooltips
+* Contextual actions
+
+---
+
+# 12. REMOVE CLUTTER, NOT FEATURES
+
+Do NOT interpret this request as permission to delete Karya AI capabilities.
+
+Keep the functionality.
+
+Instead:
+
+**Hide complexity until it is relevant.**
+
+For example, do not show:
+
+15 different analysis panels immediately.
+
+Show:
+
+**3 important findings**
+
+and allow:
+
+**View all findings**
+
+Similarly:
+
+**3 critical missing items**
+
+→ **View all**
+
+This will make Karya AI feel significantly more sophisticated.
+
+---
+
+# 13. PRODUCT VISUAL LANGUAGE
+
+The UI should visually reinforce Karya AI's concept.
+
+Use visual patterns around:
+
+**Request**
+
+↓
+
+**Requirement**
+
+↓
+
+**Evidence**
+
+↓
+
+**Verification**
+
+For example, requirements can visually connect to their evidence and status.
+
+Blocked work should clearly show the dependency causing the block.
+
+Missing information should clearly show what is missing and why.
+
+This is much better than generic dashboard cards.
+
+---
+
+# 14. RESPONSIVE DESIGN
+
+Make the redesigned experience work properly on:
+
+* Desktop
+* Laptop
+* Tablet
+* Mobile
+
+Do not simply shrink the desktop UI.
+
+On mobile, prioritize:
+
+1. Current work
+2. Readiness
+3. Missing information
+4. Next action
+5. Details
+
+---
+
+# 15. OVERALL DESIGN PRINCIPLE
+
+The final Karya AI experience should feel like:
+
+**A very intelligent tool that happens to be simple.**
+
+Not:
+
+**A giant application containing dozens of AI features.**
+
+The user should understand the core concept within approximately **10 seconds** of seeing the landing page.
+
+The product should feel:
+
+**Clean → Clear → Intelligent → Trustworthy → Useful**
+
+rather than:
+
+**Feature-heavy → Busy → Complicated → Generic**
+
+---
+
+# 16. IMPORTANT — PRESERVE EXISTING FUNCTIONALITY
+
+Do not break existing functionality.
+
+Before making changes:
+
+* Inspect the existing routes.
+* Inspect the current navigation.
+* Reuse existing components where appropriate.
+* Identify existing landing-page sections.
+* Identify duplicate pages/routes.
+* Preserve working authentication.
+* Preserve existing AI functionality.
+* Preserve existing work analysis functionality.
+* Preserve existing file upload functionality.
+* Preserve existing data.
+
+This is a **UI/UX restructuring and navigation improvement**, not a rewrite of the application backend.
+
+After implementation, verify that all existing functionality still works.

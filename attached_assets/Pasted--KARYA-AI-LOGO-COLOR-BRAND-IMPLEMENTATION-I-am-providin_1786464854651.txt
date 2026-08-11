@@ -1,0 +1,255 @@
+# KARYA AI — LOGO COLOR + BRAND IMPLEMENTATION
+
+I am providing the final Karya AI logo.
+
+Use **this exact logo as the source of truth**.
+
+## 1. DO NOT REDESIGN THE LOGO
+
+Do not change the logo's:
+
+* Shape
+* Geometry
+* Symbol
+* Proportions
+* Typography
+* Lettering
+* Spacing
+* Composition
+* Orientation
+* Structure
+
+Do not redraw it.
+
+Do not simplify it.
+
+Do not add elements.
+
+Do not remove elements.
+
+Do not create a new logo.
+
+**The logo itself is finalized.**
+
+Only adjust its **colors** so that it visually matches the existing Karya AI application and website.
+
+---
+
+## 2. MATCH THE KARYA AI DESIGN SYSTEM
+
+Analyze the existing Karya AI UI and use its existing visual language to determine the appropriate logo colors.
+
+The logo should feel like it belongs naturally within the Karya AI interface.
+
+Use colors that are:
+
+* Modern
+* Professional
+* Minimal
+* High-contrast
+* Consistent with the application's current theme
+* Clearly visible on both light and dark backgrounds where applicable
+
+Do not introduce a completely new color palette.
+
+The logo should feel like an integrated part of the Karya AI brand rather than an externally pasted asset.
+
+---
+
+## 3. CREATE APPROPRIATE LOGO VARIANTS
+
+Where necessary, create color variants of the **same exact logo**:
+
+### Primary logo
+
+For the main website and application header.
+
+### Dark-background variant
+
+For dark sections or dark UI surfaces.
+
+### Light-background variant
+
+For light surfaces.
+
+### Monochrome variant
+
+A single-color version for situations where the full-color logo is unsuitable.
+
+All variants must use the **exact same logo design**.
+
+Only the color treatment may differ.
+
+---
+
+# 4. USE THE LOGO EVERYWHERE
+
+Replace all existing Karya AI branding/logo assets with the provided logo.
+
+Use the finalized logo consistently in:
+
+* Landing page header
+* Application header
+* Dashboard
+* Login page
+* Signup page
+* Loading screen
+* Empty states where appropriate
+* Navigation
+* Mobile navigation
+* Authentication screens
+* Public pages
+* Privacy Policy
+* Terms of Use
+* Error pages where appropriate
+* Any branded UI components
+
+Remove old logo assets and references where they are no longer needed.
+
+There should not be multiple visually different Karya AI logos throughout the application.
+
+---
+
+# 5. FAVICON
+
+Use the provided Karya AI logo as the website/application favicon.
+
+Create an appropriate favicon version while preserving the exact logo identity.
+
+Implement the appropriate favicon formats/sizes required by modern browsers.
+
+Include support for:
+
+* Browser tab favicon
+* Apple/mobile web icon where appropriate
+* PWA/application icon if the application supports PWA functionality
+
+If the full wordmark does not remain legible at favicon size, use the **symbol portion of the exact provided logo**, without redesigning the symbol.
+
+Do not create a separate icon.
+
+---
+
+# 6. APP / PWA ICON
+
+If Karya AI has an installable web application or PWA:
+
+Use the same Karya AI logo identity for:
+
+* App icon
+* PWA icon
+* Manifest icons
+* Installed application icon
+
+Create the required sizes from the same logo asset.
+
+Do not introduce a different icon design.
+
+---
+
+# 7. BROWSER / SEO METADATA
+
+Make sure the Karya AI branding is correctly reflected in the site's metadata where appropriate.
+
+Use:
+
+**Karya AI**
+
+as the application/site name.
+
+Ensure the favicon and relevant branding metadata point to the correct new logo assets.
+
+Do not modify unrelated SEO content.
+
+---
+
+# 8. DARK AND LIGHT MODE
+
+If the application supports both light and dark themes:
+
+Ensure the logo remains clearly visible in both.
+
+Use the appropriate color variant depending on the background.
+
+Do not place a dark logo on a dark background or a light logo on a light background.
+
+The logo must maintain strong contrast without looking overly bright or distracting.
+
+---
+
+# 9. SIZING
+
+Do not make the logo unnecessarily large.
+
+Use appropriate sizing for each context:
+
+* Header: compact and balanced
+* Login/signup: slightly more prominent
+* Landing page: prominent but not oversized
+* Favicon: optimized for very small dimensions
+* Mobile header: compact
+* Footer: subtle
+
+Maintain the original aspect ratio everywhere.
+
+Never stretch the logo horizontally or vertically.
+
+---
+
+# 10. IMPORTANT — NO LOGO REDESIGN
+
+This is the most important instruction:
+
+**DO NOT CHANGE THE LOGO DESIGN.**
+
+Do not:
+
+* Generate a new logo
+* Redraw the logo
+* Change the symbol
+* Change the wordmark
+* Change the typography
+* Add AI sparkles
+* Add gradients unless required purely as a color treatment
+* Add shadows
+* Add 3D effects
+* Add outlines
+* Add decorative elements
+* Combine it with another icon
+* Create a new favicon symbol
+
+The provided logo is final.
+
+**Only adjust the colors to match Karya AI's existing UI and implement the logo consistently throughout the entire website and application.**
+
+---
+
+# 11. FINAL VERIFICATION
+
+After implementing the logo:
+
+Check the logo on:
+
+* Landing page
+* Application
+* Login
+* Signup
+* Light theme
+* Dark theme
+* Desktop
+* Mobile
+* Browser tab
+* PWA/app icon if applicable
+
+Verify that:
+
+* The logo is crisp.
+* The proportions are unchanged.
+* The correct color variant is used.
+* The favicon works after refreshing the browser.
+* There are no old Karya AI logos remaining.
+* There are no duplicate or conflicting favicon files.
+* The logo does not appear distorted.
+* Existing application functionality remains unchanged.
+
+**The goal is not to create a better logo. The goal is to make the provided final logo look native to Karya AI and use it consistently everywhere.**

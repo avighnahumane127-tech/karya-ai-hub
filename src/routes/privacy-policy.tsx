@@ -1,7 +1,6 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
-import { ArrowLeft } from "lucide-react";
 
-import mark from "@/assets/karya-mark.png";
+import { PublicFooter, PublicNav } from "@/components/public-layout";
 
 export const Route = createFileRoute("/privacy-policy")({
   head: () => ({
@@ -16,24 +15,8 @@ export const Route = createFileRoute("/privacy-policy")({
 function PrivacyPolicy() {
   return (
     <div className="min-h-screen bg-background">
-      {/* Nav */}
-      <header className="sticky top-0 z-40 border-b border-hairline bg-background/80 backdrop-blur">
-        <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-4 px-5 py-3.5 md:px-8">
-          <Link to="/" className="flex min-w-0 items-center gap-2">
-            <img src={mark} alt="" width={22} height={22} className="h-5 w-5 shrink-0" />
-            <span className="truncate text-sm font-medium tracking-tight">Karya AI</span>
-          </Link>
-          <Link
-            to="/"
-            className="flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
-          >
-            <ArrowLeft className="h-3.5 w-3.5" strokeWidth={1.8} />
-            Back
-          </Link>
-        </div>
-      </header>
+      <PublicNav backTo="/" />
 
-      {/* Content */}
       <main className="mx-auto w-full max-w-2xl px-5 py-14 md:px-8 md:py-20">
         {/* Title block */}
         <div className="mb-10 border-b border-hairline pb-10">
@@ -101,9 +84,7 @@ function PrivacyPolicy() {
               <li>Other information required to provide the account</li>
             </ul>
             <h3>Content You Provide</h3>
-            <p>
-              Karya AI may process information that you voluntarily provide, including:
-            </p>
+            <p>Karya AI may process information that you voluntarily provide, including:</p>
             <ul>
               <li>Work instructions</li>
               <li>Assignments</li>
@@ -143,8 +124,8 @@ function PrivacyPolicy() {
               <li>Diagnostic information</li>
             </ul>
             <p className="notice">
-              [The exact categories of automatically collected information should be confirmed based
-              on the actual implementation.]
+              [The exact categories of automatically collected information should be confirmed
+              based on the actual implementation.]
             </p>
           </section>
 
@@ -247,9 +228,7 @@ function PrivacyPolicy() {
 
           <section id="section-6">
             <h2>6. File Processing and Storage</h2>
-            <p>
-              Karya AI may process files and other content that you provide to the service.
-            </p>
+            <p>Karya AI may process files and other content that you provide to the service.</p>
             <p>
               Depending on the feature and implementation, files may be temporarily processed,
               stored, or retained so that Karya AI can provide the requested functionality.
@@ -272,8 +251,8 @@ function PrivacyPolicy() {
             <h2>7. Data Retention</h2>
             <p>
               We retain information only for as long as reasonably necessary for the purposes
-              described in this Privacy Policy, unless a longer period is required or permitted by
-              law.
+              described in this Privacy Policy, unless a longer period is required or permitted
+              by law.
             </p>
             <p>The specific retention period may depend on:</p>
             <ul>
@@ -292,8 +271,8 @@ function PrivacyPolicy() {
           <section id="section-8">
             <h2>8. Data Security</h2>
             <p>
-              We take reasonable measures designed to protect information from unauthorized access,
-              loss, misuse, alteration, or disclosure.
+              We take reasonable measures designed to protect information from unauthorized
+              access, loss, misuse, alteration, or disclosure.
             </p>
             <p>However, no online service can guarantee absolute security.</p>
             <p className="notice">
@@ -305,8 +284,8 @@ function PrivacyPolicy() {
           <section id="section-9">
             <h2>9. Your Privacy Rights</h2>
             <p>
-              Depending on where you live, you may have rights regarding your personal information,
-              which may include the right to:
+              Depending on where you live, you may have rights regarding your personal
+              information, which may include the right to:
             </p>
             <ul>
               <li>Request access to personal information we hold about you.</li>
@@ -320,9 +299,7 @@ function PrivacyPolicy() {
             <p>
               These rights may be subject to applicable legal exceptions and limitations.
             </p>
-            <p>
-              To make a privacy request, contact us using the information provided below.
-            </p>
+            <p>To make a privacy request, contact us using the information provided below.</p>
           </section>
 
           <section id="section-10">
@@ -336,9 +313,7 @@ function PrivacyPolicy() {
               [The actual cookies, analytics tools, and tracking technologies used by Karya AI
               must be confirmed before publication.]
             </p>
-            <p>
-              Where required by law, applicable consent mechanisms will be provided.
-            </p>
+            <p>Where required by law, applicable consent mechanisms will be provided.</p>
           </section>
 
           <section id="section-11">
@@ -411,38 +386,15 @@ function PrivacyPolicy() {
           <div className="border-t border-hairline pt-8 text-xs text-muted-foreground">
             <p className="font-medium">Karya AI</p>
             <div className="mt-1 flex flex-wrap gap-3">
-              <Link to="/terms-of-use" className="hover:text-foreground">
-                Terms of Use
-              </Link>
+              <Link to="/terms-of-use" className="hover:text-foreground">Terms of Use</Link>
               <span>·</span>
-              <Link to="/privacy-policy" className="hover:text-foreground">
-                Privacy Policy
-              </Link>
+              <Link to="/privacy-policy" className="hover:text-foreground">Privacy Policy</Link>
             </div>
           </div>
         </div>
       </main>
 
-      {/* Footer */}
-      <footer className="border-t border-hairline">
-        <div className="mx-auto flex w-full max-w-6xl flex-col gap-4 px-5 py-8 sm:flex-row sm:items-center sm:justify-between md:px-8">
-          <div className="space-y-0.5">
-            <p className="text-sm text-muted-foreground">© 2026 AUSPPA</p>
-            <p className="text-xs text-muted-foreground/60">Built for learners, by learners</p>
-          </div>
-          <nav className="flex items-center gap-5 text-sm text-muted-foreground">
-            <Link to="/terms-of-use" className="transition-colors hover:text-foreground">
-              Terms of Use
-            </Link>
-            <Link to="/privacy-policy" className="transition-colors hover:text-foreground">
-              Privacy Policy
-            </Link>
-            <a href="mailto:hello@karya.ai" className="transition-colors hover:text-foreground">
-              Contact
-            </a>
-          </nav>
-        </div>
-      </footer>
+      <PublicFooter />
     </div>
   );
 }

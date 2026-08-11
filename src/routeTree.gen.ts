@@ -13,14 +13,18 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AddRouteImport } from './routes/add'
 import { Route as HandoffsRouteImport } from './routes/handoffs'
 import { Route as HomeRouteImport } from './routes/home'
+import { Route as HowItWorksRouteImport } from './routes/how-it-works'
 import { Route as InsightsRouteImport } from './routes/insights'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as PrivacyPolicyRouteImport } from './routes/privacy-policy'
+import { Route as ProductRouteImport } from './routes/product'
 import { Route as QuestionsRouteImport } from './routes/questions'
 import { Route as SearchRouteImport } from './routes/search'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as TemplatesRouteImport } from './routes/templates'
 import { Route as TermsOfUseRouteImport } from './routes/terms-of-use'
+import { Route as UseCasesRouteImport } from './routes/use-cases'
+import { Route as VerificationRouteImport } from './routes/verification'
 import { Route as WorkIndexRouteImport } from './routes/work.index'
 import { Route as WorkWorkIdRouteImport } from './routes/work.$workId'
 
@@ -44,6 +48,11 @@ const HomeRoute = HomeRouteImport.update({
   path: '/home',
   getParentRoute: () => rootRouteImport,
 } as any)
+const HowItWorksRoute = HowItWorksRouteImport.update({
+  id: '/how-it-works',
+  path: '/how-it-works',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const InsightsRoute = InsightsRouteImport.update({
   id: '/insights',
   path: '/insights',
@@ -57,6 +66,11 @@ const LoginRoute = LoginRouteImport.update({
 const PrivacyPolicyRoute = PrivacyPolicyRouteImport.update({
   id: '/privacy-policy',
   path: '/privacy-policy',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProductRoute = ProductRouteImport.update({
+  id: '/product',
+  path: '/product',
   getParentRoute: () => rootRouteImport,
 } as any)
 const QuestionsRoute = QuestionsRouteImport.update({
@@ -84,6 +98,16 @@ const TermsOfUseRoute = TermsOfUseRouteImport.update({
   path: '/terms-of-use',
   getParentRoute: () => rootRouteImport,
 } as any)
+const UseCasesRoute = UseCasesRouteImport.update({
+  id: '/use-cases',
+  path: '/use-cases',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const VerificationRoute = VerificationRouteImport.update({
+  id: '/verification',
+  path: '/verification',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const WorkIndexRoute = WorkIndexRouteImport.update({
   id: '/work/',
   path: '/work/',
@@ -100,14 +124,18 @@ export interface FileRoutesByFullPath {
   '/add': typeof AddRoute
   '/handoffs': typeof HandoffsRoute
   '/home': typeof HomeRoute
+  '/how-it-works': typeof HowItWorksRoute
   '/insights': typeof InsightsRoute
   '/login': typeof LoginRoute
   '/privacy-policy': typeof PrivacyPolicyRoute
+  '/product': typeof ProductRoute
   '/questions': typeof QuestionsRoute
   '/search': typeof SearchRoute
   '/settings': typeof SettingsRoute
   '/templates': typeof TemplatesRoute
   '/terms-of-use': typeof TermsOfUseRoute
+  '/use-cases': typeof UseCasesRoute
+  '/verification': typeof VerificationRoute
   '/work/$workId': typeof WorkWorkIdRoute
   '/work/': typeof WorkIndexRoute
 }
@@ -116,14 +144,18 @@ export interface FileRoutesByTo {
   '/add': typeof AddRoute
   '/handoffs': typeof HandoffsRoute
   '/home': typeof HomeRoute
+  '/how-it-works': typeof HowItWorksRoute
   '/insights': typeof InsightsRoute
   '/login': typeof LoginRoute
   '/privacy-policy': typeof PrivacyPolicyRoute
+  '/product': typeof ProductRoute
   '/questions': typeof QuestionsRoute
   '/search': typeof SearchRoute
   '/settings': typeof SettingsRoute
   '/templates': typeof TemplatesRoute
   '/terms-of-use': typeof TermsOfUseRoute
+  '/use-cases': typeof UseCasesRoute
+  '/verification': typeof VerificationRoute
   '/work/$workId': typeof WorkWorkIdRoute
   '/work': typeof WorkIndexRoute
 }
@@ -133,14 +165,18 @@ export interface FileRoutesById {
   '/add': typeof AddRoute
   '/handoffs': typeof HandoffsRoute
   '/home': typeof HomeRoute
+  '/how-it-works': typeof HowItWorksRoute
   '/insights': typeof InsightsRoute
   '/login': typeof LoginRoute
   '/privacy-policy': typeof PrivacyPolicyRoute
+  '/product': typeof ProductRoute
   '/questions': typeof QuestionsRoute
   '/search': typeof SearchRoute
   '/settings': typeof SettingsRoute
   '/templates': typeof TemplatesRoute
   '/terms-of-use': typeof TermsOfUseRoute
+  '/use-cases': typeof UseCasesRoute
+  '/verification': typeof VerificationRoute
   '/work/$workId': typeof WorkWorkIdRoute
   '/work/': typeof WorkIndexRoute
 }
@@ -151,14 +187,18 @@ export interface FileRouteTypes {
     | '/add'
     | '/handoffs'
     | '/home'
+    | '/how-it-works'
     | '/insights'
     | '/login'
     | '/privacy-policy'
+    | '/product'
     | '/questions'
     | '/search'
     | '/settings'
     | '/templates'
     | '/terms-of-use'
+    | '/use-cases'
+    | '/verification'
     | '/work/$workId'
     | '/work/'
   fileRoutesByTo: FileRoutesByTo
@@ -167,14 +207,18 @@ export interface FileRouteTypes {
     | '/add'
     | '/handoffs'
     | '/home'
+    | '/how-it-works'
     | '/insights'
     | '/login'
     | '/privacy-policy'
+    | '/product'
     | '/questions'
     | '/search'
     | '/settings'
     | '/templates'
     | '/terms-of-use'
+    | '/use-cases'
+    | '/verification'
     | '/work/$workId'
     | '/work'
   id:
@@ -183,14 +227,18 @@ export interface FileRouteTypes {
     | '/add'
     | '/handoffs'
     | '/home'
+    | '/how-it-works'
     | '/insights'
     | '/login'
     | '/privacy-policy'
+    | '/product'
     | '/questions'
     | '/search'
     | '/settings'
     | '/templates'
     | '/terms-of-use'
+    | '/use-cases'
+    | '/verification'
     | '/work/$workId'
     | '/work/'
   fileRoutesById: FileRoutesById
@@ -200,14 +248,18 @@ export interface RootRouteChildren {
   AddRoute: typeof AddRoute
   HandoffsRoute: typeof HandoffsRoute
   HomeRoute: typeof HomeRoute
+  HowItWorksRoute: typeof HowItWorksRoute
   InsightsRoute: typeof InsightsRoute
   LoginRoute: typeof LoginRoute
   PrivacyPolicyRoute: typeof PrivacyPolicyRoute
+  ProductRoute: typeof ProductRoute
   QuestionsRoute: typeof QuestionsRoute
   SearchRoute: typeof SearchRoute
   SettingsRoute: typeof SettingsRoute
   TemplatesRoute: typeof TemplatesRoute
   TermsOfUseRoute: typeof TermsOfUseRoute
+  UseCasesRoute: typeof UseCasesRoute
+  VerificationRoute: typeof VerificationRoute
   WorkWorkIdRoute: typeof WorkWorkIdRoute
   WorkIndexRoute: typeof WorkIndexRoute
 }
@@ -242,6 +294,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof HomeRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/how-it-works': {
+      id: '/how-it-works'
+      path: '/how-it-works'
+      fullPath: '/how-it-works'
+      preLoaderRoute: typeof HowItWorksRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/insights': {
       id: '/insights'
       path: '/insights'
@@ -261,6 +320,13 @@ declare module '@tanstack/react-router' {
       path: '/privacy-policy'
       fullPath: '/privacy-policy'
       preLoaderRoute: typeof PrivacyPolicyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/product': {
+      id: '/product'
+      path: '/product'
+      fullPath: '/product'
+      preLoaderRoute: typeof ProductRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/questions': {
@@ -298,6 +364,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TermsOfUseRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/use-cases': {
+      id: '/use-cases'
+      path: '/use-cases'
+      fullPath: '/use-cases'
+      preLoaderRoute: typeof UseCasesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/verification': {
+      id: '/verification'
+      path: '/verification'
+      fullPath: '/verification'
+      preLoaderRoute: typeof VerificationRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/work/': {
       id: '/work/'
       path: '/work'
@@ -320,14 +400,18 @@ const rootRouteChildren: RootRouteChildren = {
   AddRoute: AddRoute,
   HandoffsRoute: HandoffsRoute,
   HomeRoute: HomeRoute,
+  HowItWorksRoute: HowItWorksRoute,
   InsightsRoute: InsightsRoute,
   LoginRoute: LoginRoute,
   PrivacyPolicyRoute: PrivacyPolicyRoute,
+  ProductRoute: ProductRoute,
   QuestionsRoute: QuestionsRoute,
   SearchRoute: SearchRoute,
   SettingsRoute: SettingsRoute,
   TemplatesRoute: TemplatesRoute,
   TermsOfUseRoute: TermsOfUseRoute,
+  UseCasesRoute: UseCasesRoute,
+  VerificationRoute: VerificationRoute,
   WorkWorkIdRoute: WorkWorkIdRoute,
   WorkIndexRoute: WorkIndexRoute,
 }
