@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as IndexRouteImport } from './routes/index'
 import { Route as AddRouteImport } from './routes/add'
 import { Route as HandoffsRouteImport } from './routes/handoffs'
 import { Route as HomeRouteImport } from './routes/home'
@@ -21,6 +22,11 @@ import { Route as TemplatesRouteImport } from './routes/templates'
 import { Route as WorkIndexRouteImport } from './routes/work.index'
 import { Route as WorkWorkIdRouteImport } from './routes/work.$workId'
 
+const IndexRoute = IndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AddRoute = AddRouteImport.update({
   id: '/add',
   path: '/add',
@@ -78,6 +84,7 @@ const WorkWorkIdRoute = WorkWorkIdRouteImport.update({
 } as any)
 
 export interface FileRoutesByFullPath {
+  '/': typeof IndexRoute
   '/add': typeof AddRoute
   '/handoffs': typeof HandoffsRoute
   '/home': typeof HomeRoute
@@ -91,6 +98,7 @@ export interface FileRoutesByFullPath {
   '/work/': typeof WorkIndexRoute
 }
 export interface FileRoutesByTo {
+  '/': typeof IndexRoute
   '/add': typeof AddRoute
   '/handoffs': typeof HandoffsRoute
   '/home': typeof HomeRoute
@@ -105,6 +113,7 @@ export interface FileRoutesByTo {
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
+  '/': typeof IndexRoute
   '/add': typeof AddRoute
   '/handoffs': typeof HandoffsRoute
   '/home': typeof HomeRoute
@@ -120,6 +129,7 @@ export interface FileRoutesById {
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
+    | '/'
     | '/add'
     | '/handoffs'
     | '/home'
@@ -133,6 +143,7 @@ export interface FileRouteTypes {
     | '/work/'
   fileRoutesByTo: FileRoutesByTo
   to:
+    | '/'
     | '/add'
     | '/handoffs'
     | '/home'
@@ -146,6 +157,7 @@ export interface FileRouteTypes {
     | '/work'
   id:
     | '__root__'
+    | '/'
     | '/add'
     | '/handoffs'
     | '/home'
@@ -160,6 +172,7 @@ export interface FileRouteTypes {
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
+  IndexRoute: typeof IndexRoute
   AddRoute: typeof AddRoute
   HandoffsRoute: typeof HandoffsRoute
   HomeRoute: typeof HomeRoute
@@ -175,6 +188,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/add': {
       id: '/add'
       path: '/add'
@@ -256,6 +276,7 @@ declare module '@tanstack/react-router' {
 }
 
 const rootRouteChildren: RootRouteChildren = {
+  IndexRoute: IndexRoute,
   AddRoute: AddRoute,
   HandoffsRoute: HandoffsRoute,
   HomeRoute: HomeRoute,
