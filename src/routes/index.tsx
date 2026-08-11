@@ -562,28 +562,18 @@ function Landing() {
       </section>
 
       {/* ── FOOTER ───────────────────────────────────────────────────────────── */}
-      <footer className="mx-auto w-full max-w-6xl px-5 py-10 md:px-8">
-        <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-4 sm:flex sm:justify-between">
-          <div className="flex min-w-0 items-center gap-2">
-            <img src={mark} alt="" width={18} height={18} className="h-4 w-4 shrink-0" />
-            <span className="truncate text-sm">Karya AI</span>
+      <footer className="border-t border-hairline">
+        <div className="mx-auto flex w-full max-w-6xl flex-col gap-4 px-5 py-8 sm:flex-row sm:items-center sm:justify-between md:px-8">
+          {/* Left */}
+          <div className="space-y-0.5">
+            <p className="text-sm text-muted-foreground">© 2026 AUSPPA</p>
+            <p className="text-xs text-muted-foreground/60">Built for learners, by learners</p>
           </div>
-          <nav className="flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-muted-foreground">
-            <a href="#features" className="hover:text-foreground">
-              Features
-            </a>
-            <a href="#verify" className="hover:text-foreground">
-              Verification
-            </a>
-            <a href="#usecases" className="hover:text-foreground">
-              Use cases
-            </a>
-            <a href="mailto:hello@karya.ai" className="hover:text-foreground">
-              Contact
-            </a>
-            <Link to="/login" className="hover:text-foreground">
-              Log in
-            </Link>
+          {/* Right */}
+          <nav className="flex items-center gap-5 text-sm text-muted-foreground">
+            <a href="/terms" className="transition-colors hover:text-foreground">Terms of Use</a>
+            <a href="/privacy" className="transition-colors hover:text-foreground">Privacy Policy</a>
+            <a href="mailto:hello@karya.ai" className="transition-colors hover:text-foreground">Contact</a>
           </nav>
         </div>
       </footer>

@@ -1,0 +1,201 @@
+# ADD PRIVACY POLICY AND TERMS OF USE TO KARYA AI
+
+I will provide the finalized **Privacy Policy** and **Terms of Use** content separately.
+
+Your job is to **implement these documents into the existing Karya AI application exactly as provided**.
+
+## 1. CREATE TWO PAGES
+
+Create two dedicated routes/pages:
+
+* `/privacy-policy`
+* `/terms-of-use`
+
+Use the exact legal content I provide.
+
+**Do not rewrite, summarize, shorten, expand, reinterpret, or generate any part of the legal text.**
+
+Preserve:
+
+* Exact wording
+* Headings
+* Subheadings
+* Paragraphs
+* Lists
+* Numbering
+* Emphasis
+* Important notices
+* Any dates
+* Any placeholders
+
+The content I provide is the source of truth.
+
+---
+
+## 2. DESIGN
+
+The pages should match the existing Karya AI website/app design system.
+
+Make them:
+
+* Clean
+* Modern
+* Professional
+* Highly readable
+* Responsive
+* Consistent with the existing typography
+* Consistent with the existing colors
+* Consistent with the existing header and footer
+
+Do **not** create a completely different visual style for the legal pages.
+
+However, legal pages should prioritize readability over visual effects.
+
+Avoid excessive animations.
+
+---
+
+## 3. PAGE STRUCTURE
+
+Each page should have:
+
+### Header
+
+Use the existing Karya AI header/navigation if one already exists.
+
+Do not create a duplicate or unrelated navigation system.
+
+### Main content
+
+Display the supplied legal document in a properly formatted reading layout.
+
+Use:
+
+* Clear H1 title
+* Proper H2/H3 hierarchy
+* Comfortable line spacing
+* Appropriate maximum content width
+* Good paragraph spacing
+* Proper list formatting
+* Responsive typography
+
+If the supplied document contains numbered sections, preserve the numbering.
+
+### Optional table of contents
+
+If the document is long, create a small table of contents based **only on the actual headings in the provided document**.
+
+The table of contents should link to the corresponding section.
+
+Do not invent additional sections.
+
+---
+
+## 4. FOOTER
+
+Update the existing footer so that:
+
+**Privacy Policy** links to:
+
+`/privacy-policy`
+
+**Terms of Use** links to:
+
+`/terms-of-use`
+
+Keep the existing footer design unless I explicitly provide different footer instructions.
+
+Do not create duplicate footer links.
+
+---
+
+## 5. ROUTING
+
+Make sure both pages are accessible directly by URL:
+
+`/privacy-policy`
+
+`/terms-of-use`
+
+They must also work when the user refreshes the page.
+
+Do not break the existing application's routing.
+
+---
+
+## 6. IMPORTANT — DO NOT CHANGE THE APPLICATION
+
+Do not modify existing Karya AI functionality.
+
+Do not change:
+
+* Authentication
+* AI functionality
+* Work management
+* File uploads
+* Chat
+* Dashboard
+* Navigation
+* Database
+* API behavior
+* Existing business logic
+
+unless something is strictly necessary to add these two pages and their navigation links.
+
+---
+
+## 7. DO NOT FABRICATE ANYTHING
+
+The legal documents I provide are the **only source of truth**.
+
+Do NOT:
+
+* Generate additional legal clauses
+* Remove legal clauses
+* Change legal wording
+* Invent company information
+* Invent contact information
+* Invent addresses
+* Invent legal entities
+* Invent jurisdictions
+* Add fake certifications
+* Add fake privacy practices
+* Add fake security claims
+* Add fake retention policies
+
+If the provided text contains placeholders, **keep the placeholders exactly as provided**.
+
+Do not automatically replace them with guessed information.
+
+---
+
+## 8. SEO / PAGE METADATA
+
+Add appropriate page titles:
+
+**Privacy Policy — Karya AI**
+
+**Terms of Use — Karya AI**
+
+Add basic metadata where appropriate, but do not make claims that are not contained in the provided documents.
+
+---
+
+## 9. FINAL CHECK
+
+After implementation, verify:
+
+* `/privacy-policy` loads correctly
+* `/terms-of-use` loads correctly
+* Both pages are responsive
+* Footer links work
+* Direct URLs work
+* Refreshing either page works
+* Existing application functionality still works
+* No legal text was changed
+* No legal text was fabricated
+* No existing application pages were broken
+
+I will now provide the **Privacy Policy** and **Terms of Use** content.
+
+Treat the content I provide as authoritative and implement it exactly.
