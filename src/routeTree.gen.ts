@@ -9,10 +9,16 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as AddRouteImport } from './routes/add'
 import { Route as HomeRouteImport } from './routes/home'
 import { Route as WorkIndexRouteImport } from './routes/work.index'
 import { Route as WorkWorkIdRouteImport } from './routes/work.$workId'
 
+const AddRoute = AddRouteImport.update({
+  id: '/add',
+  path: '/add',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const HomeRoute = HomeRouteImport.update({
   id: '/home',
   path: '/home',
@@ -30,30 +36,34 @@ const WorkWorkIdRoute = WorkWorkIdRouteImport.update({
 } as any)
 
 export interface FileRoutesByFullPath {
+  '/add': typeof AddRoute
   '/home': typeof HomeRoute
   '/work/$workId': typeof WorkWorkIdRoute
   '/work/': typeof WorkIndexRoute
 }
 export interface FileRoutesByTo {
+  '/add': typeof AddRoute
   '/home': typeof HomeRoute
   '/work/$workId': typeof WorkWorkIdRoute
   '/work': typeof WorkIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
+  '/add': typeof AddRoute
   '/home': typeof HomeRoute
   '/work/$workId': typeof WorkWorkIdRoute
   '/work/': typeof WorkIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/home' | '/work/$workId' | '/work/'
+  fullPaths: '/add' | '/home' | '/work/$workId' | '/work/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/home' | '/work/$workId' | '/work'
-  id: '__root__' | '/home' | '/work/$workId' | '/work/'
+  to: '/add' | '/home' | '/work/$workId' | '/work'
+  id: '__root__' | '/add' | '/home' | '/work/$workId' | '/work/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
+  AddRoute: typeof AddRoute
   HomeRoute: typeof HomeRoute
   WorkWorkIdRoute: typeof WorkWorkIdRoute
   WorkIndexRoute: typeof WorkIndexRoute
@@ -61,6 +71,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/add': {
+      id: '/add'
+      path: '/add'
+      fullPath: '/add'
+      preLoaderRoute: typeof AddRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/home': {
       id: '/home'
       path: '/home'
@@ -86,6 +103,7 @@ declare module '@tanstack/react-router' {
 }
 
 const rootRouteChildren: RootRouteChildren = {
+  AddRoute: AddRoute,
   HomeRoute: HomeRoute,
   WorkWorkIdRoute: WorkWorkIdRoute,
   WorkIndexRoute: WorkIndexRoute,
