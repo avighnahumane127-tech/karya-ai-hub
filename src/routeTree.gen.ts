@@ -15,6 +15,7 @@ import { Route as HomeRouteImport } from './routes/home'
 import { Route as InsightsRouteImport } from './routes/insights'
 import { Route as QuestionsRouteImport } from './routes/questions'
 import { Route as SearchRouteImport } from './routes/search'
+import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as TemplatesRouteImport } from './routes/templates'
 import { Route as WorkIndexRouteImport } from './routes/work.index'
 import { Route as WorkWorkIdRouteImport } from './routes/work.$workId'
@@ -49,6 +50,11 @@ const SearchRoute = SearchRouteImport.update({
   path: '/search',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SettingsRoute = SettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const TemplatesRoute = TemplatesRouteImport.update({
   id: '/templates',
   path: '/templates',
@@ -72,6 +78,7 @@ export interface FileRoutesByFullPath {
   '/insights': typeof InsightsRoute
   '/questions': typeof QuestionsRoute
   '/search': typeof SearchRoute
+  '/settings': typeof SettingsRoute
   '/templates': typeof TemplatesRoute
   '/work/$workId': typeof WorkWorkIdRoute
   '/work/': typeof WorkIndexRoute
@@ -83,6 +90,7 @@ export interface FileRoutesByTo {
   '/insights': typeof InsightsRoute
   '/questions': typeof QuestionsRoute
   '/search': typeof SearchRoute
+  '/settings': typeof SettingsRoute
   '/templates': typeof TemplatesRoute
   '/work/$workId': typeof WorkWorkIdRoute
   '/work': typeof WorkIndexRoute
@@ -95,6 +103,7 @@ export interface FileRoutesById {
   '/insights': typeof InsightsRoute
   '/questions': typeof QuestionsRoute
   '/search': typeof SearchRoute
+  '/settings': typeof SettingsRoute
   '/templates': typeof TemplatesRoute
   '/work/$workId': typeof WorkWorkIdRoute
   '/work/': typeof WorkIndexRoute
@@ -108,6 +117,7 @@ export interface FileRouteTypes {
     | '/insights'
     | '/questions'
     | '/search'
+    | '/settings'
     | '/templates'
     | '/work/$workId'
     | '/work/'
@@ -119,6 +129,7 @@ export interface FileRouteTypes {
     | '/insights'
     | '/questions'
     | '/search'
+    | '/settings'
     | '/templates'
     | '/work/$workId'
     | '/work'
@@ -130,6 +141,7 @@ export interface FileRouteTypes {
     | '/insights'
     | '/questions'
     | '/search'
+    | '/settings'
     | '/templates'
     | '/work/$workId'
     | '/work/'
@@ -142,6 +154,7 @@ export interface RootRouteChildren {
   InsightsRoute: typeof InsightsRoute
   QuestionsRoute: typeof QuestionsRoute
   SearchRoute: typeof SearchRoute
+  SettingsRoute: typeof SettingsRoute
   TemplatesRoute: typeof TemplatesRoute
   WorkWorkIdRoute: typeof WorkWorkIdRoute
   WorkIndexRoute: typeof WorkIndexRoute
@@ -191,6 +204,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SearchRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/settings': {
+      id: '/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof SettingsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/templates': {
       id: '/templates'
       path: '/templates'
@@ -222,6 +242,7 @@ const rootRouteChildren: RootRouteChildren = {
   InsightsRoute: InsightsRoute,
   QuestionsRoute: QuestionsRoute,
   SearchRoute: SearchRoute,
+  SettingsRoute: SettingsRoute,
   TemplatesRoute: TemplatesRoute,
   WorkWorkIdRoute: WorkWorkIdRoute,
   WorkIndexRoute: WorkIndexRoute,
