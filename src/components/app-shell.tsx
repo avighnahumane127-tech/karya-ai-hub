@@ -2,12 +2,13 @@ import { Link, useRouterState } from "@tanstack/react-router";
 import {
   CircleHelp,
   Bell,
-  MessageSquareText,
+  Home,
   LayoutList,
   Plus,
   HelpCircle,
   ArrowLeftRight,
   LayoutTemplate,
+  BarChart3,
   Settings,
   Search,
   Menu,
@@ -19,55 +20,71 @@ import { Button } from "@/components/ui/button";
 import {
   CommandDialog,
   CommandEmpty,
-  CommandGroup,
   CommandInput,
-  CommandItem,
   CommandList,
 } from "@/components/ui/command";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
-import { searchResults } from "@/lib/mock-data";
+import { notifications } from "@/lib/work";
 import { cn } from "@/lib/utils";
 
-const navGroups = [
-  [
-    { label: "AI Work Chat", to: "/", icon: MessageSquareText },
-    { label: "My Work", to: "/work", icon: LayoutList },
-    { label: "Add Work", to: "/add", icon: Plus },
-  ],
-  [
-    { label: "Questions", to: "/questions", icon: HelpCircle },
-    { label: "Handoffs", to: "/handoffs", icon: ArrowLeftRight },
-  ],
-  [{ label: "Templates", to: "/templates", icon: LayoutTemplate }],
+const navGroups: { label: string; items: { label: string; to: string; icon: typeof Home }[] }[] = [
+  {
+    label: "Main",
+    items: [
+      { label: "Home", to: "/home", icon: Home },
+      { label: "My Work", to: "/work", icon: LayoutList },
+      { label: "Add Work", to: "/add", icon: Plus },
+    ],
+  },
+  {
+    label: "Collaboration",
+    items: [
+      { label: "Questions", to: "/questions", icon: HelpCircle },
+      { label: "Handoffs", to: "/handoffs", icon: ArrowLeftRight },
+    ],
+  },
+  {
+    label: "Resources",
+    items: [
+      { label: "Templates", to: "/templates", icon: LayoutTemplate },
+      { label: "Insights", to: "/insights", icon: BarChart3 },
+    ],
+  },
 ];
+
+/** Routes rendered outside the app chrome. */
+const publicRoutes = ["/", "/login"];
 
 function usePathname() {
   return useRouterState({ select: (s) => s.location.pathname });
 }
 
 function isActive(pathname: string, to: string) {
-  if (to === "/") return pathname === "/";
   return pathname === to || pathname.startsWith(to + "/");
 }
+
+const itemClass = (active: boolean) =>
+  cn(
+    "flex items-center gap-2.5 rounded-md px-2.5 py-2 text-sm transition-colors",
+    active
+      ? "bg-accent font-medium text-foreground"
+      : "text-muted-foreground hover:bg-accent/60 hover:text-foreground",
+  );
 
 function NavList({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = usePathname();
   return (
-    <nav className="flex flex-1 flex-col gap-5">
-      {navGroups.map((group, i) => (
-        <div key={i} className="space-y-0.5">
-          {i > 0 ? <div className="mb-5 h-px bg-hairline" /> : null}
-          {group.map((item) => (
+    <nav className="flex flex-1 flex-col gap-6">
+      {navGroups.map((group) => (
+        <div key={group.label} className="space-y-0.5">
+          <p className="label-caps px-2.5 pb-1.5">{group.label}</p>
+          {group.items.map((item) => (
             <Link
               key={item.to}
               to={item.to}
               onClick={onNavigate}
-              className={cn(
-                "flex items-center gap-2.5 rounded-md px-2.5 py-2 text-sm transition-colors",
-                isActive(pathname, item.to)
-                  ? "bg-accent font-medium text-foreground"
-                  : "text-muted-foreground hover:bg-accent/60 hover:text-foreground",
-              )}
+              className={itemClass(isActive(pathname, item.to))}
             >
               <item.icon className="h-4 w-4 shrink-0" strokeWidth={1.6} />
               <span className="truncate">{item.label}</span>
@@ -81,7 +98,7 @@ function NavList({ onNavigate }: { onNavigate?: () => void }) {
 
 function Wordmark() {
   return (
-    <Link to="/" className="flex items-center gap-2">
+    <Link to="/home" className="flex items-center gap-2">
       <img src={mark} alt="" width={20} height={20} className="h-5 w-5" />
       <span className="text-sm font-medium tracking-tight">Karya AI</span>
     </Link>
@@ -91,28 +108,32 @@ function Wordmark() {
 function GlobalSearch({ open, setOpen }: { open: boolean; setOpen: (v: boolean) => void }) {
   return (
     <CommandDialog open={open} onOpenChange={setOpen}>
-      <CommandInput placeholder="Search your work..." />
+      <CommandInput placeholder="Search work, requirements, files..." />
       <CommandList>
-        <CommandEmpty>Nothing matched that.</CommandEmpty>
-        <CommandGroup heading="Results">
-          {searchResults.map((r) => (
-            <CommandItem key={r.id} value={`${r.title} ${r.context}`} asChild>
-              <Link to={r.to} onClick={() => setOpen(false)} className="flex flex-col items-start gap-0.5">
-                <span className="text-sm">{r.title}</span>
-                <span className="text-xs text-muted-foreground">{r.context}</span>
-              </Link>
-            </CommandItem>
-          ))}
-        </CommandGroup>
+        <CommandEmpty>No results found.</CommandEmpty>
       </CommandList>
     </CommandDialog>
   );
 }
 
 const mobileNav = [
-  { label: "Chat", to: "/", icon: MessageSquareText },
+  { label: "Home", to: "/home", icon: Home },
   { label: "My Work", to: "/work", icon: LayoutList },
   { label: "Add", to: "/add", icon: Plus },
+  { label: "Questions", to: "/questions", icon: HelpCircle },
+  { label: "Handoffs", to: "/handoffs", icon: ArrowLeftRight },
+];
+
+const contextLabels: [string, string][] = [
+  ["/home", "Home"],
+  ["/work", "My Work"],
+  ["/add", "Add Work"],
+  ["/questions", "Questions"],
+  ["/handoffs", "Handoffs"],
+  ["/templates", "Templates"],
+  ["/insights", "Insights"],
+  ["/search", "Global Search"],
+  ["/settings", "Settings"],
 ];
 
 export function AppShell({ children }: { children: ReactNode }) {
@@ -131,49 +152,33 @@ export function AppShell({ children }: { children: ReactNode }) {
     return () => window.removeEventListener("keydown", onKey);
   }, []);
 
+  if (publicRoutes.includes(pathname)) {
+    return <>{children}</>;
+  }
+
   const contextLabel =
-    pathname === "/"
-      ? "AI Work Chat"
-      : pathname.startsWith("/work/")
-        ? "My Work"
-        : pathname.startsWith("/work")
-          ? "My Work"
-          : pathname.startsWith("/add")
-            ? "Add Work"
-            : pathname.startsWith("/questions")
-              ? "Questions"
-              : pathname.startsWith("/handoffs")
-                ? "Handoffs"
-                : pathname.startsWith("/templates")
-                  ? "Templates"
-                  : pathname.startsWith("/settings")
-                    ? "Settings"
-                    : "Karya AI";
+    contextLabels.find(([to]) => isActive(pathname, to))?.[1] ?? "Karya AI";
 
   return (
     <div className="flex min-h-screen w-full bg-background">
-      <aside className="fixed inset-y-0 left-0 hidden w-[232px] flex-col border-r border-hairline px-3 py-5 lg:flex">
-        <div className="px-2.5 pb-6">
+      <aside className="fixed inset-y-0 left-0 hidden w-[240px] flex-col border-r border-hairline px-3 py-5 lg:flex">
+        <div className="px-2.5 pb-7">
           <Wordmark />
         </div>
         <NavList />
-        <div className="mt-4 border-t border-hairline pt-4">
-          <Link
-            to="/settings"
-            className={cn(
-              "flex items-center gap-2.5 rounded-md px-2.5 py-2 text-sm transition-colors",
-              isActive(pathname, "/settings")
-                ? "bg-accent font-medium text-foreground"
-                : "text-muted-foreground hover:bg-accent/60 hover:text-foreground",
-            )}
-          >
-            <Settings className="h-4 w-4" strokeWidth={1.6} />
+        <div className="mt-6 space-y-0.5 border-t border-hairline pt-4">
+          <Link to="/settings" className={itemClass(isActive(pathname, "/settings"))}>
+            <Settings className="h-4 w-4 shrink-0" strokeWidth={1.6} />
             Settings
           </Link>
+          <button type="button" onClick={() => setSearchOpen(true)} className={itemClass(false)}>
+            <Search className="h-4 w-4 shrink-0" strokeWidth={1.6} />
+            Search
+          </button>
         </div>
       </aside>
 
-      <div className="flex min-w-0 flex-1 flex-col lg:pl-[232px]">
+      <div className="flex min-w-0 flex-1 flex-col lg:pl-[240px]">
         <header className="sticky top-0 z-30 grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 border-b border-hairline bg-background/85 px-4 py-2.5 backdrop-blur md:grid-cols-[minmax(0,1fr)_minmax(0,26rem)_auto] md:px-6">
           <div className="flex min-w-0 items-center gap-2">
             <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
@@ -182,16 +187,16 @@ export function AppShell({ children }: { children: ReactNode }) {
                   <Menu className="h-4 w-4" />
                 </Button>
               </SheetTrigger>
-              <SheetContent side="left" className="w-[260px] px-3 py-5">
+              <SheetContent side="left" className="w-[268px] overflow-y-auto px-3 py-5">
                 <SheetTitle className="sr-only">Navigation</SheetTitle>
-                <div className="px-2.5 pb-6">
+                <div className="px-2.5 pb-7">
                   <Wordmark />
                 </div>
                 <NavList onNavigate={() => setMenuOpen(false)} />
                 <Link
                   to="/settings"
                   onClick={() => setMenuOpen(false)}
-                  className="mt-4 flex items-center gap-2.5 border-t border-hairline px-2.5 pt-4 text-sm text-muted-foreground"
+                  className="mt-6 flex items-center gap-2.5 border-t border-hairline px-2.5 pt-4 text-sm text-muted-foreground"
                 >
                   <Settings className="h-4 w-4" strokeWidth={1.6} />
                   Settings
@@ -223,17 +228,35 @@ export function AppShell({ children }: { children: ReactNode }) {
             <Button variant="ghost" size="icon-sm" aria-label="Help">
               <CircleHelp className="h-4 w-4" strokeWidth={1.6} />
             </Button>
-            <Button variant="ghost" size="icon-sm" aria-label="Notifications" className="relative">
-              <Bell className="h-4 w-4" strokeWidth={1.6} />
-              <span className="absolute right-1.5 top-1.5 h-1.5 w-1.5 rounded-full bg-warn" />
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="ghost" size="icon-sm" aria-label="Notifications">
+                  <Bell className="h-4 w-4" strokeWidth={1.6} />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent align="end" className="w-72 p-4">
+                <p className="label-caps">Notifications</p>
+                {notifications.length === 0 ? (
+                  <p className="mt-3 text-sm text-muted-foreground">Nothing new.</p>
+                ) : (
+                  <ul className="mt-3 space-y-3">
+                    {notifications.map((n) => (
+                      <li key={n.id} className="text-sm">
+                        {n.text}
+                        <span className="block text-xs text-muted-foreground">{n.when}</span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </PopoverContent>
+            </Popover>
+            <Button variant="outline" size="sm" className="ml-1.5 shrink-0" asChild>
+              <Link to="/login">Sign in</Link>
             </Button>
-            <span className="ml-1.5 grid h-7 w-7 shrink-0 place-items-center rounded-full bg-accent text-[11px] font-medium">
-              RS
-            </span>
           </div>
         </header>
 
-        <main className="min-w-0 flex-1 pb-20 lg:pb-0">{children}</main>
+        <main className="min-w-0 flex-1 pb-24 lg:pb-0">{children}</main>
       </div>
 
       <nav className="fixed bottom-0 left-0 right-0 z-30 flex border-t border-hairline bg-background/95 backdrop-blur lg:hidden">
@@ -246,8 +269,8 @@ export function AppShell({ children }: { children: ReactNode }) {
               isActive(pathname, item.to) ? "text-foreground" : "text-muted-foreground",
             )}
           >
-            <item.icon className="h-4.5 w-4.5" strokeWidth={1.6} />
-            {item.label}
+            <item.icon className="h-4 w-4" strokeWidth={1.6} />
+            <span className="truncate">{item.label}</span>
           </Link>
         ))}
       </nav>

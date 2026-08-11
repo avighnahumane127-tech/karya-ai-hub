@@ -2,14 +2,13 @@ import { Link, createFileRoute } from "@tanstack/react-router";
 import { Search } from "lucide-react";
 import { useState } from "react";
 
-import { EmptyState, PageHeader, StatusPill, type Tone } from "@/components/primitives";
+import { EmptyState, PageHeader, StatusPill } from "@/components/primitives";
 import { Button } from "@/components/ui/button";
-import { workItems, type WorkState } from "@/lib/mock-data";
+import { stateLabels, workItems, type WorkState } from "@/lib/work";
 import { cn } from "@/lib/utils";
 
 const title = "My Work — Karya AI";
-const description =
-  "Everything you're currently working on, with what needs attention shown first.";
+const description = "Everything you are working on, with what needs attention shown first.";
 
 export const Route = createFileRoute("/work/")({
   head: () => ({
@@ -20,46 +19,42 @@ export const Route = createFileRoute("/work/")({
       { property: "og:description", content: description },
     ],
   }),
-  component: MyWork,
+  component: MyWorkPage,
 });
 
-export const stateTone: Record<WorkState, Tone> = {
-  blocked: "blocked",
-  waiting: "warn",
-  clarify: "warn",
-  ready: "ready",
-  verify: "info",
-  done: "neutral",
+const filters = [
+  { key: "all", label: "All Work" },
+  { key: "active", label: "Active" },
+  { key: "attention", label: "Needs Attention" },
+  { key: "blocked", label: "Blocked" },
+  { key: "waiting", label: "Waiting" },
+  { key: "done", label: "Completed" },
+] as const;
+
+const matches: Record<string, (s: WorkState) => boolean> = {
+  all: () => true,
+  active: (s) => s !== "done",
+  attention: (s) => s === "clarify" || s === "blocked",
+  blocked: (s) => s === "blocked",
+  waiting: (s) => s === "waiting",
+  done: (s) => s === "done",
 };
 
-const filters = ["All", "Needs attention", "Active", "Waiting", "Completed"] as const;
-
-function MyWork() {
-  const [filter, setFilter] = useState<(typeof filters)[number]>("All");
+function MyWorkPage() {
+  const [filter, setFilter] = useState<string>("all");
   const [query, setQuery] = useState("");
 
-  const items = workItems.filter((w) => {
-    const matchesQuery =
-      !query ||
-      (w.title + w.description).toLowerCase().includes(query.toLowerCase());
-    const matchesFilter =
-      filter === "All"
-        ? true
-        : filter === "Needs attention"
-          ? w.state === "blocked" || w.state === "clarify"
-          : filter === "Active"
-            ? w.state === "ready" || w.state === "verify"
-            : filter === "Waiting"
-              ? w.state === "waiting"
-              : w.state === "done";
-    return matchesQuery && matchesFilter;
-  });
+  const items = workItems.filter(
+    (w) =>
+      (matches[filter] ?? matches["all"]!)(w.state) &&
+      w.title.toLowerCase().includes(query.trim().toLowerCase()),
+  );
 
   return (
     <div className="mx-auto w-full max-w-3xl px-5 py-10 md:px-8 md:py-14">
       <PageHeader
         title="My Work"
-        subtitle="Everything you're currently working on."
+        subtitle="Your work items and where each one stands."
         action={
           <Button size="sm" asChild>
             <Link to="/add">Add Work</Link>
@@ -67,68 +62,66 @@ function MyWork() {
         }
       />
 
-      <div className="mt-8 grid gap-3 sm:flex sm:items-center sm:justify-between">
-        <div className="flex flex-wrap items-center gap-x-1 gap-y-1 text-sm">
-          {filters.map((f) => (
-            <button
-              key={f}
-              type="button"
-              onClick={() => setFilter(f)}
-              className={cn(
-                "rounded-md px-2 py-1 transition-colors",
-                filter === f
-                  ? "bg-accent font-medium text-foreground"
-                  : "text-muted-foreground hover:text-foreground",
-              )}
-            >
-              {f}
-            </button>
-          ))}
-        </div>
-        <div className="relative sm:w-52">
-          <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
-          <input
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search"
-            className="h-9 w-full rounded-md border border-hairline bg-surface pl-8 pr-3 text-sm outline-none placeholder:text-muted-foreground focus:border-input"
-          />
-        </div>
-      </div>
-
-      <div className="mt-6 divide-y divide-hairline border-y border-hairline">
-        {items.map((w) => (
-          <Link
-            key={w.id}
-            to="/work/$workId"
-            params={{ workId: w.id }}
-            className="block px-1 py-6 transition-colors hover:bg-accent/40"
+      <div className="mt-8 flex flex-wrap items-center gap-2">
+        {filters.map((f) => (
+          <button
+            key={f.key}
+            type="button"
+            onClick={() => setFilter(f.key)}
+            className={cn(
+              "rounded-md border px-2.5 py-1 text-xs transition-colors",
+              filter === f.key
+                ? "border-foreground/30 bg-accent font-medium"
+                : "border-hairline text-muted-foreground hover:border-input hover:text-foreground",
+            )}
           >
-            <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-4">
-              <div className="min-w-0">
-                <h3 className="text-[15px] font-medium">{w.title}</h3>
-                <p className="mt-1 text-sm text-muted-foreground">{w.description}</p>
-              </div>
-              <StatusPill tone={stateTone[w.state]}>{w.stateLabel}</StatusPill>
-            </div>
-            <p className="mt-3 text-xs text-muted-foreground">{w.metaLine}</p>
-          </Link>
+            {f.label}
+          </button>
         ))}
       </div>
 
-      {items.length === 0 ? (
-        <div className="mt-6">
+      <label className="mt-4 flex h-9 items-center gap-2 rounded-md border border-hairline bg-surface px-3">
+        <Search className="h-3.5 w-3.5 shrink-0 text-muted-foreground" strokeWidth={1.7} />
+        <input
+          value={query}
+          onChange={(e) => setQuery(e.currentTarget.value)}
+          placeholder="Search your work..."
+          className="min-w-0 flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground"
+        />
+      </label>
+
+      <div className="mt-8">
+        {items.length === 0 ? (
           <EmptyState
-            title="Nothing here yet."
-            description="Add an assignment or brief and Karya AI will turn it into a clear plan."
+            title="No work yet."
+            description="Add an assignment, brief, document, or task to get started."
             action={
               <Button size="sm" asChild>
                 <Link to="/add">Add Work</Link>
               </Button>
             }
           />
-        </div>
-      ) : null}
+        ) : (
+          <div className="divide-y divide-hairline border-y border-hairline">
+            {items.map((w) => (
+              <Link
+                key={w.id}
+                to="/work/$workId"
+                params={{ workId: w.id }}
+                className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-4 py-5"
+              >
+                <div className="min-w-0">
+                  <p className="truncate text-sm font-medium">{w.title}</p>
+                  <p className="mt-1 truncate text-sm text-muted-foreground">{w.description}</p>
+                </div>
+                <StatusPill tone={w.state === "done" ? "ready" : "info"}>
+                  {stateLabels[w.state]}
+                </StatusPill>
+              </Link>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
