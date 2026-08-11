@@ -43,13 +43,13 @@ export function SourceTag({
   label?: string;
   onClick?: () => void;
 }) {
-  const map: Record<string, Tone> = {
+  const map: Record<"confirmed" | "inferred" | "assumption" | "conflict", Tone> = {
     confirmed: "neutral",
     inferred: "info",
     assumption: "warn",
     conflict: "blocked",
   };
-  const words: Record<string, string> = {
+  const words: Record<"confirmed" | "inferred" | "assumption" | "conflict", string> = {
     confirmed: "Confirmed",
     inferred: "Inferred",
     assumption: "Assumption",
