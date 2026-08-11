@@ -54,7 +54,7 @@ const navGroups: { label: string; items: { label: string; to: string; icon: type
 ];
 
 /** Routes rendered outside the app chrome. */
-const publicRoutes = ["/", "/login"];
+const publicRoutes = ["/", "/login", "/privacy-policy", "/terms-of-use"];
 
 function usePathname() {
   return useRouterState({ select: (s) => s.location.pathname });

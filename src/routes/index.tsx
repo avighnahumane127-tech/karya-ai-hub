@@ -571,8 +571,8 @@ function Landing() {
           </div>
           {/* Right */}
           <nav className="flex items-center gap-5 text-sm text-muted-foreground">
-            <a href="/terms" className="transition-colors hover:text-foreground">Terms of Use</a>
-            <a href="/privacy" className="transition-colors hover:text-foreground">Privacy Policy</a>
+            <Link to="/terms-of-use" className="transition-colors hover:text-foreground">Terms of Use</Link>
+            <Link to="/privacy-policy" className="transition-colors hover:text-foreground">Privacy Policy</Link>
             <a href="mailto:hello@karya.ai" className="transition-colors hover:text-foreground">Contact</a>
           </nav>
         </div>

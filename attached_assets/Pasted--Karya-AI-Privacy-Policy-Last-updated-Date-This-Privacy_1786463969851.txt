@@ -1,0 +1,227 @@
+# Karya AI — Privacy Policy
+
+**Last updated:** [Date]
+
+This Privacy Policy explains how Karya AI collects, uses, stores, and protects information when you use Karya AI and its related services.
+
+By using Karya AI, you acknowledge the practices described in this Privacy Policy.
+
+## 1. Information We Collect
+
+Depending on how you use Karya AI, we may collect the following categories of information.
+
+### Account Information
+
+If you create an account, we may collect information such as:
+
+* Username or name
+* Login credentials
+* Account settings
+* Other information required to provide the account
+
+### Content You Provide
+
+Karya AI may process information that you voluntarily provide, including:
+
+* Work instructions
+* Assignments
+* Briefs
+* Emails or messages
+* PDFs and DOCX files
+* Images
+* ZIP files or folders
+* Requirements
+* Questions
+* Decisions
+* Evidence
+* Completed work
+* Handoff information
+* Other content you choose to provide
+
+Some of this information may contain confidential or sensitive information belonging to you, your employer, your clients, or other parties.
+
+You are responsible for ensuring that you have the necessary permission to provide such information to Karya AI.
+
+### Technical Information
+
+When you access Karya AI, we may collect technical information necessary to operate and secure the service, such as:
+
+* IP address
+* Browser type
+* Device information
+* Operating system
+* Usage information
+* Log information
+* Diagnostic information
+
+**[The exact categories of automatically collected information should be confirmed based on the actual implementation.]**
+
+## 2. How We Use Information
+
+We may use information to:
+
+* Provide and operate Karya AI.
+* Process the content you provide.
+* Analyze work requests and supporting materials.
+* Generate work plans, questions, readiness assessments, and other requested outputs.
+* Verify work against requirements.
+* Generate handoff information.
+* Maintain and secure user accounts.
+* Detect, prevent, and investigate misuse or security issues.
+* Improve the reliability and functionality of the service.
+* Communicate with users about the service.
+* Comply with applicable legal obligations.
+
+We will not use information for purposes that are inconsistent with this Privacy Policy without appropriate notice or another lawful basis where required.
+
+## 3. AI Processing
+
+Karya AI uses artificial intelligence to analyze information provided by users and generate outputs.
+
+Depending on the feature being used, the AI may process:
+
+* Instructions
+* Documents
+* Files
+* Requirements
+* Questions
+* Evidence
+* Other content submitted by the user
+
+AI-generated results may be inaccurate or incomplete.
+
+**[The exact AI providers, processing locations, and whether submitted content may be used for model training must be confirmed based on the actual implementation.]**
+
+Do not claim that user content is never used for model training unless this has been technically and contractually confirmed.
+
+## 4. How We Share Information
+
+We may share information when reasonably necessary to:
+
+* Provide and operate Karya AI.
+* Use service providers that support the platform.
+* Maintain security and prevent abuse.
+* Comply with legal obligations.
+* Protect the rights, safety, and property of Karya AI, users, or others.
+* Complete a business transaction such as a merger, acquisition, financing, or sale of assets, where applicable.
+
+We do not sell personal information merely because it is processed through Karya AI.
+
+**[Any additional data-sharing practices should be confirmed before publication.]**
+
+## 5. Third-Party Service Providers
+
+Karya AI may rely on third-party providers for services such as:
+
+* Hosting
+* Authentication
+* Database infrastructure
+* AI processing
+* File processing
+* Analytics
+* Email
+* Security
+* Other technical services
+
+Third-party providers may process information on Karya AI's behalf where necessary to provide their services.
+
+**[The actual third-party providers and their applicable privacy policies should be listed before publication.]**
+
+## 6. File Processing and Storage
+
+Karya AI may process files and other content that you provide to the service.
+
+Depending on the feature and implementation, files may be temporarily processed, stored, or retained so that Karya AI can provide the requested functionality.
+
+**[Actual file-storage architecture and retention periods must be confirmed before publication.]**
+
+If the service supports deletion controls, those controls will be described in the applicable product settings or documentation.
+
+Do not assume that deleting a file from the user interface immediately removes every copy from backups, logs, or third-party systems.
+
+## 7. Data Retention
+
+We retain information only for as long as reasonably necessary for the purposes described in this Privacy Policy, unless a longer period is required or permitted by law.
+
+The specific retention period may depend on:
+
+* The type of information
+* The purpose for which it was collected
+* Account status
+* Legal requirements
+* Security requirements
+* Technical requirements
+
+**[Specific retention periods should be finalized based on the actual implementation.]**
+
+## 8. Data Security
+
+We take reasonable measures designed to protect information from unauthorized access, loss, misuse, alteration, or disclosure.
+
+However, no online service can guarantee absolute security.
+
+**[Specific security measures and certifications should only be listed if they have been implemented and verified.]**
+
+## 9. Your Privacy Rights
+
+Depending on where you live, you may have rights regarding your personal information, which may include the right to:
+
+* Request access to personal information we hold about you.
+* Request correction of inaccurate information.
+* Request deletion of information.
+* Request restriction of certain processing.
+* Object to certain processing.
+* Request a copy of certain information.
+* Withdraw consent where processing is based on consent.
+
+These rights may be subject to applicable legal exceptions and limitations.
+
+To make a privacy request, contact us using the information provided below.
+
+## 10. Cookies and Similar Technologies
+
+Karya AI may use cookies or similar technologies where necessary to operate the service, maintain sessions, remember preferences, understand usage, or improve the service.
+
+**[The actual cookies, analytics tools, and tracking technologies used by Karya AI must be confirmed before publication.]**
+
+Where required by law, applicable consent mechanisms will be provided.
+
+## 11. Children's Privacy
+
+Karya AI is not intended for individuals who are not legally permitted to use the service.
+
+**[The minimum age and children's privacy requirements must be finalized based on the actual target users and applicable law.]**
+
+We do not knowingly collect personal information from children in violation of applicable law.
+
+If you believe that a child has provided personal information to Karya AI in circumstances where it should not have been collected, contact us so that we can investigate and take appropriate action.
+
+## 12. International Data Transfers
+
+Depending on where Karya AI and its service providers operate, information may be processed or stored in countries other than the country in which you live.
+
+**[Actual countries, transfer mechanisms, and applicable legal requirements must be confirmed before publication.]**
+
+Where required, appropriate safeguards will be used for international transfers.
+
+## 13. Changes to This Privacy Policy
+
+We may update this Privacy Policy from time to time as Karya AI develops or our data practices change.
+
+When we make changes, we will update the **Last updated** date.
+
+Where required by applicable law, we may provide additional notice of material changes.
+
+Your continued use of Karya AI after an updated Privacy Policy becomes effective means you acknowledge the revised policy.
+
+## 14. Contact Us
+
+If you have questions, concerns, or requests regarding this Privacy Policy or your personal information, contact us at:
+
+**[Karya AI privacy/contact email]**
+
+---
+
+**Karya AI**
+
+Terms of Use · Privacy Policy

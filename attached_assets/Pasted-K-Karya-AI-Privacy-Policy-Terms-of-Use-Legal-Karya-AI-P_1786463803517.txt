@@ -1,0 +1,162 @@
+K Karya AI
+Privacy Policy Terms of Use
+Legal · Karya AI
+Privacy Policy
+This policy explains what information Karya AI collects when you use the product, how that information — including the work, files, and instructions you bring into Karya AI — is used, and what choices you have about it.
+
+Last updated: [Effective date to be added on publication] Applies to: the Karya AI application and related services
+Karya AI's own product principle is to flag uncertainty instead of hiding it. This document follows the same rule: any box styled like this one marks a detail that is not yet finalized and needs confirmation before this policy is published or relied upon.
+Request→ Deliverable→ Requirement→ Evidence→ Verification Karya AI is built around this chain — most of the information described below exists because it's needed to move a piece of work through it.
+On this page
+01 · Introduction
+02 · Information we collect
+03 · Uploaded files & work content
+04 · AI processing
+05 · How we use information
+06 · How information may be shared
+07 · Third-party service providers
+08 · Data retention
+09 · Data deletion
+10 · Security
+11 · Children's privacy
+12 · International data transfers
+13 · Your privacy rights
+14 · Cookies & similar technologies
+15 · Changes to this policy
+16 · Contact
+01
+Introduction
+Karya AI is an AI-powered work understanding, readiness, planning, and verification platform. It helps people turn messy or incomplete work instructions — assignments, briefs, emails, documents, files — into a clear picture of what's actually being asked for, what's missing, what's ambiguous, and what needs to be true for the work to be considered done.
+
+To do that, Karya AI necessarily processes the content you give it: the instructions themselves, supporting files, your answers to its clarifying questions, and the evidence you connect to requirements. This Privacy Policy explains what we collect, why, how it's used, and the choices available to you.
+
+This policy covers the Karya AI application and related services. It does not cover third-party websites or services you may reach through links inside Karya AI.
+
+02
+Information we collect
+We collect information in two broad ways: information you provide directly, and information collected automatically as you use the product.
+
+Information you provide
+Account information — such as your name, email address, and any other details required to create and manage an account.
+Work content — the requests, assignments, briefs, and instructions you enter into Karya AI, including free text typed into AI Work Chat or the Add Work flow.
+Uploaded files — PDFs, DOCX documents, images, ZIP archives, and other files you attach to a piece of work.
+Pasted or forwarded content — email text, chat messages, or other correspondence you provide as context for a piece of work.
+Structured work data you create or confirm inside Karya AI — including deliverables, requirements, questions, answers, assumptions, decisions, evidence links, readiness states, and handoff notes.
+Communications with us — messages you send us for support, feedback, or other correspondence.
+Information collected automatically
+Technical information — such as device and browser type, operating system, IP address, and general log data generated as you use the application.
+Usage information — such as which features and screens you interact with (for example, My Work, Questions, Handoffs, Templates, Insights, or Global Search), and how you interact with them.
+⚑
+Needs confirmation
+[To be finalized based on actual implementation] — the specific analytics tooling, log retention scope, and whether device/usage data is tied to individual accounts or aggregated.
+
+03
+Uploaded files & work content
+Files and content you upload — PDFs, DOCX documents, images, ZIP files, pasted emails or chat threads, and similar material — are processed by Karya AI in order to provide the product's core functionality: understanding the request, extracting requirements and deliverables, detecting missing information and ambiguity, mapping evidence, and verifying completed work against what was asked for.
+
+Some of this content may include information you consider confidential or sensitive to your work or organization. You are responsible for having the right to upload and share any content you provide to Karya AI, and for using appropriate judgment about what you include.
+
+⚑
+Needs confirmation
+We do not claim that uploaded files are stored permanently, and we do not claim that they are deleted immediately after processing, because the actual storage and retention behavior has not been finalized. [Retention policy to be finalized — see Section 08, Data Retention.]
+
+04
+AI processing
+Karya AI uses artificial intelligence systems to analyze the content you provide — for example, to interpret a request, identify a readiness state, generate clarification questions, draft a work plan, or compare a finished deliverable against the original requirements.
+
+AI-generated output can be wrong. It can misread a request, miss a requirement, misjudge whether something is ambiguous, or draw an incorrect conclusion during verification. This mirrors a core design principle of Karya AI itself: the system is meant to surface uncertainty rather than hide it, and it does not guarantee that its interpretations, readiness assessments, or verification results are accurate or complete. You should review AI-generated results, particularly before treating a piece of work as understood, ready, or verified.
+
+⚑
+Needs confirmation
+[To be finalized based on actual implementation] — the specific AI model provider(s) used to process content, and whether user content is used to train or fine-tune any underlying models.
+
+05
+How we use information
+We use the information described above to provide, maintain, and improve Karya AI, and specifically to power the core work-understanding pipeline the product is built around. That includes:
+
+Understanding work requests and extracting objectives, deliverables, and requirements
+Detecting missing information, dependencies, and ambiguities in a request
+Identifying risks and generating clarification questions
+Producing ordered work plans and tracking readiness states (such as Ready, Blocked, or Needs clarification)
+Mapping evidence to requirements
+Recording assumptions and decisions, including their associated risk level
+Verifying completed work against the original request and requirements
+Generating structured handoffs
+Operating features such as My Work, Questions, Handoffs, Templates, Insights, and Global Search
+Maintaining, securing, troubleshooting, and improving the service, where legally permitted
+Communicating with you about your account or the service
+We do not use your work content for purposes unrelated to providing and improving Karya AI, except where required by law.
+
+06
+How information may be shared
+We do not sell your information. We may share information in the following circumstances:
+
+With service providers who help us operate Karya AI, such as hosting or AI processing providers, under obligations to protect your information and use it only to provide services to us. See Section 07, Third-Party Service Providers.
+Within your organization, where Karya AI is used in a team or workspace context and content is visible to others you work with — for example, a handoff you generate is, by design, meant to be shared with the person or team it's addressed to.
+For legal reasons, if required to comply with applicable law, regulation, legal process, or governmental request, or to protect the rights, property, or safety of Karya AI, our users, or others.
+In connection with a business transaction, such as a merger, acquisition, or asset sale, subject to standard protections for personal information.
+07
+Third-party service providers
+Karya AI relies on third-party service providers to operate — for example, infrastructure hosting and the AI systems that power analysis and verification. We do not list providers we have not actually finalized, and we will not invent names to fill this section.
+
+⚑
+Needs confirmation
+[Specific third-party providers — including hosting, AI/model providers, and any analytics or authentication providers — to be finalized and listed here before publication.]
+
+08
+Data retention
+[Retention policy to be finalized.] We have not yet finalized how long different categories of information — account data, work content, uploaded files, and AI-generated outputs — are retained. We will update this section with specific retention periods once they are determined, rather than state a period that isn't accurate.
+
+09
+Data deletion
+[Data deletion process to be finalized.] We have not yet finalized the specific mechanism by which you can request deletion of your account or work content. This section will be updated with clear, actionable instructions once that mechanism is implemented.
+
+10
+Security
+We take reasonable steps intended to protect information within Karya AI. However, no method of transmission or storage is completely secure, and we cannot guarantee absolute security.
+
+⚑
+Needs confirmation
+[To be finalized based on actual implementation] — the specific technical and organizational security measures in place. This section will describe only measures that actually exist; it will not use claims such as "military-grade," "bank-level," or "100% secure."
+
+11
+Children's privacy
+Karya AI is a work-management tool intended for professional and organizational use, and it is not directed at children. We do not knowingly collect information from children.
+
+⚑
+Needs confirmation
+[A specific minimum age has not yet been decided and will be added here once finalized.] If we learn that we have collected information from a child under the applicable minimum age without appropriate consent, we will take steps to delete it.
+
+12
+International data transfers
+Depending on where you and our service providers are located, information may be transferred to, stored, or processed in a country other than your own.
+
+⚑
+Needs confirmation
+[To be finalized based on actual implementation] — the specific countries or regions where processing occurs, and any transfer safeguards that apply, will be detailed here once hosting and infrastructure decisions are confirmed.
+
+13
+Your privacy rights
+Depending on your jurisdiction, you may have rights regarding your personal information, which can include the right to access, correct, or delete information we hold about you, the right to object to or restrict certain processing, and the right to request a copy of your information in a portable format.
+
+Where such rights apply to you, you can exercise them by contacting us using the details in Section 16. We will respond in accordance with applicable law.
+
+14
+Cookies & similar technologies
+Karya AI may use cookies or similar technologies to keep you signed in, remember preferences, and understand how the product is used.
+
+⚑
+Needs confirmation
+[To be finalized based on actual implementation] — the specific categories of cookies used, whether any are used for advertising purposes, and the controls available to you.
+
+15
+Changes to this policy
+We may update this Privacy Policy from time to time, including as our data practices and implementation details are finalized. When we do, we will revise the "Last updated" date at the top of this page. Material changes may be communicated more prominently, such as by email or in-product notice, where required by law.
+
+16
+Contact
+[Contact information to be added.] Once available, questions about this Privacy Policy or your information can be directed here.
+
+This Privacy Policy is provided for informational purposes as a working draft for Karya AI and does not constitute legal advice. It should be reviewed by a qualified legal professional — and every bracketed placeholder above resolved — before being treated as final or published.
+Terms of Use Privacy Policy
+Karya AI

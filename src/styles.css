@@ -254,3 +254,73 @@
   background-size: 56px 56px;
   mask-image: radial-gradient(ellipse 70% 60% at 50% 0%, black, transparent 75%);
 }
+
+/* ── Legal page typography ────────────────────────────────────────────────── */
+
+.legal-body h2 {
+  font-size: 1.125rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--color-foreground);
+  margin-bottom: 0.75rem;
+}
+
+.legal-body h3 {
+  font-size: 0.9375rem;
+  font-weight: 500;
+  color: var(--color-foreground);
+  margin-top: 1.25rem;
+  margin-bottom: 0.5rem;
+}
+
+.legal-body p {
+  color: var(--color-muted-foreground);
+  line-height: 1.75;
+  margin-bottom: 0.75rem;
+}
+
+.legal-body p:last-child {
+  margin-bottom: 0;
+}
+
+.legal-body ul,
+.legal-body ol {
+  padding-left: 1.25rem;
+  margin-bottom: 0.75rem;
+  color: var(--color-muted-foreground);
+}
+
+.legal-body ul {
+  list-style-type: disc;
+}
+
+.legal-body ol {
+  list-style-type: decimal;
+}
+
+.legal-body li {
+  line-height: 1.75;
+  margin-bottom: 0.25rem;
+}
+
+.legal-body strong {
+  color: var(--color-foreground);
+  font-weight: 500;
+}
+
+.legal-body section {
+  padding-bottom: 2rem;
+  border-bottom: 1px solid var(--color-hairline);
+}
+
+.legal-body section:last-of-type {
+  border-bottom: none;
+}
+
+.legal-body .notice {
+  border-left: 2px solid var(--color-warn);
+  padding-left: 0.875rem;
+  color: var(--color-muted-foreground);
+  font-style: italic;
+  opacity: 0.8;
+}

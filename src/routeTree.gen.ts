@@ -15,10 +15,12 @@ import { Route as HandoffsRouteImport } from './routes/handoffs'
 import { Route as HomeRouteImport } from './routes/home'
 import { Route as InsightsRouteImport } from './routes/insights'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as PrivacyPolicyRouteImport } from './routes/privacy-policy'
 import { Route as QuestionsRouteImport } from './routes/questions'
 import { Route as SearchRouteImport } from './routes/search'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as TemplatesRouteImport } from './routes/templates'
+import { Route as TermsOfUseRouteImport } from './routes/terms-of-use'
 import { Route as WorkIndexRouteImport } from './routes/work.index'
 import { Route as WorkWorkIdRouteImport } from './routes/work.$workId'
 
@@ -52,6 +54,11 @@ const LoginRoute = LoginRouteImport.update({
   path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PrivacyPolicyRoute = PrivacyPolicyRouteImport.update({
+  id: '/privacy-policy',
+  path: '/privacy-policy',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const QuestionsRoute = QuestionsRouteImport.update({
   id: '/questions',
   path: '/questions',
@@ -72,6 +79,11 @@ const TemplatesRoute = TemplatesRouteImport.update({
   path: '/templates',
   getParentRoute: () => rootRouteImport,
 } as any)
+const TermsOfUseRoute = TermsOfUseRouteImport.update({
+  id: '/terms-of-use',
+  path: '/terms-of-use',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const WorkIndexRoute = WorkIndexRouteImport.update({
   id: '/work/',
   path: '/work/',
@@ -90,10 +102,12 @@ export interface FileRoutesByFullPath {
   '/home': typeof HomeRoute
   '/insights': typeof InsightsRoute
   '/login': typeof LoginRoute
+  '/privacy-policy': typeof PrivacyPolicyRoute
   '/questions': typeof QuestionsRoute
   '/search': typeof SearchRoute
   '/settings': typeof SettingsRoute
   '/templates': typeof TemplatesRoute
+  '/terms-of-use': typeof TermsOfUseRoute
   '/work/$workId': typeof WorkWorkIdRoute
   '/work/': typeof WorkIndexRoute
 }
@@ -104,10 +118,12 @@ export interface FileRoutesByTo {
   '/home': typeof HomeRoute
   '/insights': typeof InsightsRoute
   '/login': typeof LoginRoute
+  '/privacy-policy': typeof PrivacyPolicyRoute
   '/questions': typeof QuestionsRoute
   '/search': typeof SearchRoute
   '/settings': typeof SettingsRoute
   '/templates': typeof TemplatesRoute
+  '/terms-of-use': typeof TermsOfUseRoute
   '/work/$workId': typeof WorkWorkIdRoute
   '/work': typeof WorkIndexRoute
 }
@@ -119,10 +135,12 @@ export interface FileRoutesById {
   '/home': typeof HomeRoute
   '/insights': typeof InsightsRoute
   '/login': typeof LoginRoute
+  '/privacy-policy': typeof PrivacyPolicyRoute
   '/questions': typeof QuestionsRoute
   '/search': typeof SearchRoute
   '/settings': typeof SettingsRoute
   '/templates': typeof TemplatesRoute
+  '/terms-of-use': typeof TermsOfUseRoute
   '/work/$workId': typeof WorkWorkIdRoute
   '/work/': typeof WorkIndexRoute
 }
@@ -135,10 +153,12 @@ export interface FileRouteTypes {
     | '/home'
     | '/insights'
     | '/login'
+    | '/privacy-policy'
     | '/questions'
     | '/search'
     | '/settings'
     | '/templates'
+    | '/terms-of-use'
     | '/work/$workId'
     | '/work/'
   fileRoutesByTo: FileRoutesByTo
@@ -149,10 +169,12 @@ export interface FileRouteTypes {
     | '/home'
     | '/insights'
     | '/login'
+    | '/privacy-policy'
     | '/questions'
     | '/search'
     | '/settings'
     | '/templates'
+    | '/terms-of-use'
     | '/work/$workId'
     | '/work'
   id:
@@ -163,10 +185,12 @@ export interface FileRouteTypes {
     | '/home'
     | '/insights'
     | '/login'
+    | '/privacy-policy'
     | '/questions'
     | '/search'
     | '/settings'
     | '/templates'
+    | '/terms-of-use'
     | '/work/$workId'
     | '/work/'
   fileRoutesById: FileRoutesById
@@ -178,10 +202,12 @@ export interface RootRouteChildren {
   HomeRoute: typeof HomeRoute
   InsightsRoute: typeof InsightsRoute
   LoginRoute: typeof LoginRoute
+  PrivacyPolicyRoute: typeof PrivacyPolicyRoute
   QuestionsRoute: typeof QuestionsRoute
   SearchRoute: typeof SearchRoute
   SettingsRoute: typeof SettingsRoute
   TemplatesRoute: typeof TemplatesRoute
+  TermsOfUseRoute: typeof TermsOfUseRoute
   WorkWorkIdRoute: typeof WorkWorkIdRoute
   WorkIndexRoute: typeof WorkIndexRoute
 }
@@ -230,6 +256,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/privacy-policy': {
+      id: '/privacy-policy'
+      path: '/privacy-policy'
+      fullPath: '/privacy-policy'
+      preLoaderRoute: typeof PrivacyPolicyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/questions': {
       id: '/questions'
       path: '/questions'
@@ -258,6 +291,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TemplatesRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/terms-of-use': {
+      id: '/terms-of-use'
+      path: '/terms-of-use'
+      fullPath: '/terms-of-use'
+      preLoaderRoute: typeof TermsOfUseRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/work/': {
       id: '/work/'
       path: '/work'
@@ -282,10 +322,12 @@ const rootRouteChildren: RootRouteChildren = {
   HomeRoute: HomeRoute,
   InsightsRoute: InsightsRoute,
   LoginRoute: LoginRoute,
+  PrivacyPolicyRoute: PrivacyPolicyRoute,
   QuestionsRoute: QuestionsRoute,
   SearchRoute: SearchRoute,
   SettingsRoute: SettingsRoute,
   TemplatesRoute: TemplatesRoute,
+  TermsOfUseRoute: TermsOfUseRoute,
   WorkWorkIdRoute: WorkWorkIdRoute,
   WorkIndexRoute: WorkIndexRoute,
 }

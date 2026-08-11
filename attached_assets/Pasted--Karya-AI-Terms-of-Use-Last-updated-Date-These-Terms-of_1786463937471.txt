@@ -1,0 +1,187 @@
+# Karya AI — Terms of Use
+
+**Last updated:** [Date]
+
+These Terms of Use govern your access to and use of Karya AI and its related services. By accessing or using Karya AI, you agree to these Terms. If you do not agree with them, do not use the service.
+
+## 1. About Karya AI
+
+Karya AI is an AI-powered platform that helps users understand, plan, organize, verify, and hand off work.
+
+Karya AI may analyze information provided by users to help identify requirements, deliverables, missing information, ambiguities, dependencies, assumptions, risks, questions, evidence, and completion criteria.
+
+Karya AI provides assistance and analysis. It does not perform the underlying work on the user's behalf and does not replace the user's judgment or responsibility.
+
+## 2. Eligibility
+
+You must be legally capable of entering into a binding agreement to use Karya AI.
+
+**[Minimum age requirement to be finalized.]**
+
+If you use Karya AI on behalf of an organization, you represent that you have authority to accept these Terms on its behalf.
+
+## 3. Accounts
+
+Some features require an account.
+
+You are responsible for:
+
+* Providing accurate account information.
+* Keeping your account credentials secure.
+* Maintaining the confidentiality of your account.
+* Activities performed through your account.
+
+You must notify us if you believe your account has been accessed without authorization.
+
+## 4. Your Content
+
+You may provide Karya AI with information such as work instructions, documents, files, images, messages, requirements, evidence, and completed work.
+
+You retain the rights you already have in your content.
+
+You grant Karya AI the permissions reasonably necessary to process your content to provide and operate the service.
+
+You are responsible for ensuring that you have the necessary rights and permissions to upload or otherwise provide content to Karya AI, including content belonging to an employer, client, customer, or other third party.
+
+You should not provide content that you are not authorized to share.
+
+## 5. AI-Generated Results
+
+Karya AI uses artificial intelligence, which can make mistakes.
+
+Its outputs may include incorrect or incomplete:
+
+* Interpretations
+* Requirements
+* Work plans
+* Questions
+* Readiness assessments
+* Risk assessments
+* Assumptions
+* Verification results
+* Handoffs
+* Other analysis
+
+A result marked **Ready**, **Verified**, or similar does not guarantee that the underlying work is actually correct or complete.
+
+You are responsible for reviewing Karya AI's outputs and making your own decisions before relying on them.
+
+**[Terms governing ownership or permitted use of AI-generated output to be finalized.]**
+
+## 6. Professional Advice
+
+Karya AI is a work-organization and verification tool.
+
+It is not a substitute for qualified professional advice, including legal, medical, financial, compliance, or other regulated professional advice.
+
+You should consult an appropriately qualified professional where such advice is required.
+
+## 7. Acceptable Use
+
+You agree to use Karya AI lawfully and responsibly.
+
+You must not:
+
+* Use the service for unlawful purposes.
+* Upload content that you do not have permission to provide.
+* Attempt to gain unauthorized access to the service or another user's account.
+* Attempt to bypass or compromise security measures.
+* Interfere with the operation or availability of the service.
+* Reverse engineer, decompile, or attempt to extract source code except where applicable law permits it.
+* Abuse the service through unauthorized automated or excessive use.
+* Use the service in a way that infringes the rights of others.
+
+We may take appropriate action where misuse of the service is detected.
+
+## 8. Intellectual Property
+
+Karya AI, including its software, interface, branding, design, and related materials, is owned by Karya AI or its licensors and is protected by applicable intellectual property laws.
+
+Except for the limited right to use Karya AI as permitted by these Terms, these Terms do not grant you ownership of or other rights to Karya AI's intellectual property.
+
+**[AI-generated output ownership terms to be finalized.]**
+
+## 9. Third-Party Services
+
+Karya AI may use third-party services to provide certain functionality.
+
+Your use of third-party services may also be subject to the terms and policies of those providers.
+
+**[Current third-party services and applicable providers to be finalized.]**
+
+## 10. Availability
+
+We aim to provide a reliable service, but Karya AI may occasionally be unavailable because of maintenance, technical problems, updates, outages, or circumstances outside our control.
+
+We do not guarantee that the service will always be uninterrupted, error-free, or available.
+
+## 11. Suspension and Termination
+
+You may stop using Karya AI or close your account at any time, subject to any applicable obligations.
+
+We may suspend or terminate access where:
+
+* You violate these Terms.
+* Your use creates a security or operational risk.
+* We are required to do so by law.
+* Your use materially harms the service, other users, or third parties.
+
+Where appropriate, we may provide notice before taking action.
+
+## 12. Disclaimers
+
+To the maximum extent permitted by applicable law, Karya AI is provided on an **"as is"** and **"as available"** basis.
+
+We do not guarantee that:
+
+* AI-generated results will always be accurate.
+* The service will identify every missing requirement or risk.
+* Every ambiguity will be detected.
+* Every dependency will be correctly identified.
+* A verification result will guarantee that work is correct.
+* The service will always be available or error-free.
+
+You remain responsible for reviewing important information and decisions.
+
+## 13. Limitation of Liability
+
+To the maximum extent permitted by applicable law, Karya AI and its affiliates will not be liable for indirect, incidental, special, consequential, or punitive damages, or for loss of profits, data, business opportunities, or goodwill arising from or related to your use of the service.
+
+**[Specific liability limitations, exclusions, exceptions, and jurisdiction-dependent provisions require legal review before publication.]**
+
+## 14. Indemnification
+
+To the extent permitted by applicable law, you agree to indemnify and hold Karya AI harmless from claims, damages, losses, liabilities, and reasonable expenses arising from:
+
+* Your misuse of Karya AI.
+* Your violation of these Terms.
+* Your violation of another person's rights.
+* Content you provide to Karya AI without having the necessary rights or permissions.
+
+**[Final indemnification language should be reviewed by qualified legal counsel.]**
+
+## 15. Governing Law
+
+**[Governing law and jurisdiction to be finalized based on the applicable legal entity and jurisdiction.]**
+
+## 16. Changes to These Terms
+
+We may update these Terms from time to time as Karya AI develops.
+
+When we make changes, we will update the **Last updated** date.
+
+Where required by applicable law, we may provide additional notice of material changes.
+
+Your continued use of Karya AI after the updated Terms become effective means you accept the revised Terms.
+
+## 17. Contact
+
+If you have questions about these Terms, contact us at:
+
+**[Karya AI contact email]**
+
+---
+
+**Karya AI**
+
+Privacy Policy · Terms of Use
