@@ -183,7 +183,7 @@ export function WorkChat() {
           </PromptInputButton>
           <PromptInputButton>Add context</PromptInputButton>
         </PromptInputTools>
-        <PromptInputSubmit status={thinking ? "submitted" : undefined} disabled={!value.trim()} />
+        <PromptInputSubmit status={thinking ? "submitted" : "ready"} disabled={!value.trim()} />
       </PromptInputFooter>
     </PromptInput>
   );
