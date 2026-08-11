@@ -2,7 +2,7 @@ import { Link, useRouterState } from "@tanstack/react-router";
 import { ArrowRight, Menu, X } from "lucide-react";
 import { useState } from "react";
 
-import logo from "@/assets/karya-logo.png";
+import logo from "@/assets/karya-logo-processed.png";
 import { Button } from "@/components/ui/button";
 
 const navLinks = [
@@ -17,8 +17,8 @@ export function KaryaWordmark({ className }: { className?: string }) {
     <img
       src={logo}
       alt="Karya AI"
-      className={className ?? "h-7 w-auto"}
-      style={{ filter: "invert(1)" }}
+      className={className ?? "h-9 w-auto"}
+      style={{ filter: "brightness(0)" }}
     />
   );
 }
@@ -29,7 +29,7 @@ export function PublicNav({ backTo }: { backTo?: string }) {
 
   return (
     <header className="sticky top-0 z-40 border-b border-hairline bg-background/80 backdrop-blur">
-      <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-4 px-5 py-3 md:px-8">
+      <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-4 px-5 py-4 md:px-8">
         {/* Logo */}
         <Link to="/" className="shrink-0">
           <KaryaWordmark />

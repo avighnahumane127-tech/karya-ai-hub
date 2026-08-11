@@ -1,0 +1,290 @@
+# FIX KARYA AI LOGO IMPLEMENTATION
+
+The current Karya AI logo implementation is not acceptable.
+
+The logo is currently **too small, visually unclear, poorly integrated with the UI, and does not feel like part of the Karya AI brand**.
+
+Fix the implementation carefully.
+
+## 1. KEEP THE PROVIDED LOGO EXACTLY THE SAME
+
+The provided logo is the final logo.
+
+**Do NOT redesign it.**
+
+Do not:
+
+* Change its shape
+* Redraw it
+* Simplify it
+* Add symbols
+* Remove elements
+* Change its proportions
+* Change its typography
+* Add AI-related icons
+* Create a new logo
+
+The problem is the implementation, not the logo itself.
+
+---
+
+## 2. MAKE THE LOGO PROPERLY VISIBLE
+
+The current logo is too small.
+
+Increase its displayed size so that it is immediately recognizable without overwhelming the interface.
+
+### Website header
+
+The logo should be one of the most recognizable elements in the header.
+
+Use a size that gives the logo enough visual presence while keeping the header compact and modern.
+
+Do not force the logo into a tiny fixed-width container.
+
+Do not crop it.
+
+Do not squeeze it.
+
+Do not let surrounding navigation elements visually overpower it.
+
+### Application header
+
+Use a similarly clear size.
+
+The logo should remain easily identifiable when the user is inside the actual Karya AI product.
+
+### Login / signup
+
+The logo can be slightly larger here because there is more space.
+
+### Footer
+
+Use a smaller version, but it must still be clearly recognizable.
+
+---
+
+# 3. FIX THE LOGO'S COLOR TREATMENT
+
+The current logo colors do not fit the Karya AI interface.
+
+Use the existing Karya AI design system as the reference.
+
+The logo should visually belong to the application.
+
+Choose a restrained color treatment that works with the current:
+
+* Background
+* Primary UI color
+* Accent color
+* Typography
+* Buttons
+* Cards
+* Borders
+
+Do not introduce random colors.
+
+Do not make it excessively bright.
+
+Do not use a generic "AI gradient."
+
+Do not use unnecessary glow effects.
+
+The logo should feel **premium, intelligent, minimal, and cohesive**.
+
+---
+
+# 4. ENSURE PROPER CONTRAST
+
+The logo must remain clearly visible against its background.
+
+Check it against:
+
+* Main landing-page background
+* Header background
+* Dashboard background
+* Cards
+* Dark mode, if supported
+* Light mode, if supported
+* Login screen
+* Footer
+
+If necessary, use different **color variants of the exact same logo** for light and dark surfaces.
+
+Do not modify the logo's geometry.
+
+---
+
+# 5. FIX THE HEADER LAYOUT
+
+Do not simply increase the logo size and leave the existing layout unchanged.
+
+Rebalance the header.
+
+The header should have:
+
+**Logo | Navigation | Primary action**
+
+with proper spacing.
+
+The logo should have enough breathing room around it.
+
+Do not let:
+
+* Navigation overlap it
+* Buttons crowd it
+* The logo touch the edges
+* The logo appear vertically misaligned
+* The logo appear tiny compared with navigation text
+
+The header should feel intentionally designed around the logo.
+
+---
+
+# 6. PRESERVE THE LOGO'S ASPECT RATIO
+
+Never stretch the logo.
+
+Never distort it horizontally or vertically.
+
+Never force it into a square container if the original logo is not square.
+
+Use:
+
+* `width: auto`
+* `height: auto`
+* Appropriate `object-fit`
+* Correct intrinsic aspect ratio
+
+Make sure the source asset itself has appropriate transparent padding.
+
+If the provided logo file contains excessive empty space around the actual mark, **crop the asset's transparent canvas only** so the visible logo can be displayed at the correct size.
+
+Do NOT crop any part of the actual logo.
+
+---
+
+# 7. FIX EXCESSIVE EMPTY SPACE
+
+Inspect the actual logo asset.
+
+If the logo appears tiny because the image file contains a large transparent/empty border around the logo, fix that.
+
+The visible logo should occupy an appropriate portion of its image canvas.
+
+For example, do not have:
+
+**[ huge transparent area + tiny logo ]**
+
+Instead:
+
+**[ tightly cropped logo + appropriate transparent breathing room ]**
+
+Again, do not alter the actual logo artwork.
+
+---
+
+# 8. FAVICON
+
+Correctly implement the logo as the website favicon.
+
+The favicon must:
+
+* Actually appear in the browser tab
+* Use the correct asset
+* Have appropriate dimensions
+* Remain recognizable at small size
+* Have sufficient contrast
+* Not appear blurry
+
+If the complete wordmark cannot be legible at favicon size, use the **symbol portion from the provided logo**, without redesigning it.
+
+Do not invent a new favicon.
+
+---
+
+# 9. MOBILE
+
+On mobile, the logo must still be clearly visible.
+
+Do not reduce it to an extremely tiny icon just to make room for navigation.
+
+Instead, restructure the mobile header if necessary.
+
+Use:
+
+**Logo | Menu**
+
+with a clean mobile navigation drawer/menu.
+
+---
+
+# 10. REMOVE OLD LOGO REFERENCES
+
+Search the entire project for previous Karya AI logo assets and implementations.
+
+Make sure there are no inconsistent versions being displayed in:
+
+* Header
+* Landing page
+* Login
+* Signup
+* Dashboard
+* Footer
+* Favicon
+* Manifest
+* Loading screen
+* Error pages
+
+There should be **one consistent Karya AI identity**.
+
+---
+
+# 11. VISUAL TARGET
+
+The final logo should feel:
+
+**Clear**
+
+**Recognizable**
+
+**Confident**
+
+**Modern**
+
+**Minimal**
+
+**Native to the Karya AI interface**
+
+It should NOT feel:
+
+* Tiny
+* Washed out
+* Randomly colored
+* Disconnected from the UI
+* Like an afterthought
+* Like a generic AI logo
+
+The logo should have enough visual weight that a user immediately recognizes **Karya AI** from the header.
+
+---
+
+# 12. IMPORTANT
+
+Do not solve this by redesigning the logo.
+
+Solve it through:
+
+1. Correct asset handling
+2. Correct transparent-space/canvas handling
+3. Correct sizing
+4. Correct aspect ratio
+5. Correct color treatment
+6. Correct contrast
+7. Correct header spacing
+8. Correct responsive implementation
+9. Correct favicon implementation
+
+After making the changes, inspect the actual rendered application rather than assuming the CSS is correct.
+
+The final result should look like the provided Karya AI logo was **professionally integrated into the entire product from the beginning**, not simply inserted as a small image.

@@ -1,6 +1,6 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
 
-import logo from "@/assets/karya-logo.png";
+import logo from "@/assets/karya-logo-processed.png";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
@@ -24,7 +24,7 @@ function LoginPage() {
     <div className="flex min-h-screen items-center justify-center bg-background px-5 py-14">
       <div className="w-full max-w-sm">
         <Link to="/">
-          <img src={logo} alt="Karya AI" className="h-8 w-auto" style={{ filter: "invert(1)" }} />
+          <img src={logo} alt="Karya AI" className="h-12 w-auto" style={{ filter: "brightness(0)" }} />
         </Link>
 
         <h1 className="mt-8 text-2xl tracking-tight">Log in</h1>

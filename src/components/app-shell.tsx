@@ -15,7 +15,7 @@ import {
 } from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
 
-import logo from "@/assets/karya-logo.png";
+import logo from "@/assets/karya-logo-processed.png";
 import { Button } from "@/components/ui/button";
 import {
   CommandDialog,
@@ -108,7 +108,7 @@ function NavList({ onNavigate }: { onNavigate?: () => void }) {
 function Wordmark() {
   return (
     <Link to="/home">
-      <img src={logo} alt="Karya AI" className="h-7 w-auto" style={{ filter: "invert(1)" }} />
+      <img src={logo} alt="Karya AI" className="h-8 w-auto" style={{ filter: "brightness(0)" }} />
     </Link>
   );
 }
