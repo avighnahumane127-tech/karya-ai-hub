@@ -17,12 +17,7 @@ import { useEffect, useState, type ReactNode } from "react";
 
 import logo from "@/assets/karya-logo-processed.png";
 import { Button } from "@/components/ui/button";
-import {
-  CommandDialog,
-  CommandEmpty,
-  CommandInput,
-  CommandList,
-} from "@/components/ui/command";
+import { CommandDialog, CommandEmpty, CommandInput, CommandList } from "@/components/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { notifications } from "@/lib/work";
@@ -160,12 +155,11 @@ export function AppShell({ children }: { children: ReactNode }) {
     return () => window.removeEventListener("keydown", onKey);
   }, []);
 
-  if (publicRoutes.includes(pathname)) {
+  if (publicRoutes.includes(pathname) || pathname.startsWith("/r/")) {
     return <>{children}</>;
   }
 
-  const contextLabel =
-    contextLabels.find(([to]) => isActive(pathname, to))?.[1] ?? "Karya AI";
+  const contextLabel = contextLabels.find(([to]) => isActive(pathname, to))?.[1] ?? "Karya AI";
 
   return (
     <div className="flex min-h-screen w-full bg-background">
