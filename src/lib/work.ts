@@ -538,6 +538,7 @@ export type WorkItem = {
   collaborationEnabled?: boolean;
   templateId?: string;
   retentionPolicy?: RetentionPolicy;
+  retentionScheduledFor?: string;
   shareLink?: ShareLink;
   due?: string;
   archived?: boolean;
@@ -651,28 +652,45 @@ function loadPersistedWork(): WorkItem[] {
     const raw = window.localStorage.getItem(WORK_STORAGE_KEY);
     if (!raw) return [];
     const parsed = JSON.parse(raw) as WorkItem[];
-    return parsed.map((item) => ({
-      ...item,
-      evidence: item.evidence || [],
-      findings: item.findings || [],
-      activity: item.activity || [],
-      timeline: item.timeline || [],
-      questions: item.questions || [],
-      requirements: item.requirements || [],
-      fileFindings: item.fileFindings || [],
-      verificationRuns: item.verificationRuns || [],
-      decisions: item.decisions || [],
-      decisionHistory: item.decisionHistory || [],
-      openIssues: item.openIssues || [],
-      handoffPackets: item.handoffPackets || [],
-      assignments: item.assignments || [],
-      comments: item.comments || [],
-      approvals: item.approvals || [],
-      communicationDrafts: item.communicationDrafts || [],
-      sensitiveFindings: item.sensitiveFindings || [],
-      securityEvents: item.securityEvents || [],
-      reports: item.reports || [],
-    }));
+    let retentionApplied = false;
+    const normalized = parsed.map((item) => {
+      const work: WorkItem = {
+        ...item,
+        evidence: item.evidence || [],
+        findings: item.findings || [],
+        activity: item.activity || [],
+        timeline: item.timeline || [],
+        questions: item.questions || [],
+        requirements: item.requirements || [],
+        fileFindings: item.fileFindings || [],
+        verificationRuns: item.verificationRuns || [],
+        decisions: item.decisions || [],
+        decisionHistory: item.decisionHistory || [],
+        openIssues: item.openIssues || [],
+        handoffPackets: item.handoffPackets || [],
+        assignments: item.assignments || [],
+        comments: item.comments || [],
+        approvals: item.approvals || [],
+        communicationDrafts: item.communicationDrafts || [],
+        sensitiveFindings: item.sensitiveFindings || [],
+        securityEvents: item.securityEvents || [],
+        reports: item.reports || [],
+      };
+      if (
+        work.retentionPolicy === "DELETE_AFTER_24_HOURS" &&
+        work.retentionScheduledFor &&
+        Date.parse(work.retentionScheduledFor) <= Date.now()
+      ) {
+        retentionApplied =
+          removeLocallyRetainedFiles(
+            work,
+            "The configured 24-hour local retention period elapsed.",
+          ) > 0;
+      }
+      return work;
+    });
+    if (retentionApplied) window.localStorage.setItem(WORK_STORAGE_KEY, JSON.stringify(normalized));
+    return normalized;
   } catch {
     return [];
   }
@@ -766,6 +784,124 @@ function recordSecurityEvent(work: WorkItem, type: SecurityEvent["type"], detail
   });
 }
 
+function removeLocallyRetainedFiles(work: WorkItem, reason: string) {
+  const filesToRemove = work.files.filter((file) => file.role !== "Missing");
+  if (filesToRemove.length === 0) {
+    delete work.retentionScheduledFor;
+    return 0;
+  }
+  const removedFileIds = new Set(filesToRemove.map((file) => file.id));
+  const removedNames = new Set(filesToRemove.map((file) => file.name));
+  const affectedEvidenceIds = new Set(
+    filesToRemove.flatMap((file) => file.relatedEvidenceIds || []),
+  );
+
+  work.files = work.files.map((file) => {
+    if (!removedFileIds.has(file.id)) return file;
+    const { content: _content, ...withoutContent } = file;
+    return {
+      ...withoutContent,
+      role: "Missing",
+      processingStatus: "Needs review",
+      meta: "Locally removed by the configured file-retention setting.",
+    };
+  });
+
+  for (const evidence of work.evidence) {
+    const dependsOnRemovedFile =
+      affectedEvidenceIds.has(evidence.id) ||
+      (evidence.source ? removedNames.has(evidence.source) : false) ||
+      (evidence.sourceReference ? removedNames.has(evidence.sourceReference) : false);
+    if (dependsOnRemovedFile) {
+      evidence.verificationState = "Conflicted";
+      evidence.history.unshift({
+        id: secureId("evidence-history"),
+        date: nowLabel(),
+        change: "Evidence source was locally removed by a retention setting; review is required.",
+        by: "SYSTEM",
+      });
+    }
+  }
+
+  for (const requirement of work.requirements) {
+    const dependsOnRemovedEvidence = requirement.relatedEvidenceIds?.some((id) =>
+      affectedEvidenceIds.has(id),
+    );
+    const namesSource = removedNames.has(requirement.source.label);
+    if (dependsOnRemovedEvidence || namesSource) {
+      requirement.status = "NEEDS REVIEW";
+      requirement.history?.unshift({
+        id: secureId("requirement-history"),
+        date: nowLabel(),
+        newWording: requirement.currentWording || requirement.title,
+        changedBy: "SYSTEM",
+        reason: "A supporting source was locally removed by a retention setting.",
+      });
+    }
+  }
+
+  for (const file of filesToRemove) {
+    if (
+      work.fileFindings.some(
+        (finding) =>
+          finding.type === "missing-referenced-file" && finding.fileIds.includes(file.id),
+      )
+    ) {
+      continue;
+    }
+    work.fileFindings.unshift({
+      id: secureId("file-retention"),
+      type: "missing-referenced-file",
+      severity: "High",
+      title: "Evidence source no longer available",
+      detail:
+        "A local file was removed by the configured retention setting. Related evidence and requirements may need review.",
+      fileIds: [file.id],
+      sourceReference: file.name,
+      recommendedAction:
+        "Re-upload the source if it is still needed, then rerun review and verification.",
+      status: "Open",
+    });
+  }
+  work.findings.unshift({
+    id: secureId("retention-finding"),
+    type: "missing-asset",
+    severity: "high",
+    title: "Retained files are no longer available locally",
+    explanation:
+      "One or more files were locally removed by the configured retention setting. Any result depending on them may need recalculation.",
+    whyItMatters: "Evidence, requirements, and verification cannot rely on unavailable sources.",
+    sourceReference: "File retention",
+    recommendedAction: "Re-upload needed sources and rerun analysis or verification.",
+    status: "open",
+  });
+  work.recommendedNextAction =
+    "Review Work items affected by locally removed files and re-upload any required source.";
+  delete work.retentionScheduledFor;
+  recordSecurityEvent(
+    work,
+    "File deletion",
+    `${filesToRemove.length} locally stored file${filesToRemove.length === 1 ? "" : "s"} removed by the retention setting.`,
+  );
+  return filesToRemove.length;
+}
+
+export function applyRetentionPolicy(workId: string) {
+  const work = getWork(workId);
+  if (!work) return 0;
+  const shouldRemoveImmediately = work.retentionPolicy === "DELETE_IMMEDIATELY";
+  const shouldRemoveAfterDelay =
+    work.retentionPolicy === "DELETE_AFTER_24_HOURS" &&
+    work.retentionScheduledFor &&
+    Date.parse(work.retentionScheduledFor) <= Date.now();
+  const removed =
+    shouldRemoveImmediately || shouldRemoveAfterDelay
+      ? removeLocallyRetainedFiles(work, "The configured local retention action was applied.")
+      : 0;
+  if (removed > 0) persistWorkItems();
+  return removed;
+}
+
 export function setRetentionPolicy(workId: string, policy: RetentionPolicy) {
   const work = getWork(workId);
   if (!work) return undefined;
@@ -775,7 +911,18 @@ export function setRetentionPolicy(workId: string, policy: RetentionPolicy) {
     KEEP: "Keep",
   };
   work.retentionPolicy = policy;
+  if (policy === "DELETE_AFTER_24_HOURS") {
+    work.retentionScheduledFor = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
+  } else {
+    delete work.retentionScheduledFor;
+  }
   recordSecurityEvent(work, "Retention changed", `File retention changed to ${labels[policy]}.`);
+  if (policy === "DELETE_IMMEDIATELY") {
+    removeLocallyRetainedFiles(
+      work,
+      "The configured immediate local retention action was applied.",
+    );
+  }
   persistWorkItems();
   return work;
 }

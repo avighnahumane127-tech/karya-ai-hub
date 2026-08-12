@@ -28,6 +28,7 @@ import { PageHeader } from "@/components/primitives";
 import {
   addWorkItem,
   analyzeFileIntelligence,
+  applyRetentionPolicy,
   generateWorkPlan,
   type RetentionPolicy,
   type WorkItem,
@@ -936,6 +937,7 @@ function AddWork() {
                 addWorkItem(newItem);
                 analyzeFileIntelligence(newId);
                 generateWorkPlan(newId);
+                applyRetentionPolicy(newId);
                 setShowUnderstanding(false);
                 navigate({ to: "/work/$workId", params: { workId: newId } });
               }}

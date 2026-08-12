@@ -68,13 +68,13 @@ const retentionOptions: { value: RetentionPolicy; label: string; detail: string 
     value: "DELETE_IMMEDIATELY",
     label: "Delete immediately",
     detail:
-      "Files are deleted after processing where technically possible. Backups, providers, or logs may have separate retention.",
+      "Locally stored Work file content is removed after initial processing, leaving an unavailable file record. This client does not control provider, backup, or log retention.",
   },
   {
     value: "DELETE_AFTER_24_HOURS",
     label: "Delete after 24 hours",
     detail:
-      "Files remain available for 24 hours and are then deleted according to the application's deletion system.",
+      "Locally stored Work file content is scheduled for removal after 24 hours and is enforced the next time this client loads after the deadline. It is not a background deletion service.",
   },
   {
     value: "KEEP",

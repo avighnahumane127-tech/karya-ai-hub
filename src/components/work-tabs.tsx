@@ -214,8 +214,9 @@ function WorkSecurityControls({ work }: { work: WorkItem }) {
         <div>
           <p className="text-sm font-medium">File retention</p>
           <p className="mt-1 text-xs text-muted-foreground">
-            Controls how long uploaded Work files remain available. Deletion is applied where
-            technically possible; other systems may have separate retention.
+            Delete immediately removes locally stored file content after current processing. Delete
+            after 24 hours is enforced when this local app next loads after its deadline; it does
+            not control provider or backup retention.
           </p>
         </div>
         <select
