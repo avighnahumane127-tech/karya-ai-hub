@@ -23,6 +23,7 @@ import {
   updateWorkDeadline,
   setWorkAnalyticsExcluded,
   analyzeRequirementChanges,
+  compareSourceVersions,
   workItems,
 } from "@/lib/work";
 
@@ -792,6 +793,8 @@ function ChangePanel({
 }) {
   const [workId, setWorkId] = useState("");
   const [deadline, setDeadline] = useState("");
+  const [previousFileId, setPreviousFileId] = useState("");
+  const [currentFileId, setCurrentFileId] = useState("");
   const update = () => {
     if (!workId || !deadline.trim()) return;
     updateWorkDeadline(workId, deadline.trim());
@@ -803,6 +806,12 @@ function ChangePanel({
     analyzeRequirementChanges(workId);
     onChanged();
   };
+  const compareSources = () => {
+    if (!workId || !previousFileId || !currentFileId || previousFileId === currentFileId) return;
+    compareSourceVersions(workId, previousFileId, currentFileId);
+    onChanged();
+  };
+  const selectedWork = workId ? getWork(workId) : undefined;
   return (
     <div className="space-y-4">
       <div className="rounded-xl border border-hairline bg-surface p-4">
@@ -842,7 +851,7 @@ function ChangePanel({
             Record deadline change
           </button>
         </div>
-        <div className="mt-3 flex flex-wrap gap-2">
+        <div className="mt-3 flex flex-wrap items-end gap-3">
           <button
             type="button"
             onClick={inspectRequirementHistory}
@@ -850,6 +859,52 @@ function ChangePanel({
             className="h-9 rounded-md border border-input px-3 text-xs disabled:opacity-50"
           >
             Analyze requirement history
+          </button>
+          <label className="grid gap-1 text-xs text-muted-foreground">
+            Previous source
+            <select
+              value={previousFileId}
+              onChange={(event) => setPreviousFileId(event.currentTarget.value)}
+              disabled={!selectedWork}
+              className="h-9 min-w-48 rounded-md border border-input bg-background px-2 text-xs"
+            >
+              <option value="">Select previous</option>
+              {selectedWork?.files
+                .filter((file) => file.content)
+                .map((file) => (
+                  <option key={file.id} value={file.id}>
+                    {file.name}
+                  </option>
+                ))}
+            </select>
+          </label>
+          <label className="grid gap-1 text-xs text-muted-foreground">
+            New source
+            <select
+              value={currentFileId}
+              onChange={(event) => setCurrentFileId(event.currentTarget.value)}
+              disabled={!selectedWork}
+              className="h-9 min-w-48 rounded-md border border-input bg-background px-2 text-xs"
+            >
+              <option value="">Select new</option>
+              {selectedWork?.files
+                .filter((file) => file.content)
+                .map((file) => (
+                  <option key={file.id} value={file.id}>
+                    {file.name}
+                  </option>
+                ))}
+            </select>
+          </label>
+          <button
+            type="button"
+            onClick={compareSources}
+            disabled={
+              !workId || !previousFileId || !currentFileId || previousFileId === currentFileId
+            }
+            className="h-9 rounded-md border border-input px-3 text-xs disabled:opacity-50"
+          >
+            Compare sources
           </button>
         </div>
         <p className="mt-3 text-xs text-muted-foreground">
@@ -899,6 +954,37 @@ function ChangePanel({
             </div>
           )}
         </div>
+      </div>
+      <div className="rounded-xl border border-hairline bg-surface p-4">
+        <p className="label-caps">Source comparisons</p>
+        {snapshot.sourceComparisons.length === 0 ? (
+          <p className="mt-3 text-sm text-muted-foreground">
+            No source-version comparison has been recorded.
+          </p>
+        ) : (
+          <div className="mt-3 space-y-2">
+            {snapshot.sourceComparisons.slice(0, 8).map((comparison) => (
+              <div key={comparison.id} className="rounded-lg border border-hairline p-3">
+                <p className="text-sm font-medium">{comparison.summary}</p>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  Added: {comparison.addedLines.length} · Removed: {comparison.removedLines.length}{" "}
+                  · Affected requirements: {comparison.changedRequirementIds.length} · Affected
+                  tasks: {comparison.affectedTaskIds.length}
+                </p>
+                {comparison.addedLines.length > 0 ? (
+                  <p className="mt-2 text-xs text-ready">
+                    New: {comparison.addedLines.slice(0, 3).join(" · ")}
+                  </p>
+                ) : null}
+                {comparison.removedLines.length > 0 ? (
+                  <p className="mt-1 text-xs text-warn">
+                    Removed: {comparison.removedLines.slice(0, 3).join(" · ")}
+                  </p>
+                ) : null}
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

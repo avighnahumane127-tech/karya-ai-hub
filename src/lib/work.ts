@@ -611,6 +611,18 @@ export type ChangeImpactRecord = {
   summary: string;
   createdAt: string;
 };
+export type SourceComparison = {
+  id: string;
+  workId: string;
+  previousFileId: string;
+  currentFileId: string;
+  addedLines: string[];
+  removedLines: string[];
+  changedRequirementIds: string[];
+  affectedTaskIds: string[];
+  summary: string;
+  createdAt: string;
+};
 export type RequirementChangeRecord = {
   id: string;
   workId: string;
@@ -684,6 +696,7 @@ export type IntelligenceStore = {
   crossWorkDependencies: CrossWorkDependency[];
   changeImpacts: ChangeImpactRecord[];
   requirementChanges: RequirementChangeRecord[];
+  sourceComparisons: SourceComparison[];
   regressions: RegressionCheck[];
   recommendations: ProcessRecommendation[];
   activities: IntelligenceActivity[];
@@ -729,6 +742,7 @@ export type AnalyticsSnapshot = {
   crossWorkDependencies: CrossWorkDependency[];
   changeImpacts: ChangeImpactRecord[];
   requirementChanges: RequirementChangeRecord[];
+  sourceComparisons: SourceComparison[];
   regressions: RegressionCheck[];
   recommendations: ProcessRecommendation[];
 };
@@ -869,6 +883,7 @@ function emptyIntelligenceStore(): IntelligenceStore {
     crossWorkDependencies: [],
     changeImpacts: [],
     requirementChanges: [],
+    sourceComparisons: [],
     regressions: [],
     recommendations: [],
     activities: [],
@@ -891,6 +906,7 @@ function loadIntelligenceStore(): IntelligenceStore {
       crossWorkDependencies: parsed.crossWorkDependencies || [],
       changeImpacts: parsed.changeImpacts || [],
       requirementChanges: parsed.requirementChanges || [],
+      sourceComparisons: parsed.sourceComparisons || [],
       regressions: parsed.regressions || [],
       recommendations: parsed.recommendations || [],
       activities: parsed.activities || [],
@@ -2063,6 +2079,9 @@ export function getAnalyticsSnapshot(filters: AnalyticsFilters = {}): AnalyticsS
     requirementChanges: intelligenceStore.requirementChanges.filter((change) =>
       includedWorkIds.includes(change.workId),
     ),
+    sourceComparisons: intelligenceStore.sourceComparisons.filter((comparison) =>
+      includedWorkIds.includes(comparison.workId),
+    ),
     regressions: intelligenceStore.regressions.filter(
       (regression) =>
         includedWorkIds.includes(regression.currentWorkId) ||
@@ -2354,6 +2373,57 @@ export function analyzeRequirementChanges(workId: string) {
     );
   persistIntelligenceStore();
   return changes;
+}
+
+export function compareSourceVersions(
+  workId: string,
+  previousFileId: string,
+  currentFileId: string,
+) {
+  const work = getWork(workId);
+  const previous = work?.files.find((file) => file.id === previousFileId);
+  const current = work?.files.find((file) => file.id === currentFileId);
+  if (!work || !previous?.content || !current?.content || previous.id === current.id)
+    return undefined;
+  const previousLines = previous.content
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean);
+  const currentLines = current.content
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean);
+  const previousSet = new Set(previousLines);
+  const currentSet = new Set(currentLines);
+  const addedLines = currentLines.filter((line) => !previousSet.has(line)).slice(0, 40);
+  const removedLines = previousLines.filter((line) => !currentSet.has(line)).slice(0, 40);
+  const changedRequirementIds = work.requirements
+    .filter((requirement) => {
+      const key = normalizePatternText(requirement.title);
+      return [...addedLines, ...removedLines].some((line) =>
+        normalizePatternText(line).includes(key),
+      );
+    })
+    .map((requirement) => requirement.id);
+  const affectedTaskIds = work.plan
+    .filter((task) => task.relatedRequirementIds?.some((id) => changedRequirementIds.includes(id)))
+    .map((task) => task.id);
+  const comparison: SourceComparison = {
+    id: secureId("source-comparison"),
+    workId,
+    previousFileId,
+    currentFileId,
+    addedLines,
+    removedLines,
+    changedRequirementIds,
+    affectedTaskIds,
+    summary: `${addedLines.length} added and ${removedLines.length} removed content line${addedLines.length + removedLines.length === 1 ? "" : "s"}; ${changedRequirementIds.length} requirement${changedRequirementIds.length === 1 ? "" : "s"} and ${affectedTaskIds.length} task${affectedTaskIds.length === 1 ? "" : "s"} linked for review.`,
+    createdAt: new Date().toISOString(),
+  };
+  intelligenceStore.sourceComparisons.unshift(comparison);
+  recordIntelligenceActivity("Requirement changes detected", comparison.summary, [workId]);
+  persistIntelligenceStore();
+  return comparison;
 }
 
 export function runRegressionCheck(previousWorkId: string, currentWorkId: string) {
