@@ -817,6 +817,7 @@ function AddWork() {
                       action: "Proceed with execution.",
                     },
                   ],
+                  evidence: [],
                   plan: [
                     { id: "step-1", title: "Review requirements and sources", status: "done" },
                     { id: "step-2", title: "Execute work deliverables", status: "ready" },
@@ -832,8 +833,8 @@ function AddWork() {
                     name: s.name,
                     role: idx === 0 ? "Source" : "Working file",
                     type: s.type,
-                    size: s.size,
-                    content: s.content,
+                    ...(s.size ? { size: s.size } : {}),
+                    ...(s.content ? { content: s.content } : {}),
                     category: s.category,
                   })),
                   verify: [

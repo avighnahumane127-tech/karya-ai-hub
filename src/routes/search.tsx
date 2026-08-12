@@ -35,7 +35,13 @@ function SearchPage() {
 
   const matchedReqs = activeWork.flatMap((w) =>
     w.requirements
-      .filter((r) => r.title.toLowerCase().includes(trimmed))
+      .filter(
+        (r) =>
+          r.title.toLowerCase().includes(trimmed) ||
+          String(r.status).toLowerCase().includes(trimmed) ||
+          r.source.label.toLowerCase().includes(trimmed) ||
+          (r.sourceLocation || "").toLowerCase().includes(trimmed),
+      )
       .map((r) => ({ workId: w.id, workTitle: w.title, req: r })),
   );
 
@@ -43,6 +49,17 @@ function SearchPage() {
     w.files
       .filter((f) => f.name.toLowerCase().includes(trimmed))
       .map((f) => ({ workId: w.id, workTitle: w.title, file: f })),
+  );
+
+  const matchedEvidence = activeWork.flatMap((w) =>
+    w.evidence
+      .filter(
+        (e) =>
+          e.description.toLowerCase().includes(trimmed) ||
+          e.type.toLowerCase().includes(trimmed) ||
+          (e.source || "").toLowerCase().includes(trimmed),
+      )
+      .map((evidence) => ({ workId: w.id, workTitle: w.title, evidence })),
   );
 
   const matchedQuestions = activeWork.flatMap((w) =>
@@ -62,6 +79,7 @@ function SearchPage() {
     (matchedWorks.length > 0 ||
       matchedReqs.length > 0 ||
       matchedFiles.length > 0 ||
+      matchedEvidence.length > 0 ||
       matchedQuestions.length > 0 ||
       matchedDecisions.length > 0);
 
@@ -152,6 +170,31 @@ function SearchPage() {
                         <span className="text-xs text-muted-foreground">{workTitle}</span>
                       </div>
                       <p className="mt-1 text-xs text-muted-foreground">{file.type || file.role}</p>
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            ) : null}
+
+            {matchedEvidence.length > 0 ? (
+              <div>
+                <p className="label-caps mb-3">Evidence ({matchedEvidence.length})</p>
+                <div className="divide-y divide-hairline rounded-xl border border-hairline bg-surface">
+                  {matchedEvidence.map(({ workId, workTitle, evidence }) => (
+                    <Link
+                      key={evidence.id}
+                      to="/work/$workId"
+                      params={{ workId }}
+                      className="block p-4 hover:bg-accent/40 transition-colors"
+                    >
+                      <div className="flex items-center justify-between">
+                        <p className="text-sm font-medium">{evidence.description}</p>
+                        <span className="text-xs text-muted-foreground">{workTitle}</span>
+                      </div>
+                      <p className="mt-1 text-xs text-muted-foreground">
+                        {evidence.type} · {evidence.confidence} ·{" "}
+                        {evidence.source || "Source unavailable."}
+                      </p>
                     </Link>
                   ))}
                 </div>

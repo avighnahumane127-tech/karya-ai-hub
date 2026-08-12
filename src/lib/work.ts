@@ -262,11 +262,42 @@ export const stateLabels: Record<WorkState, string> = {
   review: "Review required",
 };
 
+const WORK_STORAGE_KEY = "karya-ai-work-items";
+
+function loadPersistedWork(): WorkItem[] {
+  if (typeof window === "undefined") return [];
+  try {
+    const raw = window.localStorage.getItem(WORK_STORAGE_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw) as WorkItem[];
+    return parsed.map((item) => ({
+      ...item,
+      evidence: item.evidence || [],
+      findings: item.findings || [],
+      activity: item.activity || [],
+      timeline: item.timeline || [],
+      questions: item.questions || [],
+      requirements: item.requirements || [],
+    }));
+  } catch {
+    return [];
+  }
+}
+
+function persistWorkItems() {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.setItem(WORK_STORAGE_KEY, JSON.stringify(workItems));
+  } catch {
+    // Storage may be unavailable or full; keep the current in-memory Work state.
+  }
+}
+
 /** Real work items. Empty until the user adds work. */
-export const workItems: WorkItem[] = [];
+export const workItems: WorkItem[] = loadPersistedWork();
 
 /** Questions raised on real work. */
-export const questions: Question[] = [];
+export const questions: Question[] = workItems.flatMap((item) => item.questions);
 
 /** Handoffs on real work. */
 export const handoffs: Handoff[] = [];
@@ -299,6 +330,7 @@ export function addWorkItem(item: WorkItem) {
   for (const q of item.questions) {
     questions.push(q);
   }
+  persistWorkItems();
 }
 
 function nowLabel() {
@@ -348,10 +380,10 @@ export function addEvidence(
       {
         id: `requirement-history-${Date.now()}-${requirement.id}`,
         date: nowLabel(),
-        previousWording: requirement.currentWording,
+        previousWording: requirement.currentWording || requirement.title,
         newWording: requirement.currentWording || requirement.title,
         changedBy: input.addedBy,
-        source: evidence.sourceReference || evidence.source,
+        source: evidence.sourceReference || evidence.source || "Source unavailable.",
         reason: "Evidence relationship updated",
       },
     ];
@@ -361,9 +393,10 @@ export function addEvidence(
     id: `act-${Date.now()}`,
     when: nowLabel(),
     change: `Evidence added: ${evidence.description}`,
-    source: evidence.sourceReference || evidence.source,
+    source: evidence.sourceReference || evidence.source || "Source unavailable.",
   });
 
+  persistWorkItems();
   return evidence;
 }
 
@@ -388,6 +421,7 @@ export function removeEvidence(workId: string, evidenceId: string) {
     when: nowLabel(),
     change: `Evidence removed: ${evidence.description}`,
   });
+  persistWorkItems();
 }
 
 export function updateRequirement(
@@ -423,6 +457,7 @@ export function updateRequirement(
     when: nowLabel(),
     change: `Requirement updated: ${requirement.title}`,
   });
+  persistWorkItems();
 }
 
 export function getRequirementEvidence(work: WorkItem, requirementId: string) {
@@ -476,6 +511,7 @@ export function archiveWork(id: string) {
       }),
       change: "Work archived",
     });
+    persistWorkItems();
   }
 }
 
@@ -492,6 +528,7 @@ export function restoreWork(id: string) {
       }),
       change: "Work restored from archive",
     });
+    persistWorkItems();
   }
 }
 
@@ -537,6 +574,7 @@ export function updateQuestionAnswer(
 
   // Recalculate readiness (simulated)
   recalculateReadiness(work);
+  persistWorkItems();
 }
 
 function recalculateReadiness(work: WorkItem) {
