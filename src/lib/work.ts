@@ -678,6 +678,7 @@ export type IntelligenceActivity = {
 };
 export type IntelligenceStore = {
   patterns: OrganizationalPattern[];
+  qualityPatterns: QualityPattern[];
   policies: OrganizationPolicy[];
   policyChecks: PolicyCheck[];
   crossWorkDependencies: CrossWorkDependency[];
@@ -862,6 +863,7 @@ const INTELLIGENCE_STORAGE_KEY = "karya-ai-intelligence";
 function emptyIntelligenceStore(): IntelligenceStore {
   return {
     patterns: [],
+    qualityPatterns: [],
     policies: [],
     policyChecks: [],
     crossWorkDependencies: [],
@@ -883,6 +885,7 @@ function loadIntelligenceStore(): IntelligenceStore {
       ...emptyIntelligenceStore(),
       ...parsed,
       patterns: parsed.patterns || [],
+      qualityPatterns: parsed.qualityPatterns || [],
       policies: parsed.policies || [],
       policyChecks: parsed.policyChecks || [],
       crossWorkDependencies: parsed.crossWorkDependencies || [],
@@ -1643,9 +1646,26 @@ export function getShareSnapshot(token: string) {
 function normalizePatternText(value: string) {
   return value
     .toLowerCase()
-    .replace(/[^a-z0-9\\s]/g, " ")
-    .replace(/\\s+/g, " ")
+    .replace(/[^a-z0-9\s]/g, " ")
+    .replace(/\s+/g, " ")
     .trim();
+}
+
+function requirementPatternLabel(value: string) {
+  const normalized = normalizePatternText(value);
+  if (/\b(source|sources|reference|references|citation|citations|cite)\b/.test(normalized)) {
+    return "Source / citation requirement";
+  }
+  if (/\b(executive summary|management summary)\b/.test(normalized)) {
+    return "Executive summary";
+  }
+  if (/\b(approval|approved|sign off|signoff)\b/.test(normalized)) {
+    return "Approval requirement";
+  }
+  if (/\b(template|approved format)\b/.test(normalized)) {
+    return "Approved template or format";
+  }
+  return value.trim();
 }
 
 function parseDate(value: string | undefined) {
@@ -1656,8 +1676,12 @@ function parseDate(value: string | undefined) {
 
 function averageDuration(startDates: (string | undefined)[], endDates: (string | undefined)[]) {
   const durations = startDates.flatMap((start, index) => {
+    const end = endDates[index];
+    const hasTimePrecision = (value: string | undefined) =>
+      Boolean(value && /T|\d{1,2}:\d{2}/.test(value));
+    if (!hasTimePrecision(start) || !hasTimePrecision(end)) return [];
     const from = parseDate(start);
-    const to = parseDate(endDates[index]);
+    const to = parseDate(end);
     return from !== undefined && to !== undefined && to >= from ? [to - from] : [];
   });
   if (durations.length === 0) return "Not enough data yet.";
@@ -1670,18 +1694,25 @@ function rankAnalyticsItems(
   values: { label: string; workId: string; detail: string }[],
   provenance: AnalyticsRankedItem["provenance"] = "FOUND IN DATA",
 ): AnalyticsRankedItem[] {
-  const grouped = new Map<string, { workIds: Set<string>; details: Set<string> }>();
+  const grouped = new Map<
+    string,
+    { displayLabel: string; workIds: Set<string>; details: Set<string> }
+  >();
   for (const value of values) {
     const key = normalizePatternText(value.label);
     if (!key) continue;
-    const group = grouped.get(key) || { workIds: new Set<string>(), details: new Set<string>() };
+    const group = grouped.get(key) || {
+      displayLabel: value.label,
+      workIds: new Set<string>(),
+      details: new Set<string>(),
+    };
     group.workIds.add(value.workId);
     if (value.detail) group.details.add(value.detail);
     grouped.set(key, group);
   }
   return Array.from(grouped.entries())
-    .map(([label, group]) => ({
-      label,
+    .map(([, group]) => ({
+      label: group.displayLabel,
       count: group.workIds.size,
       workIds: Array.from(group.workIds),
       confidence: (group.workIds.size >= 3
@@ -1801,7 +1832,7 @@ function refreshOrganizationalMemory(works = includedWorks()) {
       const workIds = Array.from(new Set(group.map((item) => item.work.id)));
       const sources = Array.from(new Set(group.map((item) => item.requirement.source.label)));
       return {
-        id: `pattern-requirement-${key.replace(/\\s+/g, "-")}`,
+        id: `pattern-requirement-${key.replace(/\s+/g, "-")}`,
         pattern: group[0]?.requirement.title || key,
         evidence: `Observed in ${workIds.length} Work items through recorded requirements.`,
         frequency: workIds.length,
@@ -1860,8 +1891,8 @@ export function getAnalyticsSnapshot(filters: AnalyticsFilters = {}): AnalyticsS
   ]);
   const requirementValues = works.flatMap((work) =>
     work.requirements.map((requirement) => ({
-      label: requirement.title,
-      detail: requirement.source.label,
+      label: requirementPatternLabel(requirement.title),
+      detail: `${requirement.title} · ${requirement.source.label}`,
       workId: work.id,
     })),
   );
@@ -1944,6 +1975,22 @@ export function getAnalyticsSnapshot(filters: AnalyticsFilters = {}): AnalyticsS
     intelligenceStore.patterns.length > 0
       ? intelligenceStore.patterns
       : refreshOrganizationalMemory(works);
+  const repeatedQualityPatterns = rankAnalyticsItems(failureValues)
+    .filter((item) => item.count >= 2)
+    .map((item) => ({
+      id: `quality-${normalizePatternText(item.label).replace(/\s+/g, "-")}`,
+      pattern: item.label,
+      frequency: item.count,
+      severity: item.count >= 3 ? ("High" as const) : ("Medium" as const),
+      workIds: item.workIds,
+      firstObserved: "Date unavailable",
+      lastObserved: "Date unavailable",
+      trend: "Unknown" as const,
+      confidence: item.confidence,
+      provenance: "FOUND IN DATA" as const,
+    }));
+  intelligenceStore.qualityPatterns = repeatedQualityPatterns;
+  persistIntelligenceStore();
   const includedWorkIds = works.map((work) => work.id);
   return {
     generatedAt: new Date().toISOString(),
@@ -1999,20 +2046,7 @@ export function getAnalyticsSnapshot(filters: AnalyticsFilters = {}): AnalyticsS
         (sum, run) => sum + run.findings.filter((finding) => finding.status !== "Resolved").length,
         0,
       ),
-      repeatedQualityPatterns: rankAnalyticsItems(failureValues)
-        .filter((item) => item.count >= 2)
-        .map((item) => ({
-          id: `quality-${normalizePatternText(item.label).replace(/\\s+/g, "-")}`,
-          pattern: item.label,
-          frequency: item.count,
-          severity: item.count >= 3 ? ("High" as const) : ("Medium" as const),
-          workIds: item.workIds,
-          firstObserved: "Date unavailable",
-          lastObserved: "Date unavailable",
-          trend: "Unknown" as const,
-          confidence: item.confidence,
-          provenance: "FOUND IN DATA" as const,
-        })),
+      repeatedQualityPatterns,
     },
     patterns,
     policyChecks: intelligenceStore.policyChecks.filter((check) =>
@@ -2050,6 +2084,19 @@ export function refreshAnalyticsIntelligence() {
   generateProcessRecommendations();
   persistIntelligenceStore();
   return getAnalyticsSnapshot();
+}
+
+export function updateOrganizationalPattern(id: string, status: OrganizationalPattern["status"]) {
+  const pattern = intelligenceStore.patterns.find((item) => item.id === id);
+  if (!pattern) return undefined;
+  pattern.status = status;
+  recordIntelligenceActivity(
+    "Pattern detected",
+    `Pattern ${pattern.pattern} marked ${status}.`,
+    [],
+  );
+  persistIntelligenceStore();
+  return pattern;
 }
 
 export function createOrganizationPolicy(
@@ -2384,7 +2431,7 @@ export function generateProcessRecommendations() {
   const topBlocker = snapshot.blockers[0];
   if (topBlocker && topBlocker.count >= 2) {
     recommendations.push({
-      id: `recommendation-blocker-${normalizePatternText(topBlocker.label).replace(/\\s+/g, "-")}`,
+      id: `recommendation-blocker-${normalizePatternText(topBlocker.label).replace(/\s+/g, "-")}`,
       title: `Review repeated ${topBlocker.label.toLowerCase()} blockers`,
       evidence: topBlocker.detail,
       frequency: topBlocker.count,
@@ -2399,7 +2446,7 @@ export function generateProcessRecommendations() {
   const topRequirement = snapshot.repeatedRequirements[0];
   if (topRequirement) {
     recommendations.push({
-      id: `recommendation-requirement-${normalizePatternText(topRequirement.label).replace(/\\s+/g, "-")}`,
+      id: `recommendation-requirement-${normalizePatternText(topRequirement.label).replace(/\s+/g, "-")}`,
       title: `Review a repeated requirement: ${topRequirement.label}`,
       evidence: `Recorded in ${topRequirement.count} Work items.`,
       frequency: topRequirement.count,
