@@ -2478,3 +2478,11 @@ export function deleteUserTemplate(templateId: string) {
   userTemplates.splice(index, 1);
   persistUserTemplates();
 }
+
+export function recordTemplateUse(templateId: string) {
+  const template = userTemplates.find((item) => item.id === templateId);
+  if (!template) return;
+  template.uses += 1;
+  template.updatedAt = nowLabel();
+  persistUserTemplates();
+}

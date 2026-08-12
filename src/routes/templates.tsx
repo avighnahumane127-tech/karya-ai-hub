@@ -6,6 +6,7 @@ import {
   applyTemplateToWork,
   createUserTemplate,
   deleteUserTemplate,
+  recordTemplateUse,
   templates,
   userTemplates,
   workItems,
@@ -45,7 +46,7 @@ function TemplatesPage() {
       return;
     }
     applyTemplateToWork(selectedWorkId, template.id);
-    if ("uses" in template) template.uses += 1;
+    if ("uses" in template) recordTemplateUse(template.id);
     setNotice(
       `${template.name} applied to ${workItems.find((work) => work.id === selectedWorkId)?.title || "the selected Work"}.`,
     );
