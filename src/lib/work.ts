@@ -1,8 +1,14 @@
-// Types describing WorkReady / Karya AI work items.
-// No user, project or activity data is fabricated here: real data only ever
-// arrives from the user, so every collection below starts genuinely empty.
+export type WorkState =
+  | "ready"
+  | "ready-with-warnings"
+  | "blocked"
+  | "clarify"
+  | "in-progress"
+  | "waiting"
+  | "ready-to-submit"
+  | "done"
+  | "review";
 
-export type WorkState = "blocked" | "waiting" | "ready" | "verify" | "clarify" | "done";
 export type ReqStatus = "complete" | "partial" | "missing" | "conflict";
 export type StepStatus = "blocked" | "ready" | "waiting" | "not-started" | "done";
 export type SourceKind = "confirmed" | "inferred" | "assumption" | "conflict";
@@ -39,6 +45,10 @@ export type WorkFile = {
   name: string;
   role: "Source" | "Working file" | "Final" | "Missing";
   meta?: string;
+  type?: string;
+  size?: string;
+  content?: string;
+  category?: string;
 };
 
 export type VerifyCheck = {
@@ -58,26 +68,64 @@ export type Handoff = {
   nextAction?: string;
 };
 
+export type RequestUnderstanding = {
+  objective: string;
+  action: string;
+  outcome: string;
+  deadline?: string;
+  audience?: string;
+  stakeholders?: string[];
+  constraints?: string[];
+  deliverables?: string[];
+  tools?: string[];
+  references?: string[];
+};
+
+export type TimelineEvent = {
+  id: string;
+  date: string;
+  title: string;
+  detail: string;
+};
+
+export type ActivityRecord = {
+  id: string;
+  when: string;
+  change: string;
+  source?: string;
+  user?: string;
+};
+
 export type WorkItem = {
   id: string;
   title: string;
   description: string;
   state: WorkState;
   due?: string;
+  archived?: boolean;
+  request: RequestUnderstanding;
   requirements: Requirement[];
   plan: PlanStep[];
   questions: Question[];
   files: WorkFile[];
   verify: VerifyCheck[];
+  timeline: TimelineEvent[];
+  activity: ActivityRecord[];
+  decisions: { id: string; text: string; source?: string }[];
+  assumptions: { id: string; text: string }[];
+  issues: Issue[];
 };
 
 export const stateLabels: Record<WorkState, string> = {
+  ready: "Ready",
+  "ready-with-warnings": "Ready with warnings",
   blocked: "Blocked",
-  waiting: "Waiting",
-  ready: "Ready to start",
-  verify: "Ready for verification",
   clarify: "Needs clarification",
+  "in-progress": "In progress",
+  waiting: "Waiting for response",
+  "ready-to-submit": "Ready to submit",
   done: "Completed",
+  review: "Review required",
 };
 
 /** Real work items. Empty until the user adds work. */
@@ -94,6 +142,45 @@ export const notifications: { id: string; text: string; when: string }[] = [];
 
 export function getWork(id: string): WorkItem | undefined {
   return workItems.find((w) => w.id === id);
+}
+
+export function addWorkItem(item: WorkItem) {
+  workItems.unshift(item);
+  for (const q of item.questions) {
+    questions.push(q);
+  }
+}
+
+export function archiveWork(id: string) {
+  const item = workItems.find((w) => w.id === id);
+  if (item) {
+    item.archived = true;
+    item.activity.unshift({
+      id: `act-${Date.now()}`,
+      when: new Date().toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+      }),
+      change: "Work archived",
+    });
+  }
+}
+
+export function restoreWork(id: string) {
+  const item = workItems.find((w) => w.id === id);
+  if (item) {
+    item.archived = false;
+    item.activity.unshift({
+      id: `act-${Date.now()}`,
+      when: new Date().toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+      }),
+      change: "Work restored from archive",
+    });
+  }
 }
 
 /**

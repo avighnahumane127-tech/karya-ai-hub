@@ -21,9 +21,11 @@ import {
   Upload,
   X,
 } from "lucide-react";
+import { useNavigate } from "@tanstack/react-router";
 import { useRef, useState, type ChangeEvent, type DragEvent } from "react";
 
 import { PageHeader } from "@/components/primitives";
+import { addWorkItem, type WorkItem } from "@/lib/work";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -169,10 +171,26 @@ function AddWork() {
   const [draft, setDraft] = useState("");
   const [messageType, setMessageType] = useState("Email");
   const [urlError, setUrlError] = useState("");
+  const navigate = useNavigate();
   const [editingId, setEditingId] = useState<string | null>(null);
   const [analysisStarted, setAnalysisStarted] = useState(false);
   const [analysisDirty, setAnalysisDirty] = useState(false);
   const [selectedPreview, setSelectedPreview] = useState<SourceRecord | null>(null);
+  const [showUnderstanding, setShowUnderstanding] = useState(false);
+  const [understandingObjective, setUnderstandingObjective] = useState(
+    "Review and analyze the provided sources to deliver actionable recommendations and outcomes.",
+  );
+  const [understandingAction, setUnderstandingAction] = useState(
+    "Review sources, extract key requirements, and synthesize findings.",
+  );
+  const [understandingOutcome, setUnderstandingOutcome] = useState(
+    "A comprehensive work package with verified requirements and clear next steps.",
+  );
+  const [understandingDeadline, setUnderstandingDeadline] = useState("Friday");
+  const [understandingAudience, setUnderstandingAudience] = useState("Management and stakeholders");
+  const [understandingDeliverables, setUnderstandingDeliverables] = useState(
+    "Analysis report, requirements list, recommendation summary",
+  );
 
   const markPackageChanged = () => {
     if (analysisStarted) setAnalysisDirty(true);
@@ -584,6 +602,7 @@ function AddWork() {
                   onClick={() => {
                     setAnalysisStarted(true);
                     setAnalysisDirty(false);
+                    setShowUnderstanding(true);
                   }}
                 >
                   {analysisStarted && analysisDirty ? "Re-analyze work" : "Analyze work"}
@@ -687,6 +706,174 @@ function AddWork() {
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => setSelectedPreview(null)}>
               Close
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={showUnderstanding} onOpenChange={setShowUnderstanding}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Here's what I believe you're being asked to do</DialogTitle>
+            <DialogDescription>
+              Karya AI has analyzed your {sources.length} sources and context. Review this
+              understanding before we build your work plan.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-2 text-sm">
+            <div className="rounded-lg border border-hairline bg-muted/30 p-4 space-y-3">
+              <div>
+                <p className="label-caps">Objective</p>
+                <input
+                  value={understandingObjective}
+                  onChange={(e) => setUnderstandingObjective(e.target.value)}
+                  className="mt-1 w-full rounded border border-input bg-background px-2.5 py-1.5 text-sm outline-none focus:ring-1 focus:ring-ring"
+                />
+              </div>
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <div>
+                  <p className="label-caps">Requested action</p>
+                  <input
+                    value={understandingAction}
+                    onChange={(e) => setUnderstandingAction(e.target.value)}
+                    className="mt-1 w-full rounded border border-input bg-background px-2.5 py-1.5 text-sm outline-none focus:ring-1 focus:ring-ring"
+                  />
+                </div>
+                <div>
+                  <p className="label-caps">Expected outcome</p>
+                  <input
+                    value={understandingOutcome}
+                    onChange={(e) => setUnderstandingOutcome(e.target.value)}
+                    className="mt-1 w-full rounded border border-input bg-background px-2.5 py-1.5 text-sm outline-none focus:ring-1 focus:ring-ring"
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <div>
+                  <p className="label-caps">Deadline</p>
+                  <input
+                    value={understandingDeadline}
+                    onChange={(e) => setUnderstandingDeadline(e.target.value)}
+                    className="mt-1 w-full rounded border border-input bg-background px-2.5 py-1.5 text-sm outline-none focus:ring-1 focus:ring-ring"
+                  />
+                </div>
+                <div>
+                  <p className="label-caps">Audience</p>
+                  <input
+                    value={understandingAudience}
+                    onChange={(e) => setUnderstandingAudience(e.target.value)}
+                    className="mt-1 w-full rounded border border-input bg-background px-2.5 py-1.5 text-sm outline-none focus:ring-1 focus:ring-ring"
+                  />
+                </div>
+              </div>
+              <div>
+                <p className="label-caps">Deliverables</p>
+                <input
+                  value={understandingDeliverables}
+                  onChange={(e) => setUnderstandingDeliverables(e.target.value)}
+                  className="mt-1 w-full rounded border border-input bg-background px-2.5 py-1.5 text-sm outline-none focus:ring-1 focus:ring-ring"
+                />
+              </div>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              You can edit any field above to correct Karya AI's interpretation. This understanding
+              becomes the source of truth for this work.
+            </p>
+          </div>
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button type="button" variant="outline" onClick={() => setShowUnderstanding(false)}>
+              Edit & Refine
+            </Button>
+            <Button
+              type="button"
+              onClick={() => {
+                const newId = `work-${Date.now()}`;
+                const titleText = packageName.trim() || sources[0]?.name || "New Work Package";
+                const newItem: WorkItem = {
+                  id: newId,
+                  title: titleText,
+                  description: understandingObjective,
+                  state: "ready",
+                  due: understandingDeadline,
+                  request: {
+                    objective: understandingObjective,
+                    action: understandingAction,
+                    outcome: understandingOutcome,
+                    deadline: understandingDeadline,
+                    audience: understandingAudience,
+                    deliverables: understandingDeliverables
+                      .split(",")
+                      .map((s) => s.trim())
+                      .filter(Boolean),
+                  },
+                  requirements: [
+                    {
+                      id: `req-${Date.now()}-1`,
+                      title: "Fulfill requested deliverables",
+                      status: "complete",
+                      why: understandingObjective,
+                      evidence: "Extracted from work package sources and context.",
+                      source: { kind: "confirmed", label: "Work Package Sources" },
+                      action: "Proceed with execution.",
+                    },
+                  ],
+                  plan: [
+                    { id: "step-1", title: "Review requirements and sources", status: "done" },
+                    { id: "step-2", title: "Execute work deliverables", status: "ready" },
+                    {
+                      id: "step-3",
+                      title: "Verify results against criteria",
+                      status: "not-started",
+                    },
+                  ],
+                  questions: [],
+                  files: sources.map((s, idx) => ({
+                    id: s.id,
+                    name: s.name,
+                    role: idx === 0 ? "Source" : "Working file",
+                    type: s.type,
+                    size: s.size,
+                    content: s.content,
+                    category: s.category,
+                  })),
+                  verify: [
+                    { id: "v-1", title: "Objective addressed", status: "satisfied" },
+                    { id: "v-2", title: "Requirements met", status: "satisfied" },
+                  ],
+                  timeline: [
+                    {
+                      id: `t-${Date.now()}`,
+                      date: new Date().toLocaleDateString("en-US", {
+                        month: "short",
+                        day: "numeric",
+                        year: "numeric",
+                      }),
+                      title: "Work package created and analyzed",
+                      detail: `${sources.length} sources and context combined. Request understanding confirmed.`,
+                    },
+                  ],
+                  activity: [
+                    {
+                      id: `act-${Date.now()}`,
+                      when: new Date().toLocaleDateString("en-US", {
+                        month: "short",
+                        day: "numeric",
+                        year: "numeric",
+                      }),
+                      change: "Work item created from Work Input package",
+                    },
+                  ],
+                  decisions: [],
+                  assumptions: [],
+                  issues: [],
+                };
+                addWorkItem(newItem);
+                setShowUnderstanding(false);
+                navigate({ to: "/work/$workId", params: { workId: newId } });
+              }}
+            >
+              Confirm & Start Work
+              <ArrowRight className="h-3.5 w-3.5 ml-1" />
             </Button>
           </DialogFooter>
         </DialogContent>
