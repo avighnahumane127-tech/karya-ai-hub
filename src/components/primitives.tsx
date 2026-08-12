@@ -39,21 +39,23 @@ export function SourceTag({
   label,
   onClick,
 }: {
-  kind: "confirmed" | "inferred" | "assumption" | "conflict";
+  kind: "confirmed" | "inferred" | "assumption" | "conflict" | "unknown";
   label?: string;
   onClick?: () => void;
 }) {
-  const map: Record<"confirmed" | "inferred" | "assumption" | "conflict", Tone> = {
+  const map: Record<"confirmed" | "inferred" | "assumption" | "conflict" | "unknown", Tone> = {
     confirmed: "neutral",
     inferred: "info",
     assumption: "warn",
     conflict: "blocked",
+    unknown: "neutral",
   };
-  const words: Record<"confirmed" | "inferred" | "assumption" | "conflict", string> = {
+  const words: Record<"confirmed" | "inferred" | "assumption" | "conflict" | "unknown", string> = {
     confirmed: "Confirmed",
     inferred: "Inferred",
     assumption: "Assumption",
     conflict: "Conflict",
+    unknown: "Unknown",
   };
   return (
     <button
@@ -61,12 +63,7 @@ export function SourceTag({
       onClick={onClick}
       className="group inline-flex max-w-full items-center gap-2 text-left text-xs text-muted-foreground"
     >
-      <span
-        className={cn(
-          "rounded px-1.5 py-0.5 text-[11px] font-medium",
-          toneClasses[map[kind]],
-        )}
-      >
+      <span className={cn("rounded px-1.5 py-0.5 text-[11px] font-medium", toneClasses[map[kind]])}>
         {words[kind]}
       </span>
       {label ? (

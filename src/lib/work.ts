@@ -40,7 +40,7 @@ export type DeadlineFeasibility =
   | "POTENTIALLY INFEASIBLE"
   | "BLOCKED"
   | "INSUFFICIENT INFORMATION";
-export type SourceKind = "confirmed" | "inferred" | "assumption" | "conflict";
+export type SourceKind = "confirmed" | "inferred" | "assumption" | "conflict" | "unknown";
 
 export type Source = { kind: SourceKind; label: string };
 
@@ -276,6 +276,7 @@ export type FileIntelligenceFinding = {
   id: string;
   type: FileIntelligenceFindingType;
   severity: "Critical" | "High" | "Medium" | "Low" | "Informational";
+  confidence?: "High" | "Medium" | "Low";
   title: string;
   detail: string;
   fileIds: string[];
@@ -302,6 +303,7 @@ export type VerificationFinding = {
   id: string;
   type: VerificationFindingType;
   severity: VerificationSeverity;
+  confidence?: "High" | "Medium" | "Low";
   title: string;
   detail: string;
   relatedRequirementIds: string[];
@@ -408,6 +410,7 @@ export type ReadinessFinding = {
   id: string;
   type: ReadinessFindingType;
   severity: ReadinessFindingSeverity;
+  confidence?: "High" | "Medium" | "Low";
   title: string;
   explanation: string;
   whyItMatters: string;
@@ -869,6 +872,7 @@ function removeLocallyRetainedFiles(work: WorkItem, reason: string) {
     id: secureId("retention-finding"),
     type: "missing-asset",
     severity: "high",
+    confidence: "High",
     title: "Retained files are no longer available locally",
     explanation:
       "One or more files were locally removed by the configured retention setting. Any result depending on them may need recalculation.",
@@ -1644,6 +1648,7 @@ export function analyzeFileIntelligence(workId: string) {
           id: `file-finding-duplicate-${left.id}-${right.id}`,
           type: "exact-duplicate",
           severity: "Medium",
+          confidence: "High",
           title: "Exact duplicate files detected",
           detail: `${left.name} and ${right.name} have matching available content fingerprints. Neither file was removed or chosen as authoritative.`,
           fileIds: [left.id, right.id],
@@ -1655,6 +1660,7 @@ export function analyzeFileIntelligence(workId: string) {
           id: `file-finding-version-${left.id}-${right.id}`,
           type: "version-conflict",
           severity: "High",
+          confidence: "Medium",
           title: "Possible version conflict",
           detail: `${left.name} and ${right.name} appear related, but Karya AI cannot safely determine which version is authoritative from filenames alone.`,
           fileIds: [left.id, right.id],
@@ -1684,6 +1690,7 @@ export function analyzeFileIntelligence(workId: string) {
           id: `file-finding-missing-${file.id}-${reference}`,
           type: "missing-referenced-file",
           severity: "High",
+          confidence: "High",
           title: "Referenced file missing",
           detail: `${file.name} refers to ${reference}, but no matching file was found in this Work Package.`,
           fileIds: [file.id],
@@ -1711,6 +1718,7 @@ export function analyzeFileIntelligence(workId: string) {
         id: `file-finding-authority-${family.map((file) => file.id).join("-")}`,
         type: "multiple-authoritative",
         severity: "High",
+        confidence: "Medium",
         title: "Multiple possible authoritative files",
         detail: `${candidates.length} related files remain possible sources of truth. Filename markers such as latest or final were not treated as proof.`,
         fileIds: candidates.map((file) => file.id),
@@ -1729,6 +1737,7 @@ export function analyzeFileIntelligence(workId: string) {
           id: `file-finding-outdated-${family.map((file) => file.id).join("-")}`,
           type: "possibly-outdated",
           severity: "Medium",
+          confidence: "Medium",
           title: "Possible outdated source",
           detail: `An approved, revised, or updated file exists alongside an older-looking version. Karya AI did not automatically replace the older file.`,
           fileIds: family.map((file) => file.id),
@@ -1966,6 +1975,8 @@ export function runVerification(workId: string) {
         relatedEvidenceIds: evidenceIds,
         relatedFileIds: submittedFiles.map((file) => file.id),
         ...(requirement.source.label ? { sourceReference: requirement.source.label } : {}),
+        confidence:
+          status === "NEEDS REVIEW" ? "Low" : status === "CONTRADICTORY" ? "Medium" : "High",
         recommendedAction:
           status === "NEEDS REVIEW"
             ? "Review the submitted work and confirm the requirement manually."

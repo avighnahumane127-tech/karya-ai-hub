@@ -905,6 +905,7 @@ function AddWork() {
                       id: `find-${Date.now()}-1`,
                       type: "assumption",
                       severity: "medium",
+                      confidence: "Medium",
                       title: "Audience assumption required",
                       explanation: `Karya AI assumes the intended audience is ${understandingAudience}.`,
                       whyItMatters: "Tone and depth should match audience expectations.",
@@ -918,6 +919,7 @@ function AddWork() {
                             id: `find-${Date.now()}-2`,
                             type: "missing-info" as const,
                             severity: "low" as const,
+                            confidence: "High" as const,
                             title: "Single source package",
                             explanation: "Only one source was provided in this work package.",
                             whyItMatters:

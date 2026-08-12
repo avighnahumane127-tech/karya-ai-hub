@@ -418,6 +418,9 @@ export function WorkTabPanel({ work, tab }: { work: WorkItem; tab: WorkTab }) {
                   {f.sourceReference ? (
                     <p className="text-xs text-muted-foreground">Source: {f.sourceReference}</p>
                   ) : null}
+                  {f.confidence ? (
+                    <p className="text-xs text-muted-foreground">Confidence: {f.confidence}</p>
+                  ) : null}
                   <div className="pt-2 flex items-center justify-between border-t border-hairline text-xs">
                     <span className="font-medium text-foreground">
                       Action: {f.recommendedAction}
@@ -1712,6 +1715,7 @@ function FileIntelligenceTab({ work }: { work: WorkItem }) {
                 <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-muted-foreground">
                   <span>Action: {finding.recommendedAction}</span>
                   {finding.sourceReference ? <span>Source: {finding.sourceReference}</span> : null}
+                  {finding.confidence ? <span>Confidence: {finding.confidence}</span> : null}
                 </div>
               </div>
             ))}
@@ -2185,6 +2189,12 @@ function VerificationFindingRow({
             <span className="font-medium">Status: </span>
             {finding.status}
           </p>
+          {finding.confidence ? (
+            <p>
+              <span className="font-medium">Confidence: </span>
+              {finding.confidence}
+            </p>
+          ) : null}
           {finding.sourceReference ? (
             <p>
               <span className="font-medium">Source: </span>
