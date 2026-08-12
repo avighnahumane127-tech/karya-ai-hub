@@ -62,6 +62,7 @@ type SourceRecord = {
   detail: string;
   file?: File;
   href?: string;
+  content?: string;
   category: string;
 };
 
@@ -169,12 +170,18 @@ function AddWork() {
   const [messageType, setMessageType] = useState("Email");
   const [urlError, setUrlError] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [analysisNotice, setAnalysisNotice] = useState(false);
+  const [analysisStarted, setAnalysisStarted] = useState(false);
+  const [analysisDirty, setAnalysisDirty] = useState(false);
+  const [selectedPreview, setSelectedPreview] = useState<SourceRecord | null>(null);
+
+  const markPackageChanged = () => {
+    if (analysisStarted) setAnalysisDirty(true);
+  };
 
   const addFiles = (files: File[]) => {
     if (files.length === 0) return;
     setSources((current) => [...current, ...files.map(createFileSource)]);
-    setAnalysisNotice(false);
+    markPackageChanged();
   };
 
   const onFileChange = (event: ChangeEvent<HTMLInputElement>) => {
@@ -224,7 +231,8 @@ function AddWork() {
           name: `${messageType} instructions`,
           type: messageType,
           status: "Ready",
-          detail: "Message content added to this work package. Analysis has not run yet.",
+          detail: "Message content preserved in this work package. Analysis has not run yet.",
+          content: value,
           category: "Message",
         },
       ]);
@@ -238,29 +246,47 @@ function AddWork() {
           name: "Pasted instructions",
           type: "Text",
           status: "Ready",
-          detail: "Pasted content added to this work package. Analysis has not run yet.",
+          detail: "Pasted content preserved in this work package. Analysis has not run yet.",
+          content: value,
           category: "Text",
         },
       ]);
     }
+    markPackageChanged();
     setDialogMode(null);
     setDraft("");
-    setAnalysisNotice(false);
   };
 
   const removeSource = (id: string) => {
     setSources((current) => current.filter((source) => source.id !== id));
-    setAnalysisNotice(false);
+    markPackageChanged();
+    if (selectedPreview?.id === id) setSelectedPreview(null);
   };
 
   const previewSource = (source: SourceRecord) => {
-    if (source.href) {
+    if (source.content) {
+      setSelectedPreview(source);
+    } else if (source.href) {
       window.open(source.href, "_blank", "noopener,noreferrer");
     } else if (source.file && (source.file.type.startsWith("image/") || source.type === "PDF")) {
       window.open(URL.createObjectURL(source.file), "_blank", "noopener,noreferrer");
     }
   };
 
+  const typeCounts = sources.reduce<Record<string, number>>((counts, source) => {
+    counts[source.type] = (counts[source.type] ?? 0) + 1;
+    return counts;
+  }, {});
+  const typeSummary = Object.entries(typeCounts)
+    .map(([type, count]) => {
+      if (count === 1) return `1 ${type}`;
+      if (type === "PDF") return `${count} PDFs`;
+      if (type === "Image") return `${count} images`;
+      if (type === "URL") return `${count} URLs`;
+      if (type === "Text") return `${count} text sources`;
+      return `${count} ${type.toLowerCase()} sources`;
+    })
+    .join(" · ");
   const canAnalyze = sources.length > 0 || context.trim().length > 0;
 
   return (
@@ -394,7 +420,7 @@ function AddWork() {
               {sources.map((source) => {
                 const Icon = sourceIcon(source.type);
                 const canPreview =
-                  Boolean(source.href) ||
+                  Boolean(source.content || source.href) ||
                   Boolean(
                     source.file && (source.file.type.startsWith("image/") || source.type === "PDF"),
                   );
@@ -452,7 +478,7 @@ function AddWork() {
                     <div className="flex shrink-0 items-center gap-1.5">
                       <span
                         className={cn(
-                          "hidden rounded-full px-2 py-1 text-[11px] font-medium sm:inline-flex",
+                          "inline-flex rounded-full px-2 py-1 text-[11px] font-medium",
                           statusTone(source.status),
                         )}
                       >
@@ -510,32 +536,60 @@ function AddWork() {
               </div>
             ) : null}
 
-            <div className="flex flex-col gap-4 border-t border-hairline px-5 py-5 md:flex-row md:items-end md:justify-between md:px-6">
-              <div>
-                <p className="label-caps">Ready to analyze?</p>
-                <p className="mt-1.5 max-w-xl text-sm text-muted-foreground">
-                  Karya AI will use these sources together to understand the work, identify
-                  requirements, find missing information, and build the work plan.
-                </p>
-                {analysisNotice ? (
-                  <div className="mt-3 flex items-start gap-2 rounded-md bg-warn-soft px-3 py-2 text-xs text-warn">
-                    <AlertCircle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
-                    <span>
-                      Analysis is not connected in this imported project yet. Your sources are
-                      grouped locally and no results were fabricated.
-                    </span>
-                  </div>
-                ) : null}
+            <div className="border-t border-hairline px-5 py-5 md:px-6">
+              <div className="grid gap-4 rounded-lg bg-accent/40 p-4 sm:grid-cols-[1fr_auto] sm:items-start">
+                <div>
+                  <p className="label-caps">Work package summary</p>
+                  <p className="mt-2 text-sm font-medium">
+                    {sources.length} {sources.length === 1 ? "source" : "sources"}
+                  </p>
+                  {typeSummary ? (
+                    <p className="mt-1 text-xs text-muted-foreground">Types: {typeSummary}</p>
+                  ) : null}
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    Additional context: {context ? "Added" : "None"}
+                  </p>
+                </div>
+                <div className="text-left sm:text-right">
+                  <p className="label-caps">One analysis</p>
+                  <p className="mt-2 text-xs text-muted-foreground">
+                    All sources stay grouped as one work package.
+                  </p>
+                </div>
               </div>
-              <Button
-                type="button"
-                className="shrink-0"
-                disabled={!canAnalyze}
-                onClick={() => setAnalysisNotice(true)}
-              >
-                Analyze work
-                <ArrowRight className="h-3.5 w-3.5" />
-              </Button>
+
+              <div className="mt-5 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+                <div>
+                  <p className="label-caps">Ready to analyze?</p>
+                  <p className="mt-1.5 max-w-xl text-sm text-muted-foreground">
+                    Karya AI will use these sources together to understand the work, identify
+                    requirements, find missing information, detect ambiguity, and build the work
+                    plan.
+                  </p>
+                  {analysisStarted ? (
+                    <div className="mt-3 flex items-start gap-2 rounded-md bg-warn-soft px-3 py-2 text-xs text-warn">
+                      <AlertCircle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+                      <span>
+                        {analysisDirty
+                          ? "Sources or context changed after the last analysis attempt. The previous analysis did not include these changes."
+                          : "Analysis is not connected in this imported project yet. Your sources are grouped locally and no results were fabricated."}
+                      </span>
+                    </div>
+                  ) : null}
+                </div>
+                <Button
+                  type="button"
+                  className="shrink-0"
+                  disabled={!canAnalyze}
+                  onClick={() => {
+                    setAnalysisStarted(true);
+                    setAnalysisDirty(false);
+                  }}
+                >
+                  {analysisStarted && analysisDirty ? "Re-analyze work" : "Analyze work"}
+                  <ArrowRight className="h-3.5 w-3.5" />
+                </Button>
+              </div>
             </div>
           </section>
         )}
@@ -608,6 +662,31 @@ function AddWork() {
             </Button>
             <Button type="button" disabled={!draft.trim()} onClick={addTextSource}>
               Add to work package
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog
+        open={selectedPreview !== null}
+        onOpenChange={(open) => !open && setSelectedPreview(null)}
+      >
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>{selectedPreview?.name}</DialogTitle>
+            <DialogDescription>
+              {selectedPreview?.type} · {selectedPreview?.category} · Original content preserved as
+              provided
+            </DialogDescription>
+          </DialogHeader>
+          <div className="max-h-[55vh] overflow-auto rounded-lg border border-hairline bg-muted/20 p-4">
+            <pre className="whitespace-pre-wrap break-words font-sans text-sm leading-6 text-foreground">
+              {selectedPreview?.content}
+            </pre>
+          </div>
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={() => setSelectedPreview(null)}>
+              Close
             </Button>
           </DialogFooter>
         </DialogContent>
