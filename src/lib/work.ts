@@ -1310,12 +1310,16 @@ export function generateRequirementsCSV(workId: string) {
 }
 
 function createShareToken() {
-  return secureId("share").replace(/^share-/, "");
+  if (typeof globalThis.crypto?.getRandomValues !== "function") return undefined;
+  const bytes = new Uint8Array(32);
+  globalThis.crypto.getRandomValues(bytes);
+  return Array.from(bytes, (byte) => byte.toString(16).padStart(2, "0")).join("");
 }
 
 export function createShareLink(workId: string) {
   const work = getWork(workId);
-  if (!work) return undefined;
+  const token = createShareToken();
+  if (!work || !token) return undefined;
   const verification = latestVerification(work);
   const requirements = getRequirementStats(work);
   const snapshot: ShareSnapshot = {
@@ -1335,7 +1339,7 @@ export function createShareLink(workId: string) {
     nextSteps: work.recommendedNextAction ? [work.recommendedNextAction] : [],
     generatedAt: new Date().toISOString(),
   };
-  work.shareLink = { token: createShareToken(), createdAt: new Date().toISOString(), snapshot };
+  work.shareLink = { token, createdAt: new Date().toISOString(), snapshot };
   recordSecurityEvent(
     work,
     "Share link created",
