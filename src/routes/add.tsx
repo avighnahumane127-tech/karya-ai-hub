@@ -25,7 +25,7 @@ import { useNavigate } from "@tanstack/react-router";
 import { useRef, useState, type ChangeEvent, type DragEvent } from "react";
 
 import { PageHeader } from "@/components/primitives";
-import { addWorkItem, generateWorkPlan, type WorkItem } from "@/lib/work";
+import { addWorkItem, analyzeFileIntelligence, generateWorkPlan, type WorkItem } from "@/lib/work";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -910,6 +910,7 @@ function AddWork() {
                       : "Proceed with drafting deliverables against confirmed requirements.",
                 };
                 addWorkItem(newItem);
+                analyzeFileIntelligence(newId);
                 generateWorkPlan(newId);
                 setShowUnderstanding(false);
                 navigate({ to: "/work/$workId", params: { workId: newId } });

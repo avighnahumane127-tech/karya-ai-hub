@@ -695,6 +695,574 @@ export function getEvidenceStats(work: WorkItem) {
   );
 }
 
+function normalizeFileName(name: string) {
+  return name
+    .toLowerCase()
+    .replace(/\.(pdf|docx|doc|pptx|ppt|xlsx|xls|csv|txt|md|png|jpg|jpeg|webp|zip)$/i, "")
+    .replace(
+      /(?:[-_ ]?(?:copy|final|latest|approved|revised|updated|version|v)?[-_ ]?\d+|[-_ ]?(?:copy|final|latest|approved|revised|updated))$/i,
+      "",
+    )
+    .replace(/[-_ ]+/g, " ")
+    .trim();
+}
+
+function fileFingerprint(file: WorkFile) {
+  if (!file.content) return undefined;
+  return `${file.type || "unknown"}:${file.size || ""}:${file.content.trim().toLowerCase()}`;
+}
+
+function inferFilePurpose(file: WorkFile): FilePurpose {
+  if (file.role === "Final") return "Final deliverable";
+  if (file.role === "Working file") return "Working file";
+  const label = `${file.name} ${file.category || ""}`.toLowerCase();
+  if (label.includes("brief")) return "Brief";
+  if (label.includes("requirement") || label.includes("instruction")) return "Requirement source";
+  if (label.includes("template")) return "Template";
+  if (label.includes("approval") || label.includes("approved")) return "Approval";
+  if (label.includes("evidence")) return "Evidence";
+  if (label.includes("proposal") || label.includes("budget") || label.includes("reference"))
+    return "Supporting material";
+  return "Unknown";
+}
+
+function fileProcessingStatus(file: WorkFile): FileProcessingStatus {
+  const extension = file.name.toLowerCase().split(".").pop() || "";
+  const supported = [
+    "pdf",
+    "docx",
+    "doc",
+    "pptx",
+    "ppt",
+    "xlsx",
+    "xls",
+    "csv",
+    "txt",
+    "md",
+    "png",
+    "jpg",
+    "jpeg",
+    "webp",
+  ];
+  if (!supported.includes(extension)) return "Unsupported";
+  if (!file.content && ["txt", "md", "csv"].includes(extension)) return "Needs review";
+  return "Ready";
+}
+
+function contentReferences(content: string | undefined) {
+  if (!content) return [];
+  const references: string[] = [];
+  const pattern =
+    /(?:see|attached|refer(?:ence)? to|appendix)\s+(?:the\s+)?([a-z0-9_.-]+\.(?:pdf|docx|doc|pptx|ppt|xlsx|xls|csv|png|jpg|jpeg))/gi;
+  let match = pattern.exec(content);
+  while (match) {
+    if (match[1]) references.push(match[1]);
+    match = pattern.exec(content);
+  }
+  return references;
+}
+
+export function analyzeFileIntelligence(workId: string) {
+  const work = getWork(workId);
+  if (!work) return undefined;
+  const files = work.files;
+  const findings: FileIntelligenceFinding[] = [];
+  const now = nowLabel();
+
+  for (const file of files) {
+    file.likelyPurpose = file.likelyPurpose || inferFilePurpose(file);
+    file.processingStatus = fileProcessingStatus(file);
+    file.source = file.source || "User upload";
+    file.uploadedDate = file.uploadedDate || now;
+    file.authorityStatus = file.authorityStatus || "Unknown";
+    if (!file.contentFingerprint) {
+      const fingerprint = fileFingerprint(file);
+      if (fingerprint) file.contentFingerprint = fingerprint;
+    }
+    file.versionFamily = file.versionFamily || normalizeFileName(file.name);
+    file.relatedRequirementIds = file.relatedRequirementIds || [];
+    file.relatedEvidenceIds = file.relatedEvidenceIds || [];
+    file.relatedFileIds = file.relatedFileIds || [];
+  }
+
+  for (let i = 0; i < files.length; i += 1) {
+    const left = files[i];
+    if (!left) continue;
+    for (let j = i + 1; j < files.length; j += 1) {
+      const right = files[j];
+      if (!right) continue;
+      const sameFingerprint =
+        left.contentFingerprint &&
+        right.contentFingerprint &&
+        left.contentFingerprint === right.contentFingerprint;
+      const sameFamily =
+        left.versionFamily && right.versionFamily && left.versionFamily === right.versionFamily;
+      const similarName = normalizeFileName(left.name) === normalizeFileName(right.name);
+      if (!sameFingerprint && !sameFamily && !similarName) continue;
+
+      left.relatedFileIds = Array.from(new Set([...(left.relatedFileIds || []), right.id]));
+      right.relatedFileIds = Array.from(new Set([...(right.relatedFileIds || []), left.id]));
+      left.relationshipConfidence = sameFingerprint
+        ? "DIRECT RELATIONSHIP"
+        : "POSSIBLE RELATIONSHIP";
+      right.relationshipConfidence = sameFingerprint
+        ? "DIRECT RELATIONSHIP"
+        : "POSSIBLE RELATIONSHIP";
+
+      if (sameFingerprint) {
+        findings.push({
+          id: `file-finding-duplicate-${left.id}-${right.id}`,
+          type: "exact-duplicate",
+          severity: "Medium",
+          title: "Exact duplicate files detected",
+          detail: `${left.name} and ${right.name} have matching available content fingerprints. Neither file was removed or chosen as authoritative.`,
+          fileIds: [left.id, right.id],
+          recommendedAction: "Keep both, remove one, or explicitly mark the authoritative file.",
+          status: "Open",
+        });
+      } else if (sameFamily || similarName) {
+        findings.push({
+          id: `file-finding-version-${left.id}-${right.id}`,
+          type: "version-conflict",
+          severity: "High",
+          title: "Possible version conflict",
+          detail: `${left.name} and ${right.name} appear related, but Karya AI cannot safely determine which version is authoritative from filenames alone.`,
+          fileIds: [left.id, right.id],
+          recommendedAction: "Review the versions and confirm the authoritative file.",
+          status: "Human review",
+        });
+      }
+    }
+  }
+
+  for (const file of files) {
+    const references = contentReferences(file.content);
+    for (const reference of references) {
+      const matchingFile = files.find(
+        (candidate) => candidate.name.toLowerCase() === reference.toLowerCase(),
+      );
+      if (matchingFile) {
+        file.relatedFileIds = Array.from(
+          new Set([...(file.relatedFileIds || []), matchingFile.id]),
+        );
+        matchingFile.relatedFileIds = Array.from(
+          new Set([...(matchingFile.relatedFileIds || []), file.id]),
+        );
+        file.relationshipConfidence = "DIRECT RELATIONSHIP";
+      } else {
+        findings.push({
+          id: `file-finding-missing-${file.id}-${reference}`,
+          type: "missing-referenced-file",
+          severity: "High",
+          title: "Referenced file missing",
+          detail: `${file.name} refers to ${reference}, but no matching file was found in this Work Package.`,
+          fileIds: [file.id],
+          sourceReference: file.name,
+          recommendedAction: `Request or add ${reference}, then reassess the affected requirements and plan tasks.`,
+          status: "Open",
+        });
+      }
+    }
+  }
+
+  const families = new Map<string, WorkFile[]>();
+  for (const file of files) {
+    if (!file.versionFamily || file.versionFamily === "") continue;
+    const family = families.get(file.versionFamily) || [];
+    family.push(file);
+    families.set(file.versionFamily, family);
+  }
+  for (const family of families.values()) {
+    const candidates = family.filter(
+      (file) => file.authorityStatus === "Candidate" || file.authorityStatus === "Unknown",
+    );
+    if (candidates.length > 1) {
+      findings.push({
+        id: `file-finding-authority-${family.map((file) => file.id).join("-")}`,
+        type: "multiple-authoritative",
+        severity: "High",
+        title: "Multiple possible authoritative files",
+        detail: `${candidates.length} related files remain possible sources of truth. Filename markers such as latest or final were not treated as proof.`,
+        fileIds: candidates.map((file) => file.id),
+        recommendedAction: "Review the versions and explicitly mark one as authoritative.",
+        status: "Human review",
+      });
+    }
+    const hasApproved = family.some((file) => /approved|revised|updated/i.test(file.name));
+    if (hasApproved) {
+      const older = family.filter((file) => !/approved|revised|updated/i.test(file.name));
+      for (const file of older) {
+        if (file.authorityStatus !== "Authoritative") file.authorityStatus = "Possibly outdated";
+      }
+      if (older.length > 0) {
+        findings.push({
+          id: `file-finding-outdated-${family.map((file) => file.id).join("-")}`,
+          type: "possibly-outdated",
+          severity: "Medium",
+          title: "Possible outdated source",
+          detail: `An approved, revised, or updated file exists alongside an older-looking version. Karya AI did not automatically replace the older file.`,
+          fileIds: family.map((file) => file.id),
+          recommendedAction: "Review the versions and confirm which source should be trusted.",
+          status: "Human review",
+        });
+      }
+    }
+  }
+
+  work.fileFindings = findings;
+  work.activity.unshift({
+    id: `act-${Date.now()}`,
+    when: now,
+    change: `File Intelligence analyzed ${files.length} file${files.length === 1 ? "" : "s"} and found ${findings.length} finding${findings.length === 1 ? "" : "s"}.`,
+  });
+  persistWorkItems();
+  return findings;
+}
+
+export function markFileAuthority(
+  workId: string,
+  fileId: string,
+  status: FileAuthorityStatus,
+  confirmedBy = "User",
+) {
+  const work = getWork(workId);
+  const file = work?.files.find((item) => item.id === fileId);
+  if (!work || !file) return;
+  const previous = file.authorityStatus || "Unknown";
+  file.authorityStatus = status;
+  if (status === "Authoritative") {
+    file.authorityConfirmedBy = confirmedBy;
+    file.authorityConfirmedDate = nowLabel();
+  }
+  work.activity.unshift({
+    id: `act-${Date.now()}`,
+    when: nowLabel(),
+    change: `File authority changed: ${file.name} · ${previous} → ${status}`,
+  });
+  analyzeFileIntelligence(workId);
+  persistWorkItems();
+}
+
+export function addCompletedWorkFile(workId: string, input: Omit<WorkFile, "id" | "role">) {
+  const work = getWork(workId);
+  if (!work) return undefined;
+  const file: WorkFile = {
+    ...input,
+    id: `file-final-${Date.now()}`,
+    role: "Final",
+    source: input.source || "User upload",
+    uploadedDate: input.uploadedDate || nowLabel(),
+    likelyPurpose: "Final deliverable",
+    processingStatus: fileProcessingStatus(input as WorkFile),
+    authorityStatus: "Unknown",
+  };
+  work.files.push(file);
+  work.activity.unshift({
+    id: `act-${Date.now()}`,
+    when: nowLabel(),
+    change: `Completed work uploaded: ${file.name}`,
+  });
+  analyzeFileIntelligence(workId);
+  persistWorkItems();
+  return file;
+}
+
+function requirementStatusForVerification(
+  status: ReqStatus,
+): VerificationRequirementResult["status"] {
+  if (status === "complete") return "SATISFIED";
+  if (status === "partial") return "PARTIALLY SATISFIED";
+  if (status === "missing") return "MISSING";
+  if (status === "conflict") return "CONTRADICTORY";
+  if (status === "SATISFIED") return "SATISFIED";
+  if (status === "PARTIALLY SATISFIED") return "PARTIALLY SATISFIED";
+  if (status === "MISSING") return "MISSING";
+  if (status === "CONTRADICTORY") return "CONTRADICTORY";
+  return "NEEDS REVIEW";
+}
+
+function contentHasRequirement(content: string, title: string) {
+  const words = title
+    .toLowerCase()
+    .split(/\\W+/)
+    .filter((word) => word.length > 4);
+  if (words.length === 0) return false;
+  const normalized = content.toLowerCase();
+  return words.filter((word) => normalized.includes(word)).length >= Math.min(2, words.length);
+}
+
+function buildCompletionTest(
+  work: WorkItem,
+  results: VerificationRequirementResult[],
+  submittedFiles: WorkFile[],
+) {
+  const items: CompletionTestItem[] = results.map((result) => ({
+    id: `completion-requirement-${result.requirementId}`,
+    type: "CONTENT",
+    title:
+      work.requirements.find((requirement) => requirement.id === result.requirementId)?.title ||
+      "Requirement",
+    status:
+      result.status === "SATISFIED"
+        ? "Pass"
+        : result.status === "PARTIALLY SATISFIED"
+          ? "Warning"
+          : result.status === "NEEDS REVIEW"
+            ? "Needs review"
+            : "Fail",
+    detail: result.finding,
+    relatedRequirementIds: [result.requirementId],
+  }));
+  if (work.due) {
+    items.push({
+      id: "completion-deadline",
+      type: "DEADLINE",
+      title: "Required delivery deadline",
+      status: "Needs review",
+      detail:
+        "A deadline exists, but submission timing cannot be verified from the uploaded file alone.",
+      relatedRequirementIds: [],
+    });
+  }
+  if (submittedFiles.some((file) => file.processingStatus === "Unsupported")) {
+    items.push({
+      id: "completion-format",
+      type: "FORMAT",
+      title: "Supported verification format",
+      status: "Needs review",
+      detail:
+        "At least one submitted file format is not currently supported for reliable verification.",
+      relatedRequirementIds: [],
+    });
+  }
+  return items;
+}
+
+export function runVerification(workId: string) {
+  const work = getWork(workId);
+  if (!work) return undefined;
+  const submittedFiles = work.files.filter((file) => file.role === "Final");
+  if (submittedFiles.length === 0) return undefined;
+  const content = submittedFiles
+    .map((file) => file.content || "")
+    .filter(Boolean)
+    .join("\\n");
+  const results: VerificationRequirementResult[] = [];
+  const findings: VerificationFinding[] = [];
+
+  for (const requirement of work.requirements) {
+    const baseStatus = requirementStatusForVerification(requirement.status);
+    const evidenceIds = requirement.relatedEvidenceIds || [];
+    const contentAvailable = content.trim().length > 0;
+    let status = baseStatus;
+    let finding = "No verification result has been established.";
+    if (!contentAvailable) {
+      status = "NEEDS REVIEW";
+      finding =
+        "The submitted format does not expose searchable content, so this requirement needs human review.";
+    } else if (baseStatus === "SATISFIED" && !contentHasRequirement(content, requirement.title)) {
+      status = "NEEDS REVIEW";
+      finding =
+        "Supporting evidence exists for the requirement, but the submitted work did not expose a clear matching statement for automated verification.";
+    } else if (baseStatus === "MISSING") {
+      finding =
+        "No supporting evidence or completed-output confirmation was found for this requirement.";
+    } else if (baseStatus === "PARTIALLY SATISFIED") {
+      finding =
+        "The requirement has some supporting evidence, but the available Work data does not establish that every part is complete.";
+    } else if (baseStatus === "CONTRADICTORY") {
+      finding =
+        "Available sources or evidence conflict. The requirement cannot be treated as satisfied without review.";
+    } else if (baseStatus === "SATISFIED") {
+      finding =
+        "The requirement is supported by the current evidence and a matching statement was found in the submitted work.";
+    } else {
+      finding =
+        "The requirement is present in the Work, but the submitted work does not yet establish completion.";
+    }
+
+    const result: VerificationRequirementResult = {
+      requirementId: requirement.id,
+      status,
+      finding,
+      evidenceIds,
+      outputFileIds: submittedFiles.map((file) => file.id),
+    };
+    results.push(result);
+
+    if (status !== "SATISFIED") {
+      const severity: VerificationSeverity =
+        requirement.priority === "CRITICAL"
+          ? "Critical"
+          : requirement.priority === "HIGH"
+            ? "High"
+            : "Medium";
+      const type: VerificationFindingType =
+        status === "MISSING"
+          ? "missing-requirement"
+          : status === "PARTIALLY SATISFIED"
+            ? "partial-requirement"
+            : status === "CONTRADICTORY"
+              ? "contradiction"
+              : "human-review";
+      findings.push({
+        id: `verification-finding-${Date.now()}-${requirement.id}`,
+        type,
+        severity,
+        title:
+          status === "MISSING"
+            ? "Requirement not satisfied"
+            : status === "PARTIALLY SATISFIED"
+              ? "Requirement partially satisfied"
+              : status === "CONTRADICTORY"
+                ? "Conflicting requirement evidence"
+                : "Human review required",
+        detail: `${requirement.title}: ${finding}`,
+        relatedRequirementIds: [requirement.id],
+        relatedEvidenceIds: evidenceIds,
+        relatedFileIds: submittedFiles.map((file) => file.id),
+        ...(requirement.source.label ? { sourceReference: requirement.source.label } : {}),
+        recommendedAction:
+          status === "NEEDS REVIEW"
+            ? "Review the submitted work and confirm the requirement manually."
+            : "Add the missing support or correct the submitted work, then rerun verification.",
+        status: status === "NEEDS REVIEW" ? "Human review" : "Open",
+      });
+    }
+    requirement.status = status;
+    requirement.modifiedDate = nowLabel();
+    requirement.history = [
+      ...(requirement.history || []),
+      {
+        id: `requirement-history-verification-${Date.now()}-${requirement.id}`,
+        date: nowLabel(),
+        previousWording: requirement.currentWording || requirement.title,
+        newWording: requirement.currentWording || requirement.title,
+        changedBy: "Verification Engine",
+        source: submittedFiles.map((file) => file.name).join(", "),
+        reason: `Verification result: ${status}`,
+      },
+    ];
+  }
+
+  for (const fileFinding of work.fileFindings || []) {
+    if (fileFinding.status === "Open" || fileFinding.status === "Human review") {
+      findings.push({
+        id: `verification-file-finding-${fileFinding.id}`,
+        type:
+          fileFinding.type === "missing-referenced-file"
+            ? "missing-attachment"
+            : fileFinding.type === "possibly-outdated"
+              ? "outdated-source"
+              : "human-review",
+        severity: fileFinding.severity,
+        title: fileFinding.title,
+        detail: fileFinding.detail,
+        relatedRequirementIds: [],
+        relatedEvidenceIds: [],
+        relatedFileIds: fileFinding.fileIds,
+        ...(fileFinding.sourceReference ? { sourceReference: fileFinding.sourceReference } : {}),
+        recommendedAction: fileFinding.recommendedAction,
+        status: fileFinding.status === "Human review" ? "Human review" : "Open",
+      });
+    }
+  }
+
+  const completionTest = buildCompletionTest(work, results, submittedFiles);
+  const criticalFindings = findings.filter(
+    (finding) => finding.severity === "Critical" && finding.status === "Open",
+  );
+  const openFindings = findings.filter((finding) => finding.status === "Open");
+  const humanReview = findings.some(
+    (finding) =>
+      finding.status === "Human review" ||
+      (finding.severity === "Critical" && finding.status !== "Resolved"),
+  );
+  const allSatisfied =
+    results.length > 0 &&
+    results.every((result) => result.status === "SATISFIED") &&
+    openFindings.length === 0;
+  const finalStatus: VerificationFinalStatus = humanReview
+    ? "HUMAN REVIEW REQUIRED"
+    : criticalFindings.length > 0 ||
+        results.some((result) => result.status === "MISSING" || result.status === "CONTRADICTORY")
+      ? "NOT READY"
+      : allSatisfied
+        ? "READY TO SUBMIT"
+        : "READY WITH WARNINGS";
+
+  const version = (work.verificationRuns?.length || 0) + 1;
+  const run: VerificationRun = {
+    id: `verification-${Date.now()}`,
+    date: nowLabel(),
+    version,
+    submittedFileIds: submittedFiles.map((file) => file.id),
+    requirementResults: results,
+    findings,
+    completionTest,
+    finalStatus,
+    summary: `${results.filter((result) => result.status === "SATISFIED").length}/${results.length} requirements satisfied · ${findings.filter((finding) => finding.severity === "Critical").length} critical issues · ${findings.length} total findings`,
+  };
+
+  work.verificationRuns = [...(work.verificationRuns || []), run];
+  work.verify = results.map((result) => ({
+    id: `verify-${result.requirementId}`,
+    title:
+      work.requirements.find((requirement) => requirement.id === result.requirementId)?.title ||
+      "Requirement",
+    status:
+      result.status === "SATISFIED"
+        ? "satisfied"
+        : result.status === "NEEDS REVIEW"
+          ? "review"
+          : "missing",
+    note: result.finding,
+  }));
+  work.state =
+    finalStatus === "READY TO SUBMIT"
+      ? "ready-to-submit"
+      : finalStatus === "HUMAN REVIEW REQUIRED"
+        ? "review"
+        : "blocked";
+  work.recommendedNextAction =
+    finalStatus === "READY TO SUBMIT"
+      ? "Proceed with the handoff or submission."
+      : findings.find((finding) => finding.status !== "Resolved")?.recommendedAction ||
+        "Review the verification findings and rerun after corrections.";
+  work.activity.unshift({
+    id: `act-${Date.now()}`,
+    when: nowLabel(),
+    change: `Verification completed · version ${version} · ${finalStatus}`,
+  });
+  work.timeline.unshift({
+    id: `timeline-${Date.now()}`,
+    date: nowLabel(),
+    title: "Verification completed",
+    detail: run.summary,
+  });
+  persistWorkItems();
+  return run;
+}
+
+export function updateVerificationFinding(
+  workId: string,
+  runId: string,
+  findingId: string,
+  status: "Resolved" | "Human review",
+) {
+  const work = getWork(workId);
+  const run = work?.verificationRuns.find((item) => item.id === runId);
+  const finding = run?.findings.find((item) => item.id === findingId);
+  if (!work || !run || !finding) return;
+  finding.status = status;
+  work.activity.unshift({
+    id: `act-${Date.now()}`,
+    when: nowLabel(),
+    change: `Verification finding ${status.toLowerCase()}: ${finding.title}`,
+  });
+  persistWorkItems();
+}
+
 function canonicalRequirementStatus(status: ReqStatus) {
   if (status === "complete") return "SATISFIED";
   if (status === "partial") return "PARTIALLY SATISFIED";
