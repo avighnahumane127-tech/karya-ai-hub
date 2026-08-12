@@ -1631,6 +1631,209 @@ export function updateOpenIssueStatus(
   persistWorkItems();
 }
 
+function collaborationIsEnabled(work: WorkItem) {
+  return work.collaborationEnabled === true;
+}
+
+export function setCollaborationEnabled(workId: string, enabled: boolean) {
+  const work = getWork(workId);
+  if (!work) return;
+  work.collaborationEnabled = enabled;
+  work.activity.unshift({
+    id: `act-${Date.now()}`,
+    when: nowLabel(),
+    change: `Collaboration ${enabled ? "enabled" : "disabled"} for this Work`,
+  });
+  persistWorkItems();
+}
+
+export function addAssignment(
+  workId: string,
+  input: Omit<ResponsibilityAssignment, "id" | "assignedDate">,
+) {
+  const work = getWork(workId);
+  if (!work || !collaborationIsEnabled(work) || !input.person.trim()) return;
+  const assignment: ResponsibilityAssignment = {
+    ...input,
+    id: `assignment-${Date.now()}`,
+    assignedDate: nowLabel(),
+  };
+  work.assignments.unshift(assignment);
+  work.activity.unshift({
+    id: `act-${Date.now()}`,
+    when: nowLabel(),
+    change: `Responsibility assigned to ${assignment.person}: ${assignment.role}`,
+  });
+  persistWorkItems();
+}
+
+export function updateAssignmentStatus(
+  workId: string,
+  assignmentId: string,
+  status: ResponsibilityAssignment["status"],
+) {
+  const work = getWork(workId);
+  if (!work || !collaborationIsEnabled(work)) return;
+  const assignment = work.assignments.find((item) => item.id === assignmentId);
+  if (!assignment) return;
+  assignment.status = status;
+  work.activity.unshift({
+    id: `act-${Date.now()}`,
+    when: nowLabel(),
+    change: `Responsibility status updated: ${assignment.person} · ${status}`,
+  });
+  persistWorkItems();
+}
+
+function extractMentions(text: string) {
+  return Array.from(
+    new Set((text.match(/@[A-Za-z0-9_-]+/g) || []).map((mention) => mention.slice(1))),
+  );
+}
+
+export function addWorkComment(
+  workId: string,
+  input: Omit<WorkComment, "id" | "createdAt" | "mentionedUsers">,
+) {
+  const work = getWork(workId);
+  if (!work || !collaborationIsEnabled(work) || !input.text.trim() || !input.author.trim()) return;
+  const comment: WorkComment = {
+    ...input,
+    id: `comment-${Date.now()}`,
+    createdAt: nowLabel(),
+    mentionedUsers: extractMentions(input.text),
+  };
+  work.comments.unshift(comment);
+  work.activity.unshift({
+    id: `act-${Date.now()}`,
+    when: nowLabel(),
+    change: `Comment added by ${comment.author}`,
+  });
+  persistWorkItems();
+}
+
+export function addApproval(workId: string, input: Omit<ApprovalRecord, "id" | "date">) {
+  const work = getWork(workId);
+  if (!work || !collaborationIsEnabled(work)) return;
+  const approval: ApprovalRecord = { ...input, id: `approval-${Date.now()}`, date: nowLabel() };
+  work.approvals.unshift(approval);
+  work.activity.unshift({
+    id: `act-${Date.now()}`,
+    when: nowLabel(),
+    change: `Approval recorded: ${approval.status} by ${approval.reviewer}`,
+  });
+  persistWorkItems();
+}
+
+export function generateCommunicationDraft(
+  workId: string,
+  purpose: CommunicationDraft["purpose"],
+  tone: CommunicationDraft["tone"] = "Professional",
+  length: CommunicationDraft["length"] = "Short",
+) {
+  const work = getWork(workId);
+  if (!work) return undefined;
+  const openQuestions = work.questions.filter((q) => q.state !== "resolved");
+  const openRequirements = work.requirements.filter((r) => r.status !== "SATISFIED");
+  const blockedTasks = work.plan.filter(
+    (task) => task.status === "blocked" || task.status === "waiting",
+  );
+  const latestRun = work.verificationRuns?.[work.verificationRuns.length - 1];
+  const authoritativeFiles = work.files
+    .filter((file) => file.authorityStatus === "Authoritative")
+    .map((file) => file.name);
+  const greeting = tone === "Friendly" ? "Hi," : tone === "Formal" ? "Dear colleague," : "Hello,";
+  const signoff = tone === "Friendly" ? "Thanks." : tone === "Formal" ? "Regards." : "Thank you.";
+  const context =
+    purpose === "Clarification"
+      ? openQuestions.length > 0
+        ? `I need clarification on: ${openQuestions
+            .slice(0, 3)
+            .map((q) => q.question)
+            .join("; ")}.`
+        : openRequirements.length > 0
+          ? `Could you clarify the unresolved requirement: ${openRequirements[0]?.title || "the current requirement"}?`
+          : "No unresolved clarification item is recorded in this Work."
+      : purpose === "Status update"
+        ? `${work.title} has ${work.plan.filter((task) => task.status === "done").length} completed plan task(s). ${openRequirements.length} requirement(s) remain unresolved${blockedTasks.length > 0 ? `, and ${blockedTasks.length} task(s) are blocked or waiting` : ""}.`
+        : purpose === "Handoff"
+          ? `The current Work state is ready for continuation. ${work.recommendedNextAction || "Please review the open items before continuing."}${authoritativeFiles.length > 0 ? ` Use ${authoritativeFiles.join(", ")} as the confirmed source file(s).` : " No authoritative file has been confirmed."}`
+          : purpose === "Delivery"
+            ? `The completed work for ${work.title} is attached. ${latestRun ? `The latest verification status is ${latestRun.finalStatus}.` : "Verification has not been run yet."}`
+            : `This Work is currently ${work.state}. ${work.recommendedNextAction || "Please review the blockers and next action."}`;
+  const extra =
+    length === "Detailed"
+      ? `\n\nRelevant open items: ${[...openRequirements.map((r) => r.title), ...openQuestions.map((q) => q.question)].slice(0, 5).join("; ") || "None recorded."}`
+      : "";
+  const text = `${greeting}\n\n${context}${extra}\n\n${signoff}`;
+  const draft: CommunicationDraft = {
+    id: `message-${Date.now()}`,
+    purpose,
+    tone,
+    length,
+    text,
+    createdAt: nowLabel(),
+    sourceObjectIds: [
+      ...openQuestions.map((q) => q.id),
+      ...openRequirements.map((r) => r.id),
+      ...blockedTasks.map((task) => task.id),
+    ],
+  };
+  work.communicationDrafts.unshift(draft);
+  work.activity.unshift({
+    id: `act-${Date.now()}`,
+    when: nowLabel(),
+    change: `${purpose} message draft generated`,
+  });
+  persistWorkItems();
+  return draft;
+}
+
+export function editCommunicationDraft(workId: string, draftId: string, text: string) {
+  const work = getWork(workId);
+  const draft = work?.communicationDrafts.find((item) => item.id === draftId);
+  if (!work || !draft || !text.trim()) return;
+  draft.text = text;
+  draft.editedAt = nowLabel();
+  persistWorkItems();
+}
+
+export function applyTemplateToWork(workId: string, templateId: string) {
+  const work = getWork(workId);
+  const template = templates.find((item) => item.id === templateId);
+  if (!work || !template) return;
+  work.templateId = template.id;
+  for (const check of template.checks) {
+    if (work.requirements.some((requirement) => requirement.title === check)) continue;
+    work.requirements.push({
+      id: `template-req-${Date.now()}-${work.requirements.length}`,
+      title: check,
+      status: "NOT STARTED",
+      why: "Added from the selected Work template.",
+      evidence: "Not established.",
+      source: { kind: "confirmed", label: `Template: ${template.name}` },
+      action: "Address this template check before completion.",
+      workId,
+      type: "MANDATORY",
+      priority: "MEDIUM",
+      originalWording: check,
+      currentWording: check,
+      createdDate: nowLabel(),
+      modifiedDate: nowLabel(),
+      relatedEvidenceIds: [],
+      relatedTaskIds: [],
+      relatedQuestionIds: [],
+      history: [],
+    });
+  }
+  work.activity.unshift({
+    id: `act-${Date.now()}`,
+    when: nowLabel(),
+    change: `Template applied: ${template.name}`,
+  });
+  persistWorkItems();
+}
+
 function canonicalRequirementStatus(status: ReqStatus) {
   if (status === "complete") return "SATISFIED";
   if (status === "partial") return "PARTIALLY SATISFIED";
