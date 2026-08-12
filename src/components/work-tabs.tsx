@@ -10,10 +10,15 @@ import {
 } from "@/components/ui/dialog";
 import {
   addCompletedWorkFile,
+  addDecision,
   addEvidence,
+  addOpenIssue,
   addPlanTask,
   analyzeFileIntelligence,
+  generateHandoffPacket,
   generateWorkPlan,
+  updateDecision,
+  updateOpenIssueStatus,
   getEvidenceStats,
   getRequirementEvidence,
   getRequirementStats,
@@ -271,12 +276,7 @@ export function WorkTabPanel({ work, tab }: { work: WorkItem; tab: WorkTab }) {
     return <VerificationTab work={work} />;
   }
 
-  return (
-    <EmptyState
-      title="No handoff prepared."
-      description="A handoff packet is created from completed work, unresolved issues, files and next steps."
-    />
-  );
+  return <HandoffTab work={work} />;
 }
 
 function QuestionsTab({ work }: { work: WorkItem }) {
@@ -1967,4 +1967,309 @@ function VerificationFindingRow({
 
 function updateFilePurpose(workId: string, fileId: string, likelyPurpose: FilePurpose) {
   updateWorkFile(workId, fileId, { likelyPurpose });
+}
+
+function HandoffTab({ work }: { work: WorkItem }) {
+  const [, rerender] = useState(0);
+  const [newDecisionText, setNewDecisionText] = useState("");
+  const [newDecisionReason, setNewDecisionReason] = useState("");
+  const [newIssueTitle, setNewIssueTitle] = useState("");
+  const [newIssueSeverity, setNewIssueSeverity] = useState<"Critical" | "High" | "Medium" | "Low">(
+    "High",
+  );
+  const [newIssueDesc, setNewIssueDesc] = useState("");
+
+  const packets = work.handoffPackets || [];
+  const latestPacket = packets[packets.length - 1];
+
+  const handleGenerate = () => {
+    generateHandoffPacket(work.id);
+    rerender((value) => value + 1);
+  };
+
+  const handleAddDecision = (event: React.FormEvent) => {
+    event.preventDefault();
+    if (!newDecisionText.trim()) return;
+    addDecision(work.id, newDecisionText, newDecisionReason);
+    setNewDecisionText("");
+    setNewDecisionReason("");
+    rerender((value) => value + 1);
+  };
+
+  const handleAddIssue = (event: React.FormEvent) => {
+    event.preventDefault();
+    if (!newIssueTitle.trim()) return;
+    addOpenIssue(work.id, {
+      issue: newIssueTitle.trim(),
+      severity: newIssueSeverity,
+      description: newIssueDesc.trim() || "No description provided.",
+      status: "Open",
+      nextAction: "Review and resolve issue.",
+    });
+    setNewIssueTitle("");
+    setNewIssueDesc("");
+    rerender((value) => value + 1);
+  };
+
+  return (
+    <div className="space-y-8">
+      <div className="rounded-xl border border-hairline bg-surface p-6 space-y-4">
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div>
+            <p className="label-caps">Handoff Mode</p>
+            <h2 className="mt-1 text-lg font-medium">{work.title}</h2>
+            <p className="mt-1 text-xs text-muted-foreground">
+              {latestPacket
+                ? `Latest packet version ${latestPacket.version} · Generated ${latestPacket.date}`
+                : "No handoff packet generated yet."}
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            {latestPacket ? (
+              <StatusPill
+                tone={
+                  latestPacket.readinessStatus === "READY"
+                    ? "ready"
+                    : latestPacket.readinessStatus === "NOT READY"
+                      ? "blocked"
+                      : "warn"
+                }
+              >
+                {latestPacket.readinessStatus}
+              </StatusPill>
+            ) : null}
+            <Button size="sm" onClick={handleGenerate}>
+              {latestPacket ? "Generate updated handoff" : "Generate handoff"}
+            </Button>
+          </div>
+        </div>
+
+        {latestPacket ? (
+          <div className="rounded-lg bg-accent/30 p-4 space-y-3">
+            <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+              What you need to know before touching this project
+            </p>
+            <ul className="list-disc space-y-1 pl-4 text-sm text-foreground">
+              <li>The work objective is: {latestPacket.summary.description}</li>
+              <li>Authoritative files: {latestPacket.summary.authoritativeFiles.join(", ")}</li>
+              <li>
+                Completed items:{" "}
+                {latestPacket.summary.completed.length > 0
+                  ? latestPacket.summary.completed[0]
+                  : "None recorded yet."}
+              </li>
+              <li>
+                Open items:{" "}
+                {latestPacket.summary.open.length > 0
+                  ? latestPacket.summary.open[0]
+                  : "No critical open items."}
+              </li>
+              <li className="font-medium text-foreground">
+                Next action: {latestPacket.summary.nextAction}
+              </li>
+            </ul>
+          </div>
+        ) : null}
+      </div>
+
+      {latestPacket ? (
+        <div className="grid gap-6 md:grid-cols-2">
+          <div className="space-y-6">
+            <section className="space-y-3">
+              <h2 className="label-caps">What was completed</h2>
+              <div className="rounded-xl border border-hairline bg-surface p-4">
+                {latestPacket.whatWasCompleted.length === 0 ? (
+                  <p className="text-sm text-muted-foreground">No items completed yet.</p>
+                ) : (
+                  <ul className="space-y-2 text-sm text-muted-foreground">
+                    {latestPacket.whatWasCompleted.map((item, idx) => (
+                      <li key={idx} className="flex items-start gap-2">
+                        <span className="text-foreground">✓</span>
+                        <span>{item}</span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            </section>
+
+            <section className="space-y-3">
+              <h2 className="label-caps">What remains</h2>
+              <div className="rounded-xl border border-hairline bg-surface p-4">
+                {latestPacket.whatRemains.length === 0 ? (
+                  <p className="text-sm text-muted-foreground">No remaining items.</p>
+                ) : (
+                  <ul className="space-y-2 text-sm text-muted-foreground">
+                    {latestPacket.whatRemains.map((item, idx) => (
+                      <li key={idx} className="flex items-start gap-2">
+                        <span className="text-warn">⚠</span>
+                        <span>{item}</span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            </section>
+
+            <section className="space-y-3">
+              <h2 className="label-caps">Authoritative files</h2>
+              <div className="rounded-xl border border-hairline bg-surface p-4">
+                {latestPacket.authoritativeFiles.length === 0 ? (
+                  <p className="text-sm text-muted-foreground">
+                    No authoritative file confirmed yet.
+                  </p>
+                ) : (
+                  <ul className="space-y-2 text-sm">
+                    {latestPacket.authoritativeFiles.map((name, idx) => (
+                      <li key={idx} className="font-medium text-foreground">
+                        📁 {name}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            </section>
+          </div>
+
+          <div className="space-y-6">
+            <section className="space-y-3">
+              <h2 className="label-caps">Open issues ({work.openIssues?.length || 0})</h2>
+              <div className="divide-y divide-hairline rounded-xl border border-hairline bg-surface p-4 space-y-4">
+                <form onSubmit={handleAddIssue} className="space-y-3 border-b border-hairline pb-4">
+                  <p className="text-xs font-medium">Record open issue</p>
+                  <input
+                    value={newIssueTitle}
+                    onChange={(e) => setNewIssueTitle(e.currentTarget.value)}
+                    placeholder="Issue summary..."
+                    className="h-9 w-full rounded-md border border-input bg-background px-3 text-xs"
+                  />
+                  <div className="flex gap-2">
+                    <select
+                      value={newIssueSeverity}
+                      onChange={(e) => setNewIssueSeverity(e.currentTarget.value as any)}
+                      className="h-8 rounded-md border border-input bg-background px-2 text-xs"
+                    >
+                      <option value="Critical">Critical</option>
+                      <option value="High">High</option>
+                      <option value="Medium">Medium</option>
+                      <option value="Low">Low</option>
+                    </select>
+                    <input
+                      value={newIssueDesc}
+                      onChange={(e) => setNewIssueDesc(e.currentTarget.value)}
+                      placeholder="Description / next action..."
+                      className="h-8 flex-1 rounded-md border border-input bg-background px-3 text-xs"
+                    />
+                    <Button type="submit" size="sm">
+                      Add
+                    </Button>
+                  </div>
+                </form>
+
+                {!work.openIssues || work.openIssues.length === 0 ? (
+                  <p className="text-sm text-muted-foreground">No open issues recorded.</p>
+                ) : (
+                  <div className="space-y-3">
+                    {work.openIssues.map((issue) => (
+                      <div key={issue.id} className="flex items-start justify-between gap-3 pt-2">
+                        <div>
+                          <p className="text-sm font-medium">{issue.issue}</p>
+                          <p className="mt-0.5 text-xs text-muted-foreground">
+                            {issue.description}
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <StatusPill
+                            tone={
+                              issue.severity === "Critical"
+                                ? "blocked"
+                                : issue.severity === "High"
+                                  ? "warn"
+                                  : "neutral"
+                            }
+                          >
+                            {issue.severity}
+                          </StatusPill>
+                          <select
+                            value={issue.status}
+                            onChange={(e) => {
+                              updateOpenIssueStatus(
+                                work.id,
+                                issue.id,
+                                e.currentTarget.value as any,
+                              );
+                              rerender((v) => v + 1);
+                            }}
+                            className="h-7 rounded-md border border-input bg-background px-1 text-xs"
+                          >
+                            <option value="Open">Open</option>
+                            <option value="In progress">In progress</option>
+                            <option value="Waiting">Waiting</option>
+                            <option value="Resolved">Resolved</option>
+                            <option value="Dismissed">Dismissed</option>
+                          </select>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </section>
+
+            <section className="space-y-3">
+              <h2 className="label-caps">Decisions ({work.decisions?.length || 0})</h2>
+              <div className="divide-y divide-hairline rounded-xl border border-hairline bg-surface p-4 space-y-4">
+                <form
+                  onSubmit={handleAddDecision}
+                  className="space-y-3 border-b border-hairline pb-4"
+                >
+                  <p className="text-xs font-medium">Record new decision</p>
+                  <input
+                    value={newDecisionText}
+                    onChange={(e) => setNewDecisionText(e.currentTarget.value)}
+                    placeholder="Decision (e.g. Use Q3 pricing)..."
+                    className="h-9 w-full rounded-md border border-input bg-background px-3 text-xs"
+                  />
+                  <div className="flex gap-2">
+                    <input
+                      value={newDecisionReason}
+                      onChange={(e) => setNewDecisionReason(e.currentTarget.value)}
+                      placeholder="Reason..."
+                      className="h-8 flex-1 rounded-md border border-input bg-background px-3 text-xs"
+                    />
+                    <Button type="submit" size="sm">
+                      Record
+                    </Button>
+                  </div>
+                </form>
+
+                {!work.decisions || work.decisions.length === 0 ? (
+                  <p className="text-sm text-muted-foreground">No decisions recorded yet.</p>
+                ) : (
+                  <div className="space-y-3">
+                    {work.decisions.map((d) => (
+                      <div key={d.id} className="pt-2 text-sm">
+                        <p className="font-medium">{d.text}</p>
+                        {d.reason ? (
+                          <p className="mt-0.5 text-xs text-muted-foreground">Reason: {d.reason}</p>
+                        ) : null}
+                        <p className="mt-1 text-xs text-muted-foreground">
+                          Decided by {d.decidedBy || "User"} · {d.date}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </section>
+          </div>
+        </div>
+      ) : (
+        <EmptyState
+          title="No handoff packet generated yet."
+          description="Click 'Generate handoff' above to compile a structured handoff packet, AI insights summary, open issues, and decision history from the current Work state."
+        />
+      )}
+    </div>
+  );
 }

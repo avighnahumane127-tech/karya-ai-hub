@@ -831,6 +831,10 @@ function AddWork() {
                   questions: [],
                   fileFindings: [],
                   verificationRuns: [],
+                  decisions: [],
+                  decisionHistory: [],
+                  openIssues: [],
+                  handoffPackets: [],
                   files: sources.map((s, idx) => ({
                     id: s.id,
                     name: s.name,
@@ -867,7 +871,6 @@ function AddWork() {
                       change: "Work item created from Work Input package",
                     },
                   ],
-                  decisions: [],
                   assumptions: [
                     {
                       id: `assump-${Date.now()}`,

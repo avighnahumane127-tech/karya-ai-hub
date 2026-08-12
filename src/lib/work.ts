@@ -435,11 +435,75 @@ export type WorkItem = {
   verify: VerifyCheck[];
   timeline: TimelineEvent[];
   activity: ActivityRecord[];
-  decisions: { id: string; text: string; source?: string }[];
+  decisions: WorkDecision[];
+  decisionHistory: DecisionChangeEntry[];
+  openIssues: OpenIssue[];
+  handoffPackets: HandoffPacket[];
   assumptions: { id: string; text: string }[];
   issues: Issue[];
   findings: ReadinessFinding[];
   recommendedNextAction: string;
+};
+
+export type WorkDecision = {
+  id: string;
+  text: string;
+  reason?: string;
+  decidedBy?: string;
+  date: string;
+  source?: string;
+  affectedRequirements?: string[];
+  affectedTasks?: string[];
+  affectedRisks?: string[];
+  previousDecision?: string;
+};
+
+export type DecisionChangeEntry = {
+  id: string;
+  date: string;
+  oldDecision?: string;
+  newDecision: string;
+  source?: string;
+  changedBy?: string;
+  impact?: string;
+};
+
+export type OpenIssue = {
+  id: string;
+  issue: string;
+  severity: "Critical" | "High" | "Medium" | "Low";
+  description: string;
+  relatedWorkObject?: string;
+  owner?: string;
+  createdDate: string;
+  status: "Open" | "In progress" | "Waiting" | "Resolved" | "Dismissed";
+  nextAction: string;
+};
+
+export type HandoffPacket = {
+  id: string;
+  version: number;
+  date: string;
+  readinessStatus: "READY" | "READY WITH WARNINGS" | "NOT READY" | "HUMAN REVIEW REQUIRED";
+  whatWasRequested: string;
+  whatWasCompleted: string[];
+  whatRemains: string[];
+  currentFiles: { name: string; type: string; purpose: string; status: string; version?: string }[];
+  authoritativeFiles: string[];
+  decisions: WorkDecision[];
+  risks: { title: string; severity: string; action: string }[];
+  openQuestions: { question: string; priority: string; owner?: string }[];
+  nextSteps: string[];
+  summary: {
+    currentStatus: string;
+    description: string;
+    completed: string[];
+    open: string[];
+    decisions: string[];
+    authoritativeFiles: string[];
+    risks: string[];
+    nextAction: string;
+  };
 };
 
 export const stateLabels: Record<WorkState, string> = {
@@ -472,6 +536,10 @@ function loadPersistedWork(): WorkItem[] {
       requirements: item.requirements || [],
       fileFindings: item.fileFindings || [],
       verificationRuns: item.verificationRuns || [],
+      decisions: item.decisions || [],
+      decisionHistory: item.decisionHistory || [],
+      openIssues: item.openIssues || [],
+      handoffPackets: item.handoffPackets || [],
     }));
   } catch {
     return [];
@@ -494,7 +562,17 @@ export const workItems: WorkItem[] = loadPersistedWork();
 export const questions: Question[] = workItems.flatMap((item) => item.questions);
 
 /** Handoffs on real work. */
-export const handoffs: Handoff[] = [];
+export const handoffs: Handoff[] = workItems.flatMap((item) =>
+  (item.handoffPackets || []).map((hp) => ({
+    id: hp.id,
+    title: item.title,
+    person: "Team",
+    direction: "outgoing" as const,
+    status: hp.readinessStatus,
+    ...(hp.whatRemains[0] ? { remainingIssues: hp.whatRemains[0] } : {}),
+    ...(hp.nextSteps[0] ? { nextAction: hp.nextSteps[0] } : {}),
+  })),
+);
 
 /** Notifications from real events. */
 export const notifications: { id: string; text: string; when: string }[] = [];
@@ -1273,6 +1351,210 @@ export function updateVerificationFinding(
     id: `act-${Date.now()}`,
     when: nowLabel(),
     change: `Verification finding ${status.toLowerCase()}: ${finding.title}`,
+  });
+  persistWorkItems();
+}
+
+export function generateHandoffPacket(workId: string): HandoffPacket | undefined {
+  const work = getWork(workId);
+  if (!work) return undefined;
+
+  const now = nowLabel();
+  const completedReqs = work.requirements.filter((r) => r.status === "SATISFIED");
+  const openReqs = work.requirements.filter((r) => r.status !== "SATISFIED");
+  const completedTasks = work.plan.filter((t) => t.status === "done");
+  const openTasks = work.plan.filter((t) => t.status !== "done");
+  const openQuestions = work.questions.filter((q) => q.state !== "resolved");
+  const authoritativeFiles = work.files.filter((f) => f.authorityStatus === "Authoritative");
+  const currentStatus =
+    (work.verificationRuns?.length || 0) > 0
+      ? work.verificationRuns[work.verificationRuns.length - 1]?.finalStatus || "READY WITH WARNINGS"
+      : work.state === "ready-to-submit"
+        ? "READY TO SUBMIT"
+        : work.state === "blocked"
+          ? "NOT READY"
+          : "READY WITH WARNINGS";
+
+  const whatWasCompleted = [
+    ...completedReqs.map((r) => `Requirement satisfied: ${r.title}`),
+    ...completedTasks.map((t) => `Task completed: ${t.title}`),
+    ...(work.verificationRuns?.length > 0
+      ? [`Verification run #${work.verificationRuns.length}: ${currentStatus}`]
+      : []),
+  ];
+
+  const whatRemains = [
+    ...openReqs.map((r) => `Unresolved requirement (${r.status}): ${r.title}`),
+    ...openTasks.slice(0, 3).map((t) => `Pending task: ${t.title}`),
+    ...openQuestions.map((q) => `Unanswered question: ${q.question}`),
+  ];
+
+  const currentFiles = work.files.map((f) => ({
+    name: f.name,
+    type: f.type || "file",
+    purpose: f.likelyPurpose || "Unknown",
+    status: f.authorityStatus || "Unknown",
+  }));
+
+  const authFileNames = authoritativeFiles.map((f) => f.name);
+  const risks = (work.fileFindings || []).map((f) => ({
+    title: f.title,
+    severity: f.severity,
+    action: f.recommendedAction,
+  }));
+
+  const nextSteps =
+    openTasks.length > 0 && openTasks[0]?.title
+      ? [openTasks[0].title]
+      : [work.recommendedNextAction || "Review current state and continue work."];
+
+  const packet: HandoffPacket = {
+    id: `handoff-${Date.now()}`,
+    version: (work.handoffPackets?.length || 0) + 1,
+    date: now,
+    readinessStatus:
+      currentStatus === "READY TO SUBMIT"
+        ? "READY"
+        : currentStatus === "NOT READY"
+          ? "NOT READY"
+          : "READY WITH WARNINGS",
+    whatWasRequested: work.request.objective || work.description,
+    whatWasCompleted,
+    whatRemains,
+    currentFiles,
+    authoritativeFiles: authFileNames.length > 0 ? authFileNames : [],
+    decisions: work.decisions || [],
+    risks,
+    openQuestions: openQuestions.map((q) => ({
+      question: q.question,
+      priority: q.priority,
+      ...(q.personResponsible ? { owner: q.personResponsible } : {}),
+    })),
+    nextSteps,
+    summary: {
+      currentStatus,
+      description: work.request.objective || work.description,
+      completed: whatWasCompleted.slice(0, 4),
+      open: whatRemains.slice(0, 4),
+      decisions: (work.decisions || []).slice(0, 3).map((d) => d.text),
+      authoritativeFiles:
+        authFileNames.length > 0 ? authFileNames : ["No authoritative file confirmed."],
+      risks: risks.map((r) => r.title),
+      nextAction: nextSteps[0] || "Review current state.",
+    },
+  };
+
+  work.handoffPackets = [...(work.handoffPackets || []), packet];
+  work.activity.unshift({
+    id: `act-${Date.now()}`,
+    when: now,
+    change: `Handoff generated · Version ${packet.version} · ${currentStatus}`,
+  });
+  persistWorkItems();
+  return packet;
+}
+
+export function addDecision(
+  workId: string,
+  text: string,
+  reason?: string,
+  decidedBy = "User",
+  source?: string,
+) {
+  const work = getWork(workId);
+  if (!work || !text.trim()) return;
+  const decision: WorkDecision = {
+    id: `decision-${Date.now()}`,
+    text: text.trim(),
+    ...(reason?.trim() ? { reason: reason.trim() } : {}),
+    decidedBy,
+    date: nowLabel(),
+    ...(source?.trim() ? { source: source.trim() } : {}),
+  };
+  work.decisions.unshift(decision);
+  work.decisionHistory.unshift({
+    id: `decision-hist-${Date.now()}`,
+    date: nowLabel(),
+    newDecision: decision.text,
+    ...(decision.source ? { source: decision.source } : {}),
+    ...(decision.decidedBy ? { changedBy: decision.decidedBy } : {}),
+    impact: "New decision recorded.",
+  });
+  work.activity.unshift({
+    id: `act-${Date.now()}`,
+    when: nowLabel(),
+    change: `Decision recorded: ${decision.text}`,
+  });
+  generateHandoffPacket(workId);
+  persistWorkItems();
+}
+
+export function updateDecision(
+  workId: string,
+  decisionId: string,
+  newText: string,
+  reason?: string,
+  source?: string,
+) {
+  const work = getWork(workId);
+  if (!work) return;
+  const decision = work.decisions.find((d) => d.id === decisionId);
+  if (!decision) return;
+  const oldText = decision.text;
+  decision.text = newText.trim();
+  if (reason) decision.reason = reason.trim();
+  if (source) decision.source = source.trim();
+  decision.previousDecision = oldText;
+
+  work.decisionHistory.unshift({
+    id: `decision-hist-${Date.now()}`,
+    date: nowLabel(),
+    oldDecision: oldText,
+    newDecision: decision.text,
+    ...(decision.source ? { source: decision.source } : {}),
+    ...(decision.decidedBy ? { changedBy: decision.decidedBy } : {}),
+    impact: "Decision updated; may affect related requirements or tasks.",
+  });
+  work.activity.unshift({
+    id: `act-${Date.now()}`,
+    when: nowLabel(),
+    change: `Decision updated: ${oldText} → ${decision.text}`,
+  });
+  generateHandoffPacket(workId);
+  persistWorkItems();
+}
+
+export function addOpenIssue(workId: string, input: Omit<OpenIssue, "id" | "createdDate">) {
+  const work = getWork(workId);
+  if (!work) return;
+  const issue: OpenIssue = {
+    ...input,
+    id: `issue-${Date.now()}`,
+    createdDate: nowLabel(),
+  };
+  work.openIssues.unshift(issue);
+  work.activity.unshift({
+    id: `act-${Date.now()}`,
+    when: nowLabel(),
+    change: `Open issue created: ${issue.issue}`,
+  });
+  persistWorkItems();
+}
+
+export function updateOpenIssueStatus(
+  workId: string,
+  issueId: string,
+  status: OpenIssue["status"],
+) {
+  const work = getWork(workId);
+  if (!work) return;
+  const issue = work.openIssues.find((i) => i.id === issueId);
+  if (!issue) return;
+  issue.status = status;
+  work.activity.unshift({
+    id: `act-${Date.now()}`,
+    when: nowLabel(),
+    change: `Open issue status updated: ${issue.issue} · ${status}`,
   });
   persistWorkItems();
 }
