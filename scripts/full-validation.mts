@@ -12,6 +12,7 @@ const storage = new Map<string, string>();
 const workLib = await import("../src/lib/work.ts");
 const {
   addApproval,
+  addAssignment,
   addCompletedWorkFile,
   addDecision,
   addEvidence,
@@ -21,6 +22,7 @@ const {
   analyzeFileIntelligence,
   analyzeRequirementChanges,
   applyRetentionPolicy,
+  applyTemplateToWork,
   compareSourceVersions,
   createCrossWorkDependency,
   createOrganizationPolicy,
@@ -38,6 +40,7 @@ const {
   getShareSnapshot,
   intelligenceStore,
   markFileAuthority,
+  previewTemplateApplication,
   refreshAnalyticsIntelligence,
   removeEvidence,
   revokeShareLink,
@@ -47,8 +50,10 @@ const {
   setCollaborationEnabled,
   setRetentionPolicy,
   setWorkAnalyticsExcluded,
+  updateAssignmentStatus,
   updateQuestionAnswer,
   updateRequirement,
+  updateUserTemplate,
   updateWorkDeadline,
   updateWorkFile,
 } = workLib;
@@ -266,13 +271,17 @@ pass(
   "requirement history records status change",
   (workLib.getWork(work.id)?.requirements[0]?.history?.length || 0) > 0,
 );
-addApproval(work.id, {
+addAssignment(work.id, {
+  person: "Reviewer",
+  role: "Source reviewer",
   relatedObjectType: "requirement",
   relatedObjectId: "req-sources",
-  reviewer: "Manager",
-  status: "APPROVED",
-  comment: "Approved",
+  status: "Assigned",
 });
+pass(
+  "collaboration actions require local enablement",
+  (workLib.getWork(work.id)?.assignments.length || 0) === 0,
+);
 addDecision(work.id, "Use Q3 pricing", "Confirmed by user");
 addOpenIssue(work.id, {
   issue: "Waiting for client approval",
@@ -282,15 +291,70 @@ addOpenIssue(work.id, {
   nextAction: "Request approval.",
 });
 setCollaborationEnabled(work.id, true);
+addAssignment(work.id, {
+  person: "Reviewer",
+  role: "Source reviewer",
+  relatedObjectType: "requirement",
+  relatedObjectId: "req-sources",
+  status: "Assigned",
+});
+const assignment = workLib.getWork(work.id)?.assignments[0];
+if (assignment) updateAssignmentStatus(work.id, assignment.id, "Completed");
 addWorkComment(work.id, {
   author: "Reviewer",
-  text: "Please review sources.",
+  text: "Please review sources with @Owner.",
   relatedObjectType: "work",
   relatedObjectId: work.id,
 });
-pass("collaboration records comment", (workLib.getWork(work.id)?.comments.length || 0) === 1);
-
-const communication = generateCommunicationDraft(work.id, "Clarification", "Professional", "Short");
+addApproval(work.id, {
+  relatedObjectType: "requirement",
+  relatedObjectId: "req-sources",
+  reviewer: "Manager",
+  status: "APPROVED",
+  comment: "Approved",
+});
+pass(
+  "collaboration records assignment",
+  workLib.getWork(work.id)?.assignments[0]?.status === "Completed",
+);
+pass(
+  "collaboration preserves comment mentions",
+  workLib.getWork(work.id)?.comments[0]?.mentionedUsers.includes("Owner") === true,
+);
+pass(
+  "collaboration records approval",
+  workLib.getWork(work.id)?.approvals[0]?.status === "APPROVED",
+);
+const draftPurposes = [
+  "Clarification",
+  "Status update",
+  "Handoff",
+  "Delivery",
+  "Escalation",
+] as const;
+const drafts = draftPurposes.map((purpose) =>
+  generateCommunicationDraft(work.id, purpose, "Professional", "Short"),
+);
+pass(
+  "communication supports every local draft purpose",
+  drafts.every(
+    (draft, index) => draft?.purpose === draftPurposes[index] && Boolean(draft.text.trim()),
+  ),
+);
+pass(
+  "communication drafts have unique local identifiers",
+  new Set(drafts.map((draft) => draft?.id)).size === drafts.length,
+);
+pass(
+  "communication is never falsely marked sent",
+  (workLib.getWork(work.id)?.activity || []).every(
+    (activity) =>
+      !String(activity.change || "")
+        .toLocaleLowerCase()
+        .includes("message sent"),
+  ),
+);
+const communication = drafts[0];
 pass(
   "communication draft uses current Work",
   Boolean(communication?.text.includes("No unresolved clarification item")),
@@ -378,12 +442,45 @@ pass(
 const analytics = refreshAnalyticsIntelligence();
 pass("analytics is derived from real Work records", analytics.includedWorkIds.includes(work.id));
 pass("advanced pattern/intelligence refresh completes", analytics.generatedAt.length > 0);
+const builtInTemplate = previewTemplateApplication(work.id, "research");
+pass(
+  "built-in templates expose additive checks",
+  Boolean(builtInTemplate && builtInTemplate.addedChecks.length > 0),
+);
+const requirementCountBeforeBuiltInTemplate = workLib.getWork(work.id)?.requirements.length || 0;
+applyTemplateToWork(work.id, "research");
+pass(
+  "built-in template adds checks without overwriting existing requirements",
+  (workLib.getWork(work.id)?.requirements.length || 0) > requirementCountBeforeBuiltInTemplate &&
+    workLib.getWork(work.id)?.requirements.find((requirement) => requirement.id === "req-sources")
+      ?.status === "SATISFIED",
+);
 const template = createUserTemplate({
   name: "Validation template",
   description: "Fixture template",
   checks: ["Include sources"],
 });
 pass("personal template persists", Boolean(template));
+if (template) updateUserTemplate(template.id, { description: "Updated validation fixture" });
+pass(
+  "personal template versions increment on update",
+  workLib.userTemplates.find((item) => item.id === template?.id)?.version === 2,
+);
+updateRequirement(work.id, "req-sources", { status: "CONTRADICTORY" });
+const templatePreview = template ? previewTemplateApplication(work.id, template.id) : undefined;
+pass(
+  "template conflict preview identifies contradictory matching requirement",
+  Boolean(templatePreview?.conflicts.some((conflict) => conflict.requirementId === "req-sources")),
+);
+const requirementCountBeforePersonalTemplate = workLib.getWork(work.id)?.requirements.length || 0;
+if (template) applyTemplateToWork(work.id, template.id);
+pass(
+  "template application retains conflicting requirement without overwrite",
+  (workLib.getWork(work.id)?.requirements.length || 0) === requirementCountBeforePersonalTemplate &&
+    workLib.getWork(work.id)?.requirements.find((requirement) => requirement.id === "req-sources")
+      ?.status === "CONTRADICTORY",
+);
+updateRequirement(work.id, "req-sources", { status: "SATISFIED" });
 setWorkAnalyticsExcluded(work.id, true);
 pass("analytics exclusion removes Work", !getAnalyticsSnapshot().includedWorkIds.includes(work.id));
 setWorkAnalyticsExcluded(work.id, false);

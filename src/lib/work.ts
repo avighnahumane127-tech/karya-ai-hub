@@ -753,6 +753,8 @@ export type UserTemplate = Template & {
   createdAt: string;
   updatedAt: string;
   uses: number;
+  /** Incremented for each user-authored update; legacy records are treated as version 1. */
+  version?: number;
   defaultRequirements?: string[];
   defaultDeliverables?: string[];
 };
@@ -3668,7 +3670,7 @@ export function addAssignment(
   if (!work || !collaborationIsEnabled(work) || !input.person.trim()) return;
   const assignment: ResponsibilityAssignment = {
     ...input,
-    id: `assignment-${Date.now()}`,
+    id: secureId("assignment"),
     assignedDate: nowLabel(),
   };
   work.assignments.unshift(assignment);
@@ -3712,7 +3714,7 @@ export function addWorkComment(
   if (!work || !collaborationIsEnabled(work) || !input.text.trim() || !input.author.trim()) return;
   const comment: WorkComment = {
     ...input,
-    id: `comment-${Date.now()}`,
+    id: secureId("comment"),
     createdAt: nowLabel(),
     mentionedUsers: extractMentions(input.text),
   };
@@ -3728,7 +3730,7 @@ export function addWorkComment(
 export function addApproval(workId: string, input: Omit<ApprovalRecord, "id" | "date">) {
   const work = getWork(workId);
   if (!work || !collaborationIsEnabled(work)) return;
-  const approval: ApprovalRecord = { ...input, id: `approval-${Date.now()}`, date: nowLabel() };
+  const approval: ApprovalRecord = { ...input, id: secureId("approval"), date: nowLabel() };
   work.approvals.unshift(approval);
   work.activity.unshift({
     id: `act-${Date.now()}`,
@@ -3780,7 +3782,7 @@ export function generateCommunicationDraft(
       : "";
   const text = `${greeting}\n\n${context}${extra}\n\n${signoff}`;
   const draft: CommunicationDraft = {
-    id: `message-${Date.now()}`,
+    id: secureId("message"),
     purpose,
     tone,
     length,
@@ -3809,6 +3811,57 @@ export function editCommunicationDraft(workId: string, draftId: string, text: st
   draft.text = text;
   draft.editedAt = nowLabel();
   persistWorkItems();
+}
+
+export type TemplateRequirementConflict = {
+  check: string;
+  requirementId: string;
+  requirementTitle: string;
+  status: ReqStatus;
+};
+
+export type TemplateApplicationPreview = {
+  templateId: string;
+  addedChecks: string[];
+  duplicateChecks: string[];
+  conflicts: TemplateRequirementConflict[];
+};
+
+/**
+ * Evaluates a template against the current Work without changing it. A conflict is only reported
+ * when the matching existing requirement is explicitly contradictory; the template is never used
+ * to overwrite requirements or their status.
+ */
+export function previewTemplateApplication(
+  workId: string,
+  templateId: string,
+): TemplateApplicationPreview | undefined {
+  const work = getWork(workId);
+  const template = [...templates, ...userTemplates].find((item) => item.id === templateId);
+  if (!work || !template) return undefined;
+  const normalized = (value: string) => value.trim().toLocaleLowerCase();
+  const addedChecks: string[] = [];
+  const duplicateChecks: string[] = [];
+  const conflicts: TemplateRequirementConflict[] = [];
+  for (const check of template.checks) {
+    const matchingRequirement = work.requirements.find(
+      (requirement) => normalized(requirement.title) === normalized(check),
+    );
+    if (!matchingRequirement) {
+      addedChecks.push(check);
+      continue;
+    }
+    duplicateChecks.push(check);
+    if (["CONTRADICTORY", "conflict"].includes(matchingRequirement.status)) {
+      conflicts.push({
+        check,
+        requirementId: matchingRequirement.id,
+        requirementTitle: matchingRequirement.title,
+        status: matchingRequirement.status,
+      });
+    }
+  }
+  return { templateId, addedChecks, duplicateChecks, conflicts };
 }
 
 export function applyTemplateToWork(workId: string, templateId: string) {
@@ -4483,6 +4536,7 @@ export function createUserTemplate(input: Pick<UserTemplate, "name" | "descripti
     createdAt: nowLabel(),
     updatedAt: nowLabel(),
     uses: 0,
+    version: 1,
   };
   userTemplates.unshift(template);
   persistUserTemplates();
@@ -4498,6 +4552,7 @@ export function updateUserTemplate(
   if (patch.name?.trim()) template.name = patch.name.trim();
   if (patch.description !== undefined) template.description = patch.description.trim();
   if (patch.checks) template.checks = patch.checks.filter(Boolean);
+  template.version = (template.version || 1) + 1;
   template.updatedAt = nowLabel();
   persistUserTemplates();
 }

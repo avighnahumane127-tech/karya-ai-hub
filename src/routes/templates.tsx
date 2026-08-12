@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import {
   applyTemplateToWork,
   createUserTemplate,
+  previewTemplateApplication,
   deleteUserTemplate,
   recordTemplateUse,
   templates,
@@ -45,10 +46,14 @@ function TemplatesPage() {
       setNotice("Select an active Work before applying a template.");
       return;
     }
+    const preview = previewTemplateApplication(selectedWorkId, template.id);
     applyTemplateToWork(selectedWorkId, template.id);
     if ("uses" in template) recordTemplateUse(template.id);
+    const additions = preview?.addedChecks.length || 0;
+    const duplicates = preview?.duplicateChecks.length || 0;
+    const conflicts = preview?.conflicts.length || 0;
     setNotice(
-      `${template.name} applied to ${workItems.find((work) => work.id === selectedWorkId)?.title || "the selected Work"}.`,
+      `${template.name} applied to ${workItems.find((work) => work.id === selectedWorkId)?.title || "the selected Work"}. Added ${additions} check${additions === 1 ? "" : "s"}; retained ${duplicates} existing requirement${duplicates === 1 ? "" : "s"} without changes.${conflicts > 0 ? ` ${conflicts} matching requirement${conflicts === 1 ? " is" : "s are"} marked CONTRADICTORY and require review.` : " No matching requirement conflicts detected."}`,
     );
   };
 
@@ -172,8 +177,9 @@ function TemplatesPage() {
                       <h3 className="text-sm font-medium">{template.name}</h3>
                       <p className="mt-1 text-sm text-muted-foreground">{template.description}</p>
                     </div>
-                    <span className="text-xs text-muted-foreground">
-                      Used {template.uses} time{template.uses === 1 ? "" : "s"}
+                    <span className="text-right text-xs text-muted-foreground">
+                      Version {template.version || 1} · Used {template.uses} time
+                      {template.uses === 1 ? "" : "s"}
                     </span>
                   </div>
                   <ul className="mt-4 space-y-1 text-xs text-muted-foreground">

@@ -50,12 +50,13 @@ export function SourceTag({
     conflict: "blocked",
     unknown: "neutral",
   };
+  const confirmedByUser = /\b(user|stakeholder|client|owner)\b/i.test(label || "");
   const words: Record<"confirmed" | "inferred" | "assumption" | "conflict" | "unknown", string> = {
-    confirmed: "Confirmed",
-    inferred: "Inferred",
-    assumption: "Assumption",
-    conflict: "Conflict",
-    unknown: "Unknown",
+    confirmed: confirmedByUser ? "USER CONFIRMED" : "FOUND IN SOURCE",
+    inferred: "INFERRED",
+    assumption: "ASSUMED",
+    conflict: "CONFLICT",
+    unknown: "UNKNOWN",
   };
   return (
     <button

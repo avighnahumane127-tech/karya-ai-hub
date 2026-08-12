@@ -111,6 +111,26 @@ const stepTone: Record<StepStatus, Tone> = {
   "needs-review": "warn",
 };
 
+function ProvenanceBadge({
+  reference,
+  fallback = "unknown",
+  label,
+}: {
+  reference?: string | undefined;
+  fallback?: "confirmed" | "inferred" | "assumption" | "conflict" | "unknown";
+  label?: string | undefined;
+}) {
+  const lowerReference = reference?.toLocaleLowerCase() || "";
+  const kind = lowerReference.includes("assum")
+    ? "assumption"
+    : lowerReference.includes("infer") || lowerReference.includes("derived")
+      ? "inferred"
+      : reference?.trim()
+        ? "confirmed"
+        : fallback;
+  return <SourceTag kind={kind} label={label || reference || "No source reference recorded"} />;
+}
+
 function Section({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <section>
@@ -415,9 +435,10 @@ export function WorkTabPanel({ work, tab }: { work: WorkItem; tab: WorkTab }) {
                   <p className="text-xs text-muted-foreground/80 italic">
                     Why it matters: {f.whyItMatters}
                   </p>
-                  {f.sourceReference ? (
-                    <p className="text-xs text-muted-foreground">Source: {f.sourceReference}</p>
-                  ) : null}
+                  <ProvenanceBadge
+                    reference={f.sourceReference}
+                    fallback={f.type === "assumption" ? "assumption" : "unknown"}
+                  />
                   {f.confidence ? (
                     <p className="text-xs text-muted-foreground">Confidence: {f.confidence}</p>
                   ) : null}
@@ -1066,9 +1087,19 @@ function EvidenceTab({ work }: { work: WorkItem }) {
                 <div className="grid gap-3 sm:grid-cols-2 text-xs">
                   <div>
                     <p className="label-caps">Source</p>
-                    <p className="mt-1 text-muted-foreground">
-                      {evidence.source || "Source unavailable."}
-                    </p>
+                    <div className="mt-1">
+                      <ProvenanceBadge
+                        reference={evidence.source || evidence.sourceReference}
+                        fallback={
+                          evidence.addedBy === "USER-PROVIDED EVIDENCE" ? "confirmed" : "unknown"
+                        }
+                        label={
+                          evidence.addedBy === "USER-PROVIDED EVIDENCE"
+                            ? "User-provided evidence"
+                            : undefined
+                        }
+                      />
+                    </div>
                     {evidence.sourceLocation ? (
                       <p className="mt-1 text-muted-foreground">{evidence.sourceLocation}</p>
                     ) : null}
@@ -1714,7 +1745,7 @@ function FileIntelligenceTab({ work }: { work: WorkItem }) {
                 </div>
                 <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-muted-foreground">
                   <span>Action: {finding.recommendedAction}</span>
-                  {finding.sourceReference ? <span>Source: {finding.sourceReference}</span> : null}
+                  <ProvenanceBadge reference={finding.sourceReference} />
                   {finding.confidence ? <span>Confidence: {finding.confidence}</span> : null}
                 </div>
               </div>
@@ -2195,14 +2226,10 @@ function VerificationFindingRow({
               {finding.confidence}
             </p>
           ) : null}
-          {finding.sourceReference ? (
-            <p>
-              <span className="font-medium">Source: </span>
-              {finding.sourceReference}
-            </p>
-          ) : (
-            <p className="text-muted-foreground">Source reference unavailable.</p>
-          )}
+          <div>
+            <span className="font-medium">Provenance: </span>
+            <ProvenanceBadge reference={finding.sourceReference} />
+          </div>
         </div>
       ) : null}
     </div>
