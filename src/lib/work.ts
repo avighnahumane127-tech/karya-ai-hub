@@ -677,6 +677,7 @@ export type IntelligenceActivity = {
   workIds: string[];
 };
 export type IntelligenceStore = {
+  patterns: OrganizationalPattern[];
   policies: OrganizationPolicy[];
   policyChecks: PolicyCheck[];
   crossWorkDependencies: CrossWorkDependency[];
@@ -856,6 +857,70 @@ export const stateLabels: Record<WorkState, string> = {
 };
 
 const WORK_STORAGE_KEY = "karya-ai-work-items";
+const INTELLIGENCE_STORAGE_KEY = "karya-ai-intelligence";
+
+function emptyIntelligenceStore(): IntelligenceStore {
+  return {
+    patterns: [],
+    policies: [],
+    policyChecks: [],
+    crossWorkDependencies: [],
+    changeImpacts: [],
+    requirementChanges: [],
+    regressions: [],
+    recommendations: [],
+    activities: [],
+  };
+}
+
+function loadIntelligenceStore(): IntelligenceStore {
+  if (typeof window === "undefined") return emptyIntelligenceStore();
+  try {
+    const raw = window.localStorage.getItem(INTELLIGENCE_STORAGE_KEY);
+    if (!raw) return emptyIntelligenceStore();
+    const parsed = JSON.parse(raw) as Partial<IntelligenceStore>;
+    return {
+      ...emptyIntelligenceStore(),
+      ...parsed,
+      patterns: parsed.patterns || [],
+      policies: parsed.policies || [],
+      policyChecks: parsed.policyChecks || [],
+      crossWorkDependencies: parsed.crossWorkDependencies || [],
+      changeImpacts: parsed.changeImpacts || [],
+      requirementChanges: parsed.requirementChanges || [],
+      regressions: parsed.regressions || [],
+      recommendations: parsed.recommendations || [],
+      activities: parsed.activities || [],
+    };
+  } catch {
+    return emptyIntelligenceStore();
+  }
+}
+
+export const intelligenceStore: IntelligenceStore = loadIntelligenceStore();
+
+function persistIntelligenceStore() {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.setItem(INTELLIGENCE_STORAGE_KEY, JSON.stringify(intelligenceStore));
+  } catch {
+    // Local storage may be unavailable or full; retain the in-memory intelligence state.
+  }
+}
+
+function recordIntelligenceActivity(
+  type: IntelligenceActivity["type"],
+  detail: string,
+  workIds: string[],
+) {
+  intelligenceStore.activities.unshift({
+    id: secureId("intelligence-activity"),
+    type,
+    detail,
+    date: nowLabel(),
+    workIds,
+  });
+}
 
 function loadPersistedWork(): WorkItem[] {
   if (typeof window === "undefined") return [];
@@ -1573,6 +1638,819 @@ export function getShareSnapshot(token: string) {
     if (work.shareLink?.token === token) return work.shareLink.snapshot;
   }
   return undefined;
+}
+
+function normalizePatternText(value: string) {
+  return value
+    .toLowerCase()
+    .replace(/[^a-z0-9\\s]/g, " ")
+    .replace(/\\s+/g, " ")
+    .trim();
+}
+
+function parseDate(value: string | undefined) {
+  if (!value) return undefined;
+  const timestamp = Date.parse(value);
+  return Number.isNaN(timestamp) ? undefined : timestamp;
+}
+
+function averageDuration(startDates: (string | undefined)[], endDates: (string | undefined)[]) {
+  const durations = startDates.flatMap((start, index) => {
+    const from = parseDate(start);
+    const to = parseDate(endDates[index]);
+    return from !== undefined && to !== undefined && to >= from ? [to - from] : [];
+  });
+  if (durations.length === 0) return "Not enough data yet.";
+  const average = durations.reduce((sum, value) => sum + value, 0) / durations.length;
+  const days = average / 86_400_000;
+  return days < 1 ? `${Math.max(1, Math.round(days * 24))} hours` : `${days.toFixed(1)} days`;
+}
+
+function rankAnalyticsItems(
+  values: { label: string; workId: string; detail: string }[],
+  provenance: AnalyticsRankedItem["provenance"] = "FOUND IN DATA",
+): AnalyticsRankedItem[] {
+  const grouped = new Map<string, { workIds: Set<string>; details: Set<string> }>();
+  for (const value of values) {
+    const key = normalizePatternText(value.label);
+    if (!key) continue;
+    const group = grouped.get(key) || { workIds: new Set<string>(), details: new Set<string>() };
+    group.workIds.add(value.workId);
+    if (value.detail) group.details.add(value.detail);
+    grouped.set(key, group);
+  }
+  return Array.from(grouped.entries())
+    .map(([label, group]) => ({
+      label,
+      count: group.workIds.size,
+      workIds: Array.from(group.workIds),
+      confidence: (group.workIds.size >= 3
+        ? "High"
+        : group.workIds.size >= 2
+          ? "Medium"
+          : "Low") as AnalyticsRankedItem["confidence"],
+      provenance,
+      detail: Array.from(group.details).slice(0, 2).join("; ") || "Observed in Work history.",
+    }))
+    .sort((left, right) => right.count - left.count || left.label.localeCompare(right.label));
+}
+
+function includedWorks(filters: AnalyticsFilters = {}) {
+  const from = parseDate(filters.from);
+  const to = parseDate(filters.to);
+  return workItems.filter((work) => {
+    if (work.analyticsExcluded || work.archived) return false;
+    if (filters.status && filters.status !== "ALL" && work.state !== filters.status) return false;
+    if (
+      filters.templateId &&
+      filters.templateId !== "ALL" &&
+      work.templateId !== filters.templateId
+    )
+      return false;
+    const dates = [
+      ...work.activity
+        .map((event) => parseDate(event.when))
+        .filter((date): date is number => date !== undefined),
+      ...work.timeline
+        .map((event) => parseDate(event.date))
+        .filter((date): date is number => date !== undefined),
+    ];
+    if (from !== undefined && dates.length > 0 && Math.max(...dates) < from) return false;
+    if (to !== undefined && dates.length > 0 && Math.min(...dates) > to) return false;
+    return true;
+  });
+}
+
+function blockerSignals(work: WorkItem) {
+  const signals: { label: string; detail: string }[] = [];
+  if (
+    work.questions.some(
+      (question) =>
+        question.priority === "MUST ANSWER BEFORE STARTING" && question.state !== "resolved",
+    )
+  ) {
+    signals.push({
+      label: "Waiting for response",
+      detail: "An unanswered blocking question is recorded.",
+    });
+  }
+  if (
+    work.fileFindings.some(
+      (finding) => finding.type === "missing-referenced-file" && finding.status !== "Resolved",
+    )
+  ) {
+    signals.push({ label: "Missing file", detail: "A referenced file is missing from the Work." });
+  }
+  if (
+    work.requirements.some(
+      (requirement) => canonicalRequirementStatus(requirement.status) === "CONTRADICTORY",
+    )
+  ) {
+    signals.push({
+      label: "Requirement conflict",
+      detail: "A requirement has contradictory status.",
+    });
+  } else if (
+    work.requirements.some(
+      (requirement) => canonicalRequirementStatus(requirement.status) === "MISSING",
+    )
+  ) {
+    signals.push({
+      label: "Missing information",
+      detail: "A requirement is missing supporting information.",
+    });
+  }
+  if (work.plan.some((task) => task.status === "blocked")) {
+    signals.push({ label: "Dependency", detail: "A Work Plan task is blocked." });
+  }
+  if (
+    work.openIssues.some((issue) => /approval/i.test(issue.issue) && issue.status !== "Resolved")
+  ) {
+    signals.push({
+      label: "Missing approval",
+      detail: "An unresolved approval issue is recorded.",
+    });
+  }
+  if (work.state === "blocked" && signals.length === 0) {
+    signals.push({
+      label: "Unknown blocker",
+      detail: "The Work is blocked but no structured blocker category is recorded.",
+    });
+  }
+  return signals;
+}
+
+function refreshOrganizationalMemory(works = includedWorks()) {
+  const values = works.flatMap((work) =>
+    work.requirements.map((requirement) => ({
+      work,
+      requirement,
+      key: normalizePatternText(requirement.title),
+    })),
+  );
+  const groups = new Map<string, typeof values>();
+  for (const value of values) {
+    if (!value.key) continue;
+    const group = groups.get(value.key) || [];
+    group.push(value);
+    groups.set(value.key, group);
+  }
+  const patterns = Array.from(groups.entries())
+    .filter(([, group]) => new Set(group.map((item) => item.work.id)).size >= 2)
+    .map(([key, group]) => {
+      const workIds = Array.from(new Set(group.map((item) => item.work.id)));
+      const sources = Array.from(new Set(group.map((item) => item.requirement.source.label)));
+      return {
+        id: `pattern-requirement-${key.replace(/\\s+/g, "-")}`,
+        pattern: group[0]?.requirement.title || key,
+        evidence: `Observed in ${workIds.length} Work items through recorded requirements.`,
+        frequency: workIds.length,
+        sources,
+        lastObserved:
+          group.map((item) => item.work.activity[0]?.when).find(Boolean) || "Date unavailable",
+        scope: "INDIVIDUAL" as const,
+        confidence: workIds.length >= 3 ? ("High" as const) : ("Medium" as const),
+        status: "Known pattern" as const,
+      };
+    });
+  intelligenceStore.patterns = patterns;
+  if (patterns.length > 0) {
+    recordIntelligenceActivity(
+      "Pattern detected",
+      `${patterns.length} recurring requirement pattern${patterns.length === 1 ? "" : "s"} derived from Work history.`,
+      patterns.flatMap((pattern) =>
+        values
+          .filter(
+            (value) =>
+              normalizePatternText(value.requirement.title) ===
+              normalizePatternText(pattern.pattern),
+          )
+          .map((value) => value.work.id),
+      ),
+    );
+  }
+  persistIntelligenceStore();
+  return patterns;
+}
+
+export function getAnalyticsSnapshot(filters: AnalyticsFilters = {}): AnalyticsSnapshot {
+  const works = includedWorks(filters);
+  const completed = works.filter((work) => work.state === "done");
+  const blocked = works.filter((work) => work.state === "blocked");
+  const waiting = works.filter((work) => work.state === "waiting");
+  const blockerValues = blocked.flatMap((work) =>
+    blockerSignals(work).map((signal) => ({ ...signal, workId: work.id })),
+  );
+  const questionValues = works.flatMap((work) =>
+    work.questions
+      .filter((question) => question.state !== "resolved")
+      .map((question) => ({
+        label: question.category,
+        detail: question.question,
+        workId: work.id,
+      })),
+  );
+  const missingValues = works.flatMap((work) => [
+    ...work.findings
+      .filter((finding) => finding.type === "missing-info" || finding.type === "missing-asset")
+      .map((finding) => ({ label: finding.title, detail: finding.explanation, workId: work.id })),
+    ...work.questions
+      .filter((question) => question.state !== "resolved")
+      .map((question) => ({ label: question.question, detail: question.why, workId: work.id })),
+  ]);
+  const requirementValues = works.flatMap((work) =>
+    work.requirements.map((requirement) => ({
+      label: requirement.title,
+      detail: requirement.source.label,
+      workId: work.id,
+    })),
+  );
+  const failureValues = works.flatMap((work) =>
+    work.verificationRuns.flatMap((run) =>
+      run.findings.map((finding) => ({
+        label: finding.title,
+        detail: finding.detail,
+        workId: work.id,
+      })),
+    ),
+  );
+  const revisionValues = works.flatMap((work) => [
+    ...work.requirements.flatMap((requirement) =>
+      (requirement.history || []).map((entry) => ({
+        label: entry.reason || "Requirement changed",
+        detail: entry.newWording,
+        workId: work.id,
+      })),
+    ),
+    ...work.decisionHistory.map((entry) => ({
+      label: "Decision changed",
+      detail: entry.impact || entry.newDecision,
+      workId: work.id,
+    })),
+  ]);
+  const verificationOutcomes = rankAnalyticsItems(
+    works.flatMap((work) =>
+      work.verificationRuns.map((run) => ({
+        label: run.finalStatus,
+        detail: run.summary,
+        workId: work.id,
+      })),
+    ),
+  );
+  const completedOverTime = rankAnalyticsItems(
+    completed.map((work) => ({
+      label: work.activity[work.activity.length - 1]?.when || "Date unavailable",
+      detail: work.title,
+      workId: work.id,
+    })),
+  );
+  const questionCount = works.reduce((sum, work) => sum + work.questions.length, 0);
+  const resolvedQuestions = works.flatMap((work) =>
+    work.questions.filter((question) => question.state === "resolved"),
+  );
+  const beforeStarting = works.reduce(
+    (sum, work) =>
+      sum +
+      work.questions.filter((question) => question.priority === "MUST ANSWER BEFORE STARTING")
+        .length,
+    0,
+  );
+  const waitingForResponse = works.reduce(
+    (sum, work) =>
+      sum +
+      work.questions.filter(
+        (question) => question.status === "Waiting for Answer" || question.state === "waiting",
+      ).length,
+    0,
+  );
+  const qualityRuns = works.flatMap((work) => work.verificationRuns);
+  const satisfiedFirstPass = qualityRuns
+    .filter((run) => run.version === 1)
+    .reduce(
+      (sum, run) =>
+        sum + run.requirementResults.filter((result) => result.status === "SATISFIED").length,
+      0,
+    );
+  const firstPassTotal = qualityRuns
+    .filter((run) => run.version === 1)
+    .reduce((sum, run) => sum + run.requirementResults.length, 0);
+  const strongEvidence = works.reduce(
+    (sum, work) =>
+      sum + work.evidence.filter((item) => item.confidence === "STRONG EVIDENCE").length,
+    0,
+  );
+  const totalEvidence = works.reduce((sum, work) => sum + work.evidence.length, 0);
+  const patterns =
+    intelligenceStore.patterns.length > 0
+      ? intelligenceStore.patterns
+      : refreshOrganizationalMemory(works);
+  const includedWorkIds = works.map((work) => work.id);
+  return {
+    generatedAt: new Date().toISOString(),
+    filters,
+    includedWorkIds,
+    hasData: works.length > 0,
+    overview: {
+      totalWork: works.length,
+      completed: completed.length,
+      blocked: blocked.length,
+      waiting: waiting.length,
+      verificationOutcomes,
+      completedOverTime,
+      completionTiming: { withinDeadline: 0, afterDeadline: 0, unavailable: completed.length },
+      averageCompletionDuration: "Not enough timestamp data yet.",
+    },
+    blockers: rankAnalyticsItems(blockerValues),
+    clarifications: {
+      averagePerWork:
+        works.length > 0 ? (questionCount / works.length).toFixed(1) : "Not enough data yet.",
+      beforeStarting,
+      duringExecution: Math.max(0, questionCount - beforeStarting),
+      waitingForResponse,
+      resolved: resolvedQuestions.length,
+      averageResolutionTime: averageDuration(
+        resolvedQuestions.map((question) => question.createdDate),
+        resolvedQuestions.map((question) => question.answeredDate),
+      ),
+    },
+    missingInformation: rankAnalyticsItems(missingValues),
+    repeatedRequirements: rankAnalyticsItems(requirementValues).filter((item) => item.count >= 2),
+    requirementFailures: rankAnalyticsItems(failureValues).filter((item) => item.count >= 1),
+    handoffDelays: {
+      status: "NOT ENOUGH DATA",
+      detail:
+        "Handoff receipt and first-action timestamps are not recorded in the current Work model.",
+    },
+    revisionCauses: rankAnalyticsItems(revisionValues),
+    quality: {
+      firstPassSatisfied:
+        firstPassTotal > 0 ? `${satisfiedFirstPass}/${firstPassTotal}` : "Not enough data yet.",
+      requirementsNeedingRevision: works.reduce(
+        (sum, work) =>
+          sum +
+          work.requirements.filter((requirement) => (requirement.history || []).length > 0).length,
+        0,
+      ),
+      evidenceCoverage:
+        works.length > 0
+          ? `${strongEvidence}/${Math.max(totalEvidence, 1)} strong evidence items`
+          : "Not enough data yet.",
+      verificationFailures: qualityRuns.reduce(
+        (sum, run) => sum + run.findings.filter((finding) => finding.status !== "Resolved").length,
+        0,
+      ),
+      repeatedQualityPatterns: rankAnalyticsItems(failureValues)
+        .filter((item) => item.count >= 2)
+        .map((item) => ({
+          id: `quality-${normalizePatternText(item.label).replace(/\\s+/g, "-")}`,
+          pattern: item.label,
+          frequency: item.count,
+          severity: item.count >= 3 ? ("High" as const) : ("Medium" as const),
+          workIds: item.workIds,
+          firstObserved: "Date unavailable",
+          lastObserved: "Date unavailable",
+          trend: "Unknown" as const,
+          confidence: item.confidence,
+          provenance: "FOUND IN DATA" as const,
+        })),
+    },
+    patterns,
+    policyChecks: intelligenceStore.policyChecks.filter((check) =>
+      includedWorkIds.includes(check.workId),
+    ),
+    crossWorkDependencies: intelligenceStore.crossWorkDependencies.filter(
+      (dependency) =>
+        includedWorkIds.includes(dependency.sourceWorkId) ||
+        includedWorkIds.includes(dependency.targetWorkId),
+    ),
+    changeImpacts: intelligenceStore.changeImpacts.filter((impact) =>
+      includedWorkIds.includes(impact.workId),
+    ),
+    requirementChanges: intelligenceStore.requirementChanges.filter((change) =>
+      includedWorkIds.includes(change.workId),
+    ),
+    regressions: intelligenceStore.regressions.filter(
+      (regression) =>
+        includedWorkIds.includes(regression.currentWorkId) ||
+        includedWorkIds.includes(regression.previousWorkId),
+    ),
+    recommendations: intelligenceStore.recommendations.filter(
+      (recommendation) =>
+        recommendation.relatedWorkIds.some((id) => includedWorkIds.includes(id)) &&
+        recommendation.status === "Open",
+    ),
+  };
+}
+
+export function refreshAnalyticsIntelligence() {
+  const works = includedWorks();
+  refreshOrganizationalMemory(works);
+  runPolicyChecks();
+  detectCrossWorkDependencies();
+  generateProcessRecommendations();
+  persistIntelligenceStore();
+  return getAnalyticsSnapshot();
+}
+
+export function createOrganizationPolicy(
+  input: Omit<OrganizationPolicy, "id" | "createdDate" | "version" | "history">,
+) {
+  const policy: OrganizationPolicy = {
+    ...input,
+    id: secureId("policy"),
+    createdDate: nowLabel(),
+    version: 1,
+    history: [],
+  };
+  intelligenceStore.policies.unshift(policy);
+  recordIntelligenceActivity("Policy created", `Policy created: ${policy.name}`, []);
+  persistIntelligenceStore();
+  return policy;
+}
+
+function policyMatchesWork(policy: OrganizationPolicy, work: WorkItem) {
+  const scope = normalizePatternText(`${work.title} ${work.description} ${work.request.objective}`);
+  return !policy.appliesTo || scope.includes(normalizePatternText(policy.appliesTo));
+}
+
+function evaluatePolicy(policy: OrganizationPolicy, work: WorkItem): PolicyCheck {
+  const rule = normalizePatternText(policy.rule);
+  const sourceRequirement = /source|reference|citation/.test(rule);
+  const approvalRequirement = /approval|approved/.test(rule);
+  const executiveSummaryRequirement = /executive summary/.test(rule);
+  let passed = true;
+  let detail = "The recorded Work data satisfies this policy check.";
+  if (sourceRequirement) {
+    passed = work.files.length > 0 || work.evidence.some((evidence) => evidence.source);
+    detail = passed
+      ? "At least one source or evidence reference is recorded."
+      : "No source or evidence reference is recorded.";
+  } else if (approvalRequirement) {
+    passed = work.approvals.some((approval) => approval.status === "APPROVED");
+    detail = passed ? "An approved record is present." : "No approved record is present.";
+  } else if (executiveSummaryRequirement) {
+    passed =
+      work.requirements.some((requirement) => /executive summary/i.test(requirement.title)) ||
+      /executive summary/i.test(work.description);
+    detail = passed
+      ? "An executive-summary requirement is recorded."
+      : "No executive-summary requirement is recorded.";
+  } else {
+    return {
+      id: secureId("policy-check"),
+      policyId: policy.id,
+      workId: work.id,
+      status: "WARNING",
+      detail:
+        "This policy rule is not machine-evaluable by the local policy checker and requires human review.",
+      source: "Organization Policy",
+      checkedAt: new Date().toISOString(),
+    };
+  }
+  return {
+    id: secureId("policy-check"),
+    policyId: policy.id,
+    workId: work.id,
+    status: passed ? "PASS" : policy.enforcementMode === "Block" ? "BLOCKED" : "WARNING",
+    detail,
+    source: "Organization Policy",
+    checkedAt: new Date().toISOString(),
+  };
+}
+
+export function runPolicyChecks() {
+  const works = includedWorks();
+  const checks = intelligenceStore.policies.flatMap((policy) =>
+    works
+      .filter((work) => policyMatchesWork(policy, work))
+      .map((work) => evaluatePolicy(policy, work)),
+  );
+  intelligenceStore.policyChecks = checks;
+  persistIntelligenceStore();
+  return checks;
+}
+
+export function detectCrossWorkDependencies() {
+  const works = includedWorks();
+  const dependencies: CrossWorkDependency[] = [];
+  for (const sourceWork of works) {
+    for (const sourceFile of sourceWork.files) {
+      const references = contentReferences(sourceFile.content);
+      for (const reference of references) {
+        const target = works.find(
+          (work) =>
+            work.id !== sourceWork.id &&
+            work.files.some(
+              (file) =>
+                file.role === "Final" && file.name.toLowerCase() === reference.toLowerCase(),
+            ),
+        );
+        if (!target) continue;
+        dependencies.push({
+          id: `cross-work-${sourceWork.id}-${target.id}-${reference}`,
+          sourceWorkId: sourceWork.id,
+          targetWorkId: target.id,
+          dependency: reference,
+          status: target.state === "blocked" ? "Potentially blocked" : "Confirmed",
+          impact: `The source Work references ${reference}, which is produced by another Work.`,
+          evidence: `${sourceFile.name} explicitly references ${reference}.`,
+          confidence: "High",
+          userConfirmed: false,
+          createdAt: new Date().toISOString(),
+        });
+      }
+    }
+  }
+  intelligenceStore.crossWorkDependencies = dependencies;
+  if (dependencies.length > 0) {
+    recordIntelligenceActivity(
+      "Cross-work dependency detected",
+      `${dependencies.length} explicit cross-Work file reference${dependencies.length === 1 ? "" : "s"} detected.`,
+      dependencies.flatMap((dependency) => [dependency.sourceWorkId, dependency.targetWorkId]),
+    );
+  }
+  persistIntelligenceStore();
+  return dependencies;
+}
+
+export function createCrossWorkDependency(
+  input: Omit<CrossWorkDependency, "id" | "createdAt" | "confidence" | "userConfirmed">,
+) {
+  const source = getWork(input.sourceWorkId);
+  const target = getWork(input.targetWorkId);
+  if (!source || !target || source.id === target.id) return undefined;
+  const dependency: CrossWorkDependency = {
+    ...input,
+    id: secureId("cross-work"),
+    confidence: "High",
+    userConfirmed: true,
+    createdAt: new Date().toISOString(),
+  };
+  intelligenceStore.crossWorkDependencies.unshift(dependency);
+  recordIntelligenceActivity(
+    "Cross-work dependency detected",
+    `User-confirmed dependency: ${source.title} waits for ${target.title}.`,
+    [source.id, target.id],
+  );
+  persistIntelligenceStore();
+  return dependency;
+}
+
+export function updateCrossWorkDependencyStatus(id: string, status: CrossWorkDependency["status"]) {
+  const dependency = intelligenceStore.crossWorkDependencies.find((item) => item.id === id);
+  if (!dependency) return undefined;
+  dependency.status = status;
+  persistIntelligenceStore();
+  return dependency;
+}
+
+export function generateChangeImpact(
+  workId: string,
+  input: Pick<ChangeImpactRecord, "changeType" | "oldValue" | "newValue">,
+) {
+  const work = getWork(workId);
+  if (!work) return undefined;
+  const affectedTasks = work.plan
+    .filter(
+      (task) =>
+        input.changeType === "Deadline" ||
+        task.relatedRequirementIds?.some((id) =>
+          work.requirements.some((requirement) => requirement.id === id),
+        ),
+    )
+    .map((task) => task.id);
+  const affectedRequirements = work.requirements
+    .filter(
+      (requirement) => input.changeType === "Requirement" || requirement.status !== "SATISFIED",
+    )
+    .map((requirement) => requirement.id);
+  const impact: ChangeImpactRecord = {
+    id: secureId("change-impact"),
+    workId,
+    ...input,
+    affectedTaskIds: affectedTasks,
+    affectedDependencyIds:
+      work.planMeta?.dependencies
+        .filter(
+          (dependency) =>
+            affectedTasks.includes(dependency.dependentTaskId) ||
+            affectedTasks.includes(dependency.prerequisiteTaskId),
+        )
+        .map((dependency) => dependency.id) || [],
+    affectedRequirementIds: affectedRequirements,
+    affectedHandoffIds: (work.handoffPackets || []).map((packet) => packet.id),
+    criticalPathChanged:
+      input.changeType === "Deadline" &&
+      affectedTasks.some((taskId) => work.planMeta?.criticalPathTaskIds.includes(taskId)),
+    risk:
+      affectedTasks.length >= 4 || affectedRequirements.length >= 3
+        ? "High"
+        : affectedTasks.length > 0
+          ? "Medium"
+          : "Low",
+    ...(work.planMeta ? { feasibility: work.planMeta.feasibility.status } : {}),
+    summary: `${input.changeType} changed from ${input.oldValue || "unknown"} to ${input.newValue || "unknown"}; ${affectedTasks.length} tasks and ${affectedRequirements.length} requirements may be affected.`,
+    createdAt: new Date().toISOString(),
+  };
+  intelligenceStore.changeImpacts.unshift(impact);
+  recordIntelligenceActivity("Change impact generated", impact.summary, [workId]);
+  persistIntelligenceStore();
+  return impact;
+}
+
+export function updateWorkDeadline(workId: string, newDeadline: string) {
+  const work = getWork(workId);
+  if (!work) return undefined;
+  const oldDeadline = work.due || work.request.deadline || "Unknown";
+  work.due = newDeadline;
+  work.request.deadline = newDeadline;
+  generateWorkPlan(workId);
+  const impact = generateChangeImpact(workId, {
+    changeType: "Deadline",
+    oldValue: oldDeadline,
+    newValue: newDeadline,
+  });
+  work.activity.unshift({
+    id: secureId("act"),
+    when: nowLabel(),
+    change: `Deadline changed: ${oldDeadline} → ${newDeadline}`,
+  });
+  persistWorkItems();
+  return impact;
+}
+
+export function analyzeRequirementChanges(workId: string) {
+  const work = getWork(workId);
+  if (!work) return [];
+  const changes = work.requirements.flatMap((requirement) =>
+    (requirement.history || []).map((entry) => ({
+      id: `requirement-change-${entry.id}`,
+      workId,
+      requirementId: requirement.id,
+      changeType: "Modified" as const,
+      ...(entry.previousWording ? { oldValue: entry.previousWording } : {}),
+      newValue: entry.newWording,
+      ...(entry.source ? { source: entry.source } : {}),
+      impact: "Requirement wording changed; related plan tasks and verification may need review.",
+      createdAt: new Date().toISOString(),
+    })),
+  );
+  intelligenceStore.requirementChanges = [
+    ...changes,
+    ...intelligenceStore.requirementChanges.filter((change) => change.workId !== workId),
+  ];
+  if (changes.length > 0)
+    recordIntelligenceActivity(
+      "Requirement changes detected",
+      `${changes.length} requirement change${changes.length === 1 ? "" : "s"} recorded.`,
+      [workId],
+    );
+  persistIntelligenceStore();
+  return changes;
+}
+
+export function runRegressionCheck(previousWorkId: string, currentWorkId: string) {
+  const previous = getWork(previousWorkId);
+  const current = getWork(currentWorkId);
+  if (!previous || !current) return undefined;
+  const previousByKey = new Map(
+    previous.requirements.map((requirement) => [
+      normalizePatternText(requirement.title),
+      requirement,
+    ]),
+  );
+  const currentByKey = new Map(
+    current.requirements.map((requirement) => [
+      normalizePatternText(requirement.title),
+      requirement,
+    ]),
+  );
+  const expectedRequirementIds = Array.from(previousByKey.values()).map(
+    (requirement) => requirement.id,
+  );
+  const satisfiedRequirementIds = Array.from(currentByKey.values())
+    .filter(
+      (requirement) =>
+        previousByKey.has(normalizePatternText(requirement.title)) &&
+        canonicalRequirementStatus(requirement.status) === "SATISFIED",
+    )
+    .map((requirement) => requirement.id);
+  const missingRequirementIds = Array.from(currentByKey.values())
+    .filter(
+      (requirement) =>
+        previousByKey.has(normalizePatternText(requirement.title)) &&
+        canonicalRequirementStatus(requirement.status) !== "SATISFIED",
+    )
+    .map((requirement) => requirement.id);
+  const newRequirementIds = Array.from(currentByKey.values())
+    .filter((requirement) => !previousByKey.has(normalizePatternText(requirement.title)))
+    .map((requirement) => requirement.id);
+  const insufficient = previous.requirements.length === 0 || current.requirements.length === 0;
+  const status = insufficient
+    ? "INSUFFICIENT DATA"
+    : missingRequirementIds.length > 0 || newRequirementIds.length > 0
+      ? "REGRESSION DETECTED"
+      : "PASS";
+  const regression: RegressionCheck = {
+    id: secureId("regression"),
+    previousWorkId,
+    currentWorkId,
+    recurringBasis:
+      previous.templateId && previous.templateId === current.templateId
+        ? `Shared template: ${previous.templateId}`
+        : "User-selected comparison",
+    expectedRequirementIds,
+    satisfiedRequirementIds,
+    missingRequirementIds,
+    newRequirementIds,
+    status,
+    summary: insufficient
+      ? "Not enough requirement data to compare these Work items."
+      : `${satisfiedRequirementIds.length} recurring requirements satisfied; ${missingRequirementIds.length} missing and ${newRequirementIds.length} new.`,
+    createdAt: new Date().toISOString(),
+  };
+  intelligenceStore.regressions.unshift(regression);
+  recordIntelligenceActivity("Regression detected", regression.summary, [
+    previousWorkId,
+    currentWorkId,
+  ]);
+  persistIntelligenceStore();
+  return regression;
+}
+
+export function generateProcessRecommendations() {
+  const snapshot = getAnalyticsSnapshot();
+  const recommendations: ProcessRecommendation[] = [];
+  const topBlocker = snapshot.blockers[0];
+  if (topBlocker && topBlocker.count >= 2) {
+    recommendations.push({
+      id: `recommendation-blocker-${normalizePatternText(topBlocker.label).replace(/\\s+/g, "-")}`,
+      title: `Review repeated ${topBlocker.label.toLowerCase()} blockers`,
+      evidence: topBlocker.detail,
+      frequency: topBlocker.count,
+      impact: `Observed across ${topBlocker.count} Work items; delay duration is not inferred without timestamps.`,
+      confidence: topBlocker.confidence,
+      relatedWorkIds: topBlocker.workIds,
+      action: "Review recommendation",
+      status: "Open",
+      createdAt: new Date().toISOString(),
+    });
+  }
+  const topRequirement = snapshot.repeatedRequirements[0];
+  if (topRequirement) {
+    recommendations.push({
+      id: `recommendation-requirement-${normalizePatternText(topRequirement.label).replace(/\\s+/g, "-")}`,
+      title: `Review a repeated requirement: ${topRequirement.label}`,
+      evidence: `Recorded in ${topRequirement.count} Work items.`,
+      frequency: topRequirement.count,
+      impact: "A template or policy may help, but no workflow is changed automatically.",
+      confidence: topRequirement.confidence,
+      relatedWorkIds: topRequirement.workIds,
+      action: "Create template",
+      status: "Open",
+      createdAt: new Date().toISOString(),
+    });
+  }
+  intelligenceStore.recommendations = [
+    ...recommendations,
+    ...intelligenceStore.recommendations.filter(
+      (existing) => !recommendations.some((item) => item.id === existing.id),
+    ),
+  ];
+  if (recommendations.length > 0)
+    recordIntelligenceActivity(
+      "Process recommendation generated",
+      `${recommendations.length} data-backed recommendation${recommendations.length === 1 ? "" : "s"} generated.`,
+      recommendations.flatMap((recommendation) => recommendation.relatedWorkIds),
+    );
+  persistIntelligenceStore();
+  return recommendations;
+}
+
+export function updateProcessRecommendation(id: string, status: ProcessRecommendation["status"]) {
+  const recommendation = intelligenceStore.recommendations.find((item) => item.id === id);
+  if (!recommendation) return undefined;
+  recommendation.status = status;
+  recordIntelligenceActivity(
+    "Recommendation updated",
+    `Recommendation ${recommendation.title} marked ${status}.`,
+    recommendation.relatedWorkIds,
+  );
+  persistIntelligenceStore();
+  return recommendation;
+}
+
+export function setWorkAnalyticsExcluded(workId: string, excluded: boolean) {
+  const work = getWork(workId);
+  if (!work) return undefined;
+  work.analyticsExcluded = excluded;
+  work.activity.unshift({
+    id: secureId("act"),
+    when: nowLabel(),
+    change: `Analytics inclusion ${excluded ? "disabled" : "enabled"}`,
+  });
+  persistWorkItems();
+  return work;
 }
 
 export function addEvidence(
