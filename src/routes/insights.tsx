@@ -5,6 +5,7 @@ import { EmptyState, PageHeader, StatusPill, type Tone } from "@/components/prim
 import {
   createCrossWorkDependency,
   createOrganizationPolicy,
+  createUserTemplate,
   getAnalyticsSnapshot,
   getWork,
   intelligenceStore,
@@ -20,6 +21,7 @@ import {
   updateCrossWorkDependencyStatus,
   updateProcessRecommendation,
   updateWorkDeadline,
+  analyzeRequirementChanges,
   workItems,
 } from "@/lib/work";
 
@@ -395,7 +397,7 @@ function InsightsPage() {
           title="Change Intelligence"
           detail="Changes are recorded only through explicit actions or existing requirement history."
         />
-        <ChangePanel onChanged={() => load(true)} />
+        <ChangePanel snapshot={snapshot} onChanged={() => load(true)} />
       </section>
 
       <section className="mt-10">
@@ -740,7 +742,13 @@ function PolicyPanel({
   );
 }
 
-function ChangePanel({ onChanged }: { onChanged: () => void }) {
+function ChangePanel({
+  snapshot,
+  onChanged,
+}: {
+  snapshot: AnalyticsSnapshot;
+  onChanged: () => void;
+}) {
   const [workId, setWorkId] = useState("");
   const [deadline, setDeadline] = useState("");
   const update = () => {
@@ -749,48 +757,108 @@ function ChangePanel({ onChanged }: { onChanged: () => void }) {
     setDeadline("");
     onChanged();
   };
+  const inspectRequirementHistory = () => {
+    if (!workId) return;
+    analyzeRequirementChanges(workId);
+    onChanged();
+  };
   return (
-    <div className="rounded-xl border border-hairline bg-surface p-4">
-      <div className="flex flex-wrap items-end gap-3">
-        <label className="grid gap-1 text-xs text-muted-foreground">
-          Work
-          <select
-            value={workId}
-            onChange={(event) => setWorkId(event.currentTarget.value)}
-            className="h-9 rounded-md border border-input bg-background px-2 text-sm text-foreground"
+    <div className="space-y-4">
+      <div className="rounded-xl border border-hairline bg-surface p-4">
+        <div className="flex flex-wrap items-end gap-3">
+          <label className="grid gap-1 text-xs text-muted-foreground">
+            Work
+            <select
+              value={workId}
+              onChange={(event) => setWorkId(event.currentTarget.value)}
+              className="h-9 rounded-md border border-input bg-background px-2 text-sm text-foreground"
+            >
+              <option value="">Select Work</option>
+              {workItems
+                .filter((work) => !work.archived)
+                .map((work) => (
+                  <option key={work.id} value={work.id}>
+                    {work.title}
+                  </option>
+                ))}
+            </select>
+          </label>
+          <label className="grid gap-1 text-xs text-muted-foreground">
+            New deadline
+            <input
+              value={deadline}
+              onChange={(event) => setDeadline(event.currentTarget.value)}
+              placeholder="Wednesday"
+              className="h-9 rounded-md border border-input bg-background px-3 text-sm"
+            />
+          </label>
+          <button
+            type="button"
+            onClick={update}
+            disabled={!workId || !deadline.trim()}
+            className="h-9 rounded-md bg-primary px-3 text-xs font-medium text-primary-foreground disabled:opacity-50"
           >
-            <option value="">Select Work</option>
-            {workItems
-              .filter((work) => !work.archived)
-              .map((work) => (
-                <option key={work.id} value={work.id}>
-                  {work.title}
-                </option>
-              ))}
-          </select>
-        </label>
-        <label className="grid gap-1 text-xs text-muted-foreground">
-          New deadline
-          <input
-            value={deadline}
-            onChange={(event) => setDeadline(event.currentTarget.value)}
-            placeholder="Wednesday"
-            className="h-9 rounded-md border border-input bg-background px-3 text-sm"
-          />
-        </label>
-        <button
-          type="button"
-          onClick={update}
-          disabled={!workId || !deadline.trim()}
-          className="h-9 rounded-md bg-primary px-3 text-xs font-medium text-primary-foreground disabled:opacity-50"
-        >
-          Record deadline change
-        </button>
+            Record deadline change
+          </button>
+        </div>
+        <div className="mt-3 flex flex-wrap gap-2">
+          <button
+            type="button"
+            onClick={inspectRequirementHistory}
+            disabled={!workId}
+            className="h-9 rounded-md border border-input px-3 text-xs disabled:opacity-50"
+          >
+            Analyze requirement history
+          </button>
+        </div>
+        <p className="mt-3 text-xs text-muted-foreground">
+          This explicitly updates the selected Work, recalculates its plan, and stores an impact
+          record. No change is made without this action.
+        </p>
       </div>
-      <p className="mt-3 text-xs text-muted-foreground">
-        This explicitly updates the selected Work, recalculates its plan, and stores an impact
-        record. No change is made without this action.
-      </p>
+      <div className="grid gap-3 lg:grid-cols-2">
+        <div className="rounded-xl border border-hairline bg-surface p-4">
+          <p className="label-caps">Recorded impact summaries</p>
+          {snapshot.changeImpacts.length === 0 ? (
+            <p className="mt-3 text-sm text-muted-foreground">
+              No change impact has been recorded.
+            </p>
+          ) : (
+            <div className="mt-3 space-y-2">
+              {snapshot.changeImpacts.slice(0, 8).map((impact) => (
+                <div key={impact.id} className="rounded-lg border border-hairline p-3">
+                  <p className="text-sm font-medium">
+                    {impact.changeType}: {impact.oldValue} → {impact.newValue}
+                  </p>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    {impact.summary} · Risk: {impact.risk}
+                  </p>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+        <div className="rounded-xl border border-hairline bg-surface p-4">
+          <p className="label-caps">Requirement changes</p>
+          {snapshot.requirementChanges.length === 0 ? (
+            <p className="mt-3 text-sm text-muted-foreground">
+              No requirement history record is available.
+            </p>
+          ) : (
+            <div className="mt-3 space-y-2">
+              {snapshot.requirementChanges.slice(0, 8).map((change) => (
+                <div key={change.id} className="rounded-lg border border-hairline p-3">
+                  <p className="text-sm font-medium">{change.changeType}</p>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    {change.oldValue || "Unknown"} → {change.newValue || "Unknown"} ·{" "}
+                    {change.impact}
+                  </p>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   );
 }
@@ -1002,6 +1070,18 @@ function RecommendationPanel({
   recommendations: ProcessRecommendation[];
   onChanged: () => void;
 }) {
+  const applyRecommendation = (recommendation: ProcessRecommendation) => {
+    if (recommendation.action === "Create template") {
+      createUserTemplate({
+        name: recommendation.title,
+        description: `Created from a repeated Work pattern. Evidence: ${recommendation.evidence}`,
+        checks: [recommendation.title, recommendation.evidence],
+      });
+    }
+    updateProcessRecommendation(recommendation.id, "Accepted");
+    onChanged();
+  };
+
   return (
     <div className="space-y-3">
       {recommendations.length === 0 ? (
@@ -1024,13 +1104,12 @@ function RecommendationPanel({
             <div className="mt-3 flex flex-wrap gap-2">
               <button
                 type="button"
-                onClick={() => {
-                  updateProcessRecommendation(recommendation.id, "Accepted");
-                  onChanged();
-                }}
+                onClick={() => applyRecommendation(recommendation)}
                 className="rounded-md border border-input px-3 py-1.5 text-xs hover:bg-accent"
               >
-                Accept for review
+                {recommendation.action === "Create template"
+                  ? "Create template from pattern"
+                  : "Accept for review"}
               </button>
               <button
                 type="button"
