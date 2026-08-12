@@ -64,7 +64,7 @@ const work = {
     outcome: "A recommendation for management",
     deadline: "Friday",
     audience: "Management",
-    deliverables: ["Recommendation report"],
+    deliverables: ["Recommendation report", "Risk analysis"],
   },
   requirements: [
     {
@@ -228,6 +228,22 @@ pass(
   workLib.getWork(work.id)?.state === "blocked",
 );
 pass("question answer propagates to plan", (workLib.getWork(work.id)?.plan.length || 0) > 0);
+const plannedTasks = workLib.getWork(work.id)?.plan || [];
+const plannedTaskIds = new Set(plannedTasks.map((task) => task.id));
+pass(
+  "plan dependencies reference existing tasks",
+  plannedTasks.every((task) =>
+    task.dependencies.every((dependencyId) => plannedTaskIds.has(dependencyId)),
+  ),
+);
+pass(
+  "plan records critical path",
+  (workLib.getWork(work.id)?.planMeta?.criticalPathTaskIds.length || 0) > 0,
+);
+pass(
+  "plan exposes parallel-work opportunities",
+  (workLib.getWork(work.id)?.planMeta?.parallelGroups.length || 0) > 0,
+);
 updateRequirement(work.id, "req-sources", { status: "SATISFIED", priority: "HIGH" });
 addEvidence(work.id, {
   type: "File",
