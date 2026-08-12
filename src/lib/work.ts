@@ -491,7 +491,9 @@ export type SecurityEvent = {
     | "Retention changed"
     | "Sensitive warning"
     | "Redaction performed"
-    | "Export requested";
+    | "Export requested"
+    | "Share link created"
+    | "Share link revoked";
   date: string;
   detail: string;
 };
@@ -1336,7 +1338,7 @@ export function createShareLink(workId: string) {
   work.shareLink = { token: createShareToken(), createdAt: new Date().toISOString(), snapshot };
   recordSecurityEvent(
     work,
-    "Export requested",
+    "Share link created",
     "A readiness share link was created from the current Work snapshot.",
   );
   persistWorkItems();
@@ -1347,7 +1349,7 @@ export function revokeShareLink(workId: string) {
   const work = getWork(workId);
   if (!work?.shareLink) return false;
   delete work.shareLink;
-  recordSecurityEvent(work, "Export requested", "The readiness share link was revoked.");
+  recordSecurityEvent(work, "Share link revoked", "The readiness share link was revoked.");
   persistWorkItems();
   return true;
 }
