@@ -821,7 +821,11 @@ function AddWork() {
                   id: newId,
                   title: titleText,
                   description: objective,
-                  state: sources.length >= 2 ? "ready" : "ready-with-warnings",
+                  state: !audience
+                    ? "blocked"
+                    : sources.length >= 2
+                      ? "ready"
+                      : "ready-with-warnings",
                   ...(deadline ? { due: deadline } : {}),
                   request: {
                     objective,
