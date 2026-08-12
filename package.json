@@ -9,6 +9,7 @@
     "build:dev": "vite build --mode development",
     "preview": "vite preview",
     "lint": "eslint .",
+    "test:full-validation": "node --experimental-strip-types scripts/full-validation.mts",
     "format": "prettier --write ."
   },
   "dependencies": {
