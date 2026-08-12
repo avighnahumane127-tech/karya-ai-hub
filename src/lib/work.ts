@@ -1800,7 +1800,7 @@ export function editCommunicationDraft(workId: string, draftId: string, text: st
 
 export function applyTemplateToWork(workId: string, templateId: string) {
   const work = getWork(workId);
-  const template = templates.find((item) => item.id === templateId);
+  const template = [...templates, ...userTemplates].find((item) => item.id === templateId);
   if (!work || !template) return;
   work.templateId = template.id;
   for (const check of template.checks) {
@@ -2418,3 +2418,63 @@ export const templates: Template[] = [
     checks: ["Requested outcome", "Inputs needed", "Who signs off"],
   },
 ];
+
+const USER_TEMPLATE_STORAGE_KEY = "karya-ai-user-templates";
+
+function loadUserTemplates(): UserTemplate[] {
+  if (typeof window === "undefined") return [];
+  try {
+    const raw = window.localStorage.getItem(USER_TEMPLATE_STORAGE_KEY);
+    return raw ? (JSON.parse(raw) as UserTemplate[]) : [];
+  } catch {
+    return [];
+  }
+}
+
+function persistUserTemplates() {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.setItem(USER_TEMPLATE_STORAGE_KEY, JSON.stringify(userTemplates));
+  } catch {
+    // Keep the in-memory template if browser storage is unavailable.
+  }
+}
+
+export const userTemplates: UserTemplate[] = loadUserTemplates();
+
+export function createUserTemplate(input: Pick<UserTemplate, "name" | "description" | "checks">) {
+  if (!input.name.trim() || input.checks.length === 0) return undefined;
+  const template: UserTemplate = {
+    id: `user-template-${Date.now()}`,
+    name: input.name.trim(),
+    description: input.description.trim() || "Personal Work template.",
+    checks: input.checks.filter(Boolean),
+    owner: "User",
+    createdAt: nowLabel(),
+    updatedAt: nowLabel(),
+    uses: 0,
+  };
+  userTemplates.unshift(template);
+  persistUserTemplates();
+  return template;
+}
+
+export function updateUserTemplate(
+  templateId: string,
+  patch: Partial<Pick<UserTemplate, "name" | "description" | "checks">>,
+) {
+  const template = userTemplates.find((item) => item.id === templateId);
+  if (!template) return;
+  if (patch.name?.trim()) template.name = patch.name.trim();
+  if (patch.description !== undefined) template.description = patch.description.trim();
+  if (patch.checks) template.checks = patch.checks.filter(Boolean);
+  template.updatedAt = nowLabel();
+  persistUserTemplates();
+}
+
+export function deleteUserTemplate(templateId: string) {
+  const index = userTemplates.findIndex((item) => item.id === templateId);
+  if (index < 0) return;
+  userTemplates.splice(index, 1);
+  persistUserTemplates();
+}
