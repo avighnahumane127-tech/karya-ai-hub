@@ -606,7 +606,7 @@ function estimatePlanEffort(tasks: PlanTask[]) {
   let min = 0;
   let max = 0;
   for (const task of tasks) {
-    const match = task.estimatedEffort?.match(/(\\d+)–(\\d+)/);
+    const match = task.estimatedEffort?.match(/(\d+)–(\d+)/);
     if (match) {
       min += Number(match[1]);
       max += Number(match[2]);
