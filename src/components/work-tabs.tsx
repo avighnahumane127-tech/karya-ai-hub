@@ -10,15 +10,20 @@ import {
 } from "@/components/ui/dialog";
 import {
   addEvidence,
+  addPlanTask,
+  generateWorkPlan,
   getEvidenceStats,
   getRequirementEvidence,
   getRequirementStats,
   stateLabels,
+  updatePlanTask,
+  updatePlanTaskStatus,
   updateQuestionAnswer,
   updateRequirement,
   type EvidenceConfidence,
   type EvidenceType,
   type Question,
+  type PlanGroup,
   type QuestionPriority,
   type ReqStatus,
   type Requirement,
@@ -243,32 +248,7 @@ export function WorkTabPanel({ work, tab }: { work: WorkItem; tab: WorkTab }) {
   }
 
   if (tab === "Plan") {
-    if (work.plan.length === 0) {
-      return (
-        <EmptyState
-          title="No plan yet."
-          description="Your work plan will appear after the request is analyzed."
-        />
-      );
-    }
-    return (
-      <ol className="divide-y divide-hairline border-y border-hairline">
-        {work.plan.map((step, i) => (
-          <li key={step.id} className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-4 py-5">
-            <div className="flex min-w-0 gap-3">
-              <span className="mt-0.5 font-mono text-xs text-muted-foreground">{i + 1}</span>
-              <div className="min-w-0">
-                <p className="text-sm font-medium">{step.title}</p>
-                {step.note ? (
-                  <p className="mt-1 text-sm text-muted-foreground">{step.note}</p>
-                ) : null}
-              </div>
-            </div>
-            <StatusPill tone={stepTone[step.status]}>{step.status}</StatusPill>
-          </li>
-        ))}
-      </ol>
-    );
+    return <WorkPlanTab work={work} />;
   }
 
   if (tab === "Questions") {
@@ -1052,3 +1032,426 @@ function EvidenceTab({ work }: { work: WorkItem }) {
     </div>
   );
 }
+
+function WorkPlanTab({ work }: { work: WorkItem }) {
+  const [, rerender] = useState(0);
+  const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [showAdd, setShowAdd] = useState(false);
+  const [newTitle, setNewTitle] = useState("");
+  const [newGroup, setNewGroup] = useState<PlanGroup>("PRODUCTION");
+  const tasks = work.plan || [];
+  const plan = work.planMeta;
+  const grouped = [
+    "PREPARATION",
+    "RESEARCH",
+    "PRODUCTION",
+    "REVIEW",
+    "APPROVAL",
+    "DELIVERY",
+  ] as const;
+  const blocked = tasks.filter((task) => task.status === "blocked");
+  const waiting = tasks.filter((task) => task.status === "waiting");
+  const readyNow = tasks.filter((task) => task.status === "ready");
+  const inProgress = tasks.filter((task) => task.status === "in-progress");
+  const completed = tasks.filter((task) => task.status === "done");
+
+  const regenerate = () => {
+    generateWorkPlan(work.id);
+    rerender((value) => value + 1);
+  };
+
+  const addTask = () => {
+    if (!newTitle.trim()) return;
+    addPlanTask(work.id, newTitle, newGroup);
+    setNewTitle("");
+    setShowAdd(false);
+    rerender((value) => value + 1);
+  };
+
+  if (!plan || tasks.length === 0) {
+    return (
+      <div className="rounded-xl border border-dashed border-hairline p-8 text-center">
+        <p className="text-sm font-medium">No Work Plan has been generated yet.</p>
+        <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
+          Karya AI will use the confirmed request, requirements, questions, evidence, and readiness
+          findings to create an executable plan.
+        </p>
+        <Button className="mt-5" onClick={regenerate}>
+          Generate Work Plan
+        </Button>
+      </div>
+    );
+  }
+
+  const feasibilityTone: Tone =
+    plan.feasibility.status === "FEASIBLE"
+      ? "ready"
+      : plan.feasibility.status === "BLOCKED" ||
+          plan.feasibility.status === "POTENTIALLY INFEASIBLE"
+        ? "blocked"
+        : "warn";
+
+  return (
+    <div className="space-y-7">
+      <div className="rounded-xl border border-hairline bg-surface p-5 space-y-5">
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div>
+            <p className="label-caps">Work Plan</p>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Version {plan.version} · Generated from the current Work data
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            <StatusPill tone={feasibilityTone}>{plan.feasibility.status}</StatusPill>
+            <Button size="sm" variant="outline" onClick={regenerate}>
+              Recalculate
+            </Button>
+          </div>
+        </div>
+        <p className="text-sm leading-relaxed">{plan.feasibility.explanation}</p>
+        <div className="grid gap-3 sm:grid-cols-3">
+          <div className="rounded-lg bg-accent/40 p-3">
+            <p className="label-caps">Estimated effort</p>
+            <p className="mt-1 text-sm font-medium">
+              {plan.feasibility.estimatedEffort || "Cannot be estimated reliably yet."}
+            </p>
+          </div>
+          <div className="rounded-lg bg-accent/40 p-3">
+            <p className="label-caps">Critical path</p>
+            <p className="mt-1 text-sm font-medium">
+              {plan.criticalPathTaskIds.length} task
+              {plan.criticalPathTaskIds.length === 1 ? "" : "s"}
+            </p>
+          </div>
+          <div className="rounded-lg bg-accent/40 p-3">
+            <p className="label-caps">Unresolved dependencies</p>
+            <p className="mt-1 text-sm font-medium">{plan.feasibility.unresolvedDependencyCount}</p>
+          </div>
+        </div>
+      </div>
+
+      {blocked.length > 0 || waiting.length > 0 ? (
+        <section className="space-y-3">
+          <div className="flex items-center justify-between">
+            <h2 className="label-caps">Needs attention</h2>
+            <span className="text-xs text-muted-foreground">
+              {blocked.length} blocked · {waiting.length} waiting
+            </span>
+          </div>
+          <div className="space-y-2">
+            {[...blocked, ...waiting].map((task) => (
+              <button
+                key={task.id}
+                type="button"
+                onClick={() => setExpandedId(task.id)}
+                className="w-full rounded-lg border border-hairline bg-surface p-4 text-left hover:bg-accent/30"
+              >
+                <div className="flex items-start justify-between gap-4">
+                  <div>
+                    <p className="text-sm font-medium">{task.title}</p>
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      {task.blocker ||
+                        (task.status === "waiting"
+                          ? "Waiting for a prerequisite or answer."
+                          : "Blocked by an unresolved input.")}
+                    </p>
+                  </div>
+                  <StatusPill tone={task.status === "blocked" ? "blocked" : "warn"}>
+                    {task.status === "blocked" ? "Blocked" : "Waiting"}
+                  </StatusPill>
+                </div>
+              </button>
+            ))}
+          </div>
+        </section>
+      ) : null}
+
+      {readyNow.length > 0 ? (
+        <section className="space-y-3">
+          <h2 className="label-caps">Ready now</h2>
+          <div className="grid gap-2 sm:grid-cols-2">
+            {readyNow.map((task) => (
+              <TaskSummary key={task.id} task={task} onOpen={() => setExpandedId(task.id)} />
+            ))}
+          </div>
+        </section>
+      ) : null}
+
+      {inProgress.length > 0 ? (
+        <section className="space-y-3">
+          <h2 className="label-caps">In progress</h2>
+          <div className="grid gap-2 sm:grid-cols-2">
+            {inProgress.map((task) => (
+              <TaskSummary key={task.id} task={task} onOpen={() => setExpandedId(task.id)} />
+            ))}
+          </div>
+        </section>
+      ) : null}
+
+      {plan.parallelGroups.length > 0 ? (
+        <section className="space-y-3">
+          <h2 className="label-caps">Can run in parallel</h2>
+          <div className="rounded-lg border border-hairline bg-surface p-4">
+            <p className="text-sm text-muted-foreground">
+              These tasks share prerequisites but do not depend on one another.
+            </p>
+            {plan.parallelGroups.map((group) => (
+              <div key={group.join("-")} className="mt-3 flex flex-wrap gap-2">
+                {group.map((taskId) => (
+                  <span key={taskId} className="rounded bg-accent px-2.5 py-1 text-xs">
+                    {tasks.find((task) => task.id === taskId)?.title || taskId}
+                  </span>
+                ))}
+              </div>
+            ))}
+          </div>
+        </section>
+      ) : null}
+
+      <section className="space-y-3">
+        <div className="flex items-center justify-between">
+          <h2 className="label-caps">Critical path</h2>
+          <span className="text-xs text-muted-foreground">
+            {plan.criticalPathTaskIds.length} tasks determine the earliest possible completion
+          </span>
+        </div>
+        <div className="rounded-lg border border-hairline bg-surface p-4">
+          <div className="flex flex-wrap items-center gap-2">
+            {plan.criticalPathTaskIds.map((taskId, index) => (
+              <div key={taskId} className="flex items-center gap-2">
+                <span className="rounded bg-accent px-2.5 py-1 text-xs">
+                  {tasks.find((task) => task.id === taskId)?.title || taskId}
+                </span>
+                {index < plan.criticalPathTaskIds.length - 1 ? (
+                  <span className="text-muted-foreground">→</span>
+                ) : null}
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="space-y-3">
+        <div className="flex items-center justify-between">
+          <h2 className="label-caps">Detailed plan</h2>
+          <Button size="sm" variant="outline" onClick={() => setShowAdd(true)}>
+            Add task
+          </Button>
+        </div>
+        <div className="space-y-6">
+          {grouped.map((group) => {
+            const groupTasks = tasks.filter((task) => task.group === group);
+            if (groupTasks.length === 0) return null;
+            return (
+              <div key={group} className="space-y-2">
+                <h3 className="text-xs font-medium tracking-wider text-muted-foreground">
+                  {group}
+                </h3>
+                <div className="divide-y divide-hairline rounded-xl border border-hairline bg-surface">
+                  {groupTasks.map((task) => {
+                    const expanded = expandedId === task.id;
+                    return (
+                      <div key={task.id} className="p-4">
+                        <button
+                          type="button"
+                          className="w-full text-left"
+                          onClick={() => setExpandedId(expanded ? null : task.id)}
+                        >
+                          <div className="flex items-start justify-between gap-4">
+                            <div className="flex min-w-0 gap-3">
+                              <span className="font-mono text-xs text-muted-foreground">
+                                {tasks.indexOf(task) + 1}
+                              </span>
+                              <div className="min-w-0">
+                                <p className="text-sm font-medium">{task.title}</p>
+                                <p className="mt-1 text-xs text-muted-foreground">
+                                  {task.estimatedEffort
+                                    ? `Estimated effort: ${task.estimatedEffort}`
+                                    : "Effort cannot be estimated reliably yet."}
+                                </p>
+                              </div>
+                            </div>
+                            <StatusPill tone={stepTone[task.status]}>
+                              {task.status === "not-started"
+                                ? "Not started"
+                                : task.status === "in-progress"
+                                  ? "In progress"
+                                  : task.status === "needs-review"
+                                    ? "Needs review"
+                                    : task.status === "done"
+                                      ? "Completed"
+                                      : task.status}
+                            </StatusPill>
+                          </div>
+                        </button>
+                        {expanded ? (
+                          <div className="mt-4 space-y-4 border-t border-hairline pt-4">
+                            <div className="grid gap-4 sm:grid-cols-2">
+                              <div>
+                                <p className="label-caps">Objective</p>
+                                <p className="mt-1 text-sm text-muted-foreground">
+                                  {task.objective || task.title}
+                                </p>
+                              </div>
+                              <div>
+                                <p className="label-caps">Expected output</p>
+                                <p className="mt-1 text-sm text-muted-foreground">
+                                  {task.expectedOutput || "Not specified."}
+                                </p>
+                              </div>
+                            </div>
+                            <div className="grid gap-4 sm:grid-cols-2">
+                              <div>
+                                <p className="label-caps">Inputs</p>
+                                <p className="mt-1 text-sm text-muted-foreground">
+                                  {task.inputs?.length
+                                    ? task.inputs.join(" · ")
+                                    : "No additional inputs recorded."}
+                                </p>
+                              </div>
+                              <div>
+                                <p className="label-caps">Evidence required</p>
+                                <p className="mt-1 text-sm text-muted-foreground">
+                                  {task.evidenceRequired?.length
+                                    ? task.evidenceRequired.join(" · ")
+                                    : "No evidence requirement recorded."}
+                                </p>
+                              </div>
+                            </div>
+                            {task.blocker ? (
+                              <div className="rounded-md bg-blocked-soft p-3 text-xs text-blocked">
+                                <p className="font-medium">Why this is blocked</p>
+                                <p className="mt-1">{task.blocker}</p>
+                              </div>
+                            ) : null}
+                            <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
+                              <span>
+                                {task.relatedRequirementIds?.length || 0} related requirements
+                              </span>
+                              <span>{task.relatedQuestionIds?.length || 0} related questions</span>
+                              <span>{task.evidenceIds?.length || 0} linked evidence items</span>
+                              {task.isCriticalPath ? (
+                                <span className="rounded bg-accent px-2 py-0.5">Critical path</span>
+                              ) : null}
+                              {task.canRunInParallel ? (
+                                <span className="rounded bg-accent px-2 py-0.5">
+                                  Parallelizable
+                                </span>
+                              ) : null}
+                            </div>
+                            <div className="flex flex-wrap items-center gap-2">
+                              <select
+                                value={task.status}
+                                onChange={(event) => {
+                                  updatePlanTaskStatus(
+                                    work.id,
+                                    task.id,
+                                    event.currentTarget.value as PlanTaskStatus,
+                                  );
+                                  rerender((value) => value + 1);
+                                }}
+                                className="h-8 rounded-md border border-input bg-background px-2 text-xs"
+                              >
+                                <option value="not-started">Not started</option>
+                                <option value="ready">Ready</option>
+                                <option value="in-progress">In progress</option>
+                                <option value="waiting">Waiting</option>
+                                <option value="blocked">Blocked</option>
+                                <option value="done">Completed</option>
+                                <option value="skipped">Skipped</option>
+                                <option value="needs-review">Needs review</option>
+                              </select>
+                              <span className="text-xs text-muted-foreground">
+                                Status changes are recorded as user edits.
+                              </span>
+                            </div>
+                          </div>
+                        ) : null}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </section>
+
+      {completed.length > 0 ? (
+        <section className="space-y-3">
+          <h2 className="label-caps">Completed</h2>
+          <p className="text-sm text-muted-foreground">
+            {completed.length} task{completed.length === 1 ? "" : "s"} marked complete through
+            explicit user status or evidence.
+          </p>
+        </section>
+      ) : null}
+
+      <Dialog open={showAdd} onOpenChange={setShowAdd}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Add plan task</DialogTitle>
+            <DialogDescription>
+              Add a task based on actual Work needs. User-created tasks are preserved during
+              recalculation.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <label className="grid gap-1.5 text-sm">
+              <span className="label-caps">Task</span>
+              <input
+                value={newTitle}
+                onChange={(event) => setNewTitle(event.currentTarget.value)}
+                placeholder="Describe the action that needs to happen"
+                className="h-9 rounded-md border border-input bg-background px-3 text-sm outline-none focus:ring-1 focus:ring-ring"
+                autoFocus
+              />
+            </label>
+            <label className="grid gap-1.5 text-sm">
+              <span className="label-caps">Stage</span>
+              <select
+                value={newGroup}
+                onChange={(event) => setNewGroup(event.currentTarget.value as PlanGroup)}
+                className="h-9 rounded-md border border-input bg-background px-2 text-sm"
+              >
+                {grouped.map((option) => (
+                  <option key={option}>{option}</option>
+                ))}
+              </select>
+            </label>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowAdd(false)}>
+              Cancel
+            </Button>
+            <Button onClick={addTask} disabled={!newTitle.trim()}>
+              Add task
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+}
+
+function TaskSummary({ task, onOpen }: { task: WorkItem["plan"][number]; onOpen: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onOpen}
+      className="rounded-lg border border-hairline bg-surface p-4 text-left hover:bg-accent/30"
+    >
+      <div className="flex items-start justify-between gap-3">
+        <p className="text-sm font-medium">{task.title}</p>
+        <StatusPill tone={stepTone[task.status]}>
+          {task.status === "in-progress" ? "In progress" : "Ready"}
+        </StatusPill>
+      </div>
+      <p className="mt-2 text-xs text-muted-foreground">
+        {task.objective || "Action connected to the confirmed Work request."}
+      </p>
+    </button>
+  );
+}
+
+type PlanTaskStatus = StepStatus;

@@ -25,7 +25,7 @@ import { useNavigate } from "@tanstack/react-router";
 import { useRef, useState, type ChangeEvent, type DragEvent } from "react";
 
 import { PageHeader } from "@/components/primitives";
-import { addWorkItem, type WorkItem } from "@/lib/work";
+import { addWorkItem, generateWorkPlan, type WorkItem } from "@/lib/work";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -810,9 +810,10 @@ function AddWork() {
                     {
                       id: `req-${Date.now()}-1`,
                       title: "Fulfill requested deliverables",
-                      status: "complete",
+                      status: "NOT STARTED",
                       why: understandingObjective,
-                      evidence: "Extracted from work package sources and context.",
+                      evidence:
+                        "Requirement extracted from the confirmed request; supporting evidence has not been recorded yet.",
                       source: { kind: "confirmed", label: "Work Package Sources" },
                       action: "Proceed with execution.",
                     },
@@ -907,6 +908,7 @@ function AddWork() {
                       : "Proceed with drafting deliverables against confirmed requirements.",
                 };
                 addWorkItem(newItem);
+                generateWorkPlan(newId);
                 setShowUnderstanding(false);
                 navigate({ to: "/work/$workId", params: { workId: newId } });
               }}
