@@ -10,6 +10,7 @@
     "preview": "vite preview",
     "lint": "eslint .",
     "test:full-validation": "node --experimental-strip-types scripts/full-validation.mts",
+    "test:secret-preview": "node --experimental-strip-types scripts/secret-preview-validation.mts",
     "format": "prettier --write ."
   },
   "dependencies": {

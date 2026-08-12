@@ -2,7 +2,13 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 
 import { PageHeader } from "@/components/primitives";
+import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
+import { createEnvironmentTemplate, integrationCategories } from "@/lib/integration-config";
+import {
+  getIntegrationEnvironmentPreview,
+  type IntegrationEnvironmentPreview,
+} from "@/lib/integration-status";
 import type { RetentionPolicy } from "@/lib/work";
 
 const title = "Settings — Karya AI";
@@ -86,12 +92,35 @@ const retentionOptions: { value: RetentionPolicy; label: string; detail: string 
 
 function SettingsPage() {
   const [defaultRetention, setDefaultRetention] = useState<RetentionPolicy>("KEEP");
+  const [environmentPreview, setEnvironmentPreview] =
+    useState<IntegrationEnvironmentPreview | null>(null);
+  const [environmentPreviewError, setEnvironmentPreviewError] = useState("");
+  const [environmentPreviewLoading, setEnvironmentPreviewLoading] = useState(true);
+  const [templateCopied, setTemplateCopied] = useState(false);
 
   useEffect(() => {
     const saved = window.localStorage.getItem(DEFAULT_RETENTION_KEY) as RetentionPolicy | null;
     if (saved && retentionOptions.some((option) => option.value === saved)) {
       setDefaultRetention(saved);
     }
+  }, []);
+
+  const refreshEnvironmentPreview = () => {
+    setEnvironmentPreviewLoading(true);
+    setEnvironmentPreviewError("");
+    void getIntegrationEnvironmentPreview()
+      .then((result) => setEnvironmentPreview(result))
+      .catch(() => {
+        setEnvironmentPreview(null);
+        setEnvironmentPreviewError(
+          "The server preview is unavailable. Secret values were not requested or stored in this browser.",
+        );
+      })
+      .finally(() => setEnvironmentPreviewLoading(false));
+  };
+
+  useEffect(() => {
+    refreshEnvironmentPreview();
   }, []);
 
   const updateDefaultRetention = (policy: RetentionPolicy) => {
@@ -126,6 +155,126 @@ function SettingsPage() {
             </div>
           </section>
         ))}
+
+        <section>
+          <h2 className="label-caps">API keys &amp; secret variables</h2>
+          <div className="mt-3 space-y-5 rounded-xl border border-hairline bg-surface p-5">
+            <div className="rounded-lg border border-warn/40 bg-warn/5 p-4">
+              <p className="text-sm font-medium">Server-only configuration</p>
+              <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
+                Insert API keys and secret variables in your deployment secret manager or an ignored
+                <code className="mx-1 rounded bg-muted px-1 py-0.5 text-xs">.env.local</code>
+                file. Karya AI never asks this browser to store or display secret values, and
+                secrets must not use the{" "}
+                <code className="mx-1 rounded bg-muted px-1 py-0.5 text-xs">VITE_</code>
+                prefix.
+              </p>
+            </div>
+
+            <div>
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div>
+                  <p className="text-sm font-medium">Environment template</p>
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    A blank, tracked template is available at{" "}
+                    <code className="rounded bg-muted px-1 py-0.5 text-xs">.env.example</code>. Fill
+                    the local copy on the server or hosting platform, never in this page.
+                  </p>
+                </div>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => {
+                    void navigator.clipboard?.writeText(createEnvironmentTemplate());
+                    setTemplateCopied(true);
+                    window.setTimeout(() => setTemplateCopied(false), 1800);
+                  }}
+                >
+                  {templateCopied ? "Template copied" : "Copy blank template"}
+                </Button>
+              </div>
+              <textarea
+                readOnly
+                value={createEnvironmentTemplate()}
+                aria-label="Blank server environment template"
+                className="mt-3 min-h-40 w-full rounded-md border border-input bg-background p-3 font-mono text-[11px] text-muted-foreground"
+              />
+            </div>
+
+            <div className="border-t border-hairline pt-5">
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div>
+                  <p className="text-sm font-medium">Configuration preview</p>
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    This preview returns only whether a server variable is present. It never returns
+                    key values.
+                  </p>
+                </div>
+                <Button size="sm" variant="ghost" onClick={refreshEnvironmentPreview}>
+                  Refresh preview
+                </Button>
+              </div>
+              {environmentPreviewLoading ? (
+                <p className="mt-4 text-xs text-muted-foreground">Checking server configuration…</p>
+              ) : environmentPreviewError ? (
+                <p className="mt-4 rounded-md border border-warn/40 bg-warn/5 p-3 text-xs text-muted-foreground">
+                  {environmentPreviewError}
+                </p>
+              ) : environmentPreview?.previewEnabled ? (
+                <div className="mt-4 space-y-4">
+                  <p className="text-xs text-muted-foreground">
+                    Presence preview enabled for this server. Values remain server-only.
+                  </p>
+                  {integrationCategories.map((category) => {
+                    const variables = environmentPreview.variables.filter(
+                      (variable) => variable.category === category,
+                    );
+                    return (
+                      <div key={category}>
+                        <p className="label-caps">{category}</p>
+                        <div className="mt-2 divide-y divide-hairline rounded-md border border-hairline">
+                          {variables.map((variable) => (
+                            <div
+                              key={variable.key}
+                              className="grid gap-2 px-3 py-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center"
+                            >
+                              <div className="min-w-0">
+                                <p className="text-xs font-medium">{variable.label}</p>
+                                <p className="mt-0.5 break-all font-mono text-[11px] text-muted-foreground">
+                                  {variable.key}
+                                </p>
+                                <p className="mt-1 text-xs text-muted-foreground">
+                                  Required for {variable.requiredFor}.
+                                </p>
+                              </div>
+                              <span
+                                className={`w-fit rounded-full px-2 py-1 text-[10px] font-medium uppercase tracking-wide ${
+                                  variable.configured
+                                    ? "bg-ready/10 text-ready"
+                                    : "bg-warn/10 text-warn"
+                                }`}
+                              >
+                                {variable.configured ? "Configured" : "Missing"}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <p className="mt-4 rounded-md border border-hairline bg-muted/30 p-3 text-xs text-muted-foreground">
+                  Presence preview is disabled. Set{" "}
+                  <code className="rounded bg-muted px-1 py-0.5">
+                    KARYA_ENABLE_SECRET_PREVIEW=true
+                  </code>
+                  on the server only when you need a local configuration check.
+                </p>
+              )}
+            </div>
+          </div>
+        </section>
 
         <section>
           <h2 className="label-caps">Security &amp; Privacy</h2>
