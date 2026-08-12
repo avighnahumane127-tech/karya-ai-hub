@@ -34,7 +34,7 @@ const navGroups: { label: string; items: { label: string; to: string; icon: type
     items: [
       { label: "Home", to: "/home", icon: Home },
       { label: "My Work", to: "/work", icon: LayoutList },
-      { label: "Add Work", to: "/add", icon: Plus },
+      { label: "Work Input", to: "/add", icon: Plus },
     ],
   },
   {
@@ -127,7 +127,7 @@ function GlobalSearch({ open, setOpen }: { open: boolean; setOpen: (v: boolean) 
 const mobileNav = [
   { label: "Home", to: "/home", icon: Home },
   { label: "My Work", to: "/work", icon: LayoutList },
-  { label: "Add", to: "/add", icon: Plus },
+  { label: "Work Input", to: "/add", icon: Plus },
   { label: "Questions", to: "/questions", icon: HelpCircle },
   { label: "Handoffs", to: "/handoffs", icon: ArrowLeftRight },
 ];
@@ -135,7 +135,7 @@ const mobileNav = [
 const contextLabels: [string, string][] = [
   ["/home", "Home"],
   ["/work", "My Work"],
-  ["/add", "Add Work"],
+  ["/add", "Work Input"],
   ["/questions", "Questions"],
   ["/handoffs", "Handoffs"],
   ["/templates", "Templates"],

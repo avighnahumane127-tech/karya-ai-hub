@@ -1,0 +1,767 @@
+# WORKREADY — COMPLETE "WORK INPUT" SECTION
+
+Build and complete the **Work Input** section of the Karya AI application.
+
+This section is the starting point for creating a new work analysis. Its purpose is simple:
+
+> **Let the user bring together everything related to a piece of work, regardless of format, and have Karya AI treat it as one unified work package.**
+
+Do not make this feel like a generic file-upload page or cloud storage system.
+
+The experience should feel like:
+
+**"Give Karya AI everything you received about this work."**
+
+Then Karya AI can understand and analyze it as a whole.
+
+---
+
+# 1. WORK INPUT — MAIN SCREEN
+
+When the user opens **Work Input**, show a clean, focused workspace.
+
+The page should have:
+
+### Header
+
+**Work Input**
+
+**Bring together the instructions, files, messages, and other context needed for this work. Karya AI will analyze them as one work package.**
+
+Keep the explanation short.
+
+Do not overwhelm the user with a list of every supported format immediately.
+
+---
+
+# 2. PRIMARY INPUT AREA
+
+Create a large, polished drag-and-drop area in the center of the screen.
+
+The primary action should be immediately obvious.
+
+Example:
+
+### Drop everything related to the work here
+
+**Drag & drop files or add content**
+
+Supported:
+
+**PDF · DOCX · TXT · Images · ZIP · Audio · Video**
+
+Also provide clear buttons/actions:
+
+**Upload files**
+
+**Paste text**
+
+**Add URL**
+
+**Add email/message**
+
+The interface should make it clear that users can add **multiple sources at once**.
+
+Example visual:
+
+```text
+┌──────────────────────────────────────────────────────┐
+│                                                      │
+│        Drop files and work context here              │
+│                                                      │
+│       PDF · DOCX · Images · ZIP · Audio · Video      │
+│                                                      │
+│            [ Upload files ]  [ Paste text ]          │
+│                                                      │
+└──────────────────────────────────────────────────────┘
+```
+
+Do not make the upload box unnecessarily huge.
+
+---
+
+# 3. UNIVERSAL INPUT SUPPORT
+
+The Work Input system should support the following input types:
+
+### Files
+
+* PDF
+* DOCX
+* TXT
+* Images
+* Screenshots
+* ZIP files
+* Multiple files simultaneously
+
+### Text
+
+* Pasted instructions
+* Email content
+* Chat/message content
+* Notes
+* Requirements
+* Previous deliverables
+
+### URLs
+
+Allow users to add relevant URLs.
+
+### Audio
+
+Support:
+
+* Voice notes
+* Audio recordings
+
+### Video
+
+Support video files for future/available multimodal analysis.
+
+If a format is not currently supported by the backend, **do not fake processing**.
+
+Instead, clearly indicate the format as:
+
+**Coming soon**
+
+or
+
+**Not yet supported**
+
+depending on the actual implementation.
+
+Never display fabricated analysis results.
+
+---
+
+# 4. MULTIPLE FILE UPLOAD
+
+Users must be able to upload multiple files in a single Work Input session.
+
+Example:
+
+```text
+supplier-brief.pdf
+proposal-a.pdf
+proposal-b.pdf
+proposal-c.pdf
+budget.xlsx
+email-screenshot.png
+previous-report.docx
+```
+
+These must be treated as **one work package**.
+
+Do not create seven unrelated analyses.
+
+The interface should visually communicate:
+
+### 7 sources added
+
+**This work package contains 7 sources.**
+
+Allow users to:
+
+* Remove a source
+* Add another source
+* Preview a source where supported
+* See file type
+* See file size
+* See processing status
+* See whether processing succeeded
+* Rename the display label if appropriate
+
+---
+
+# 5. WORK PACKAGE
+
+Once sources are added, create a clear **Work Package** area.
+
+This is one of the most important concepts in the application.
+
+The Work Package represents:
+
+> **Everything Karya AI currently knows about this piece of work.**
+
+Example:
+
+### Supplier Recommendation
+
+**8 sources**
+
+* Supplier brief.pdf
+* Proposal A.pdf
+* Proposal B.pdf
+* Proposal C.pdf
+* Budget.xlsx
+* Email instructions
+* Previous recommendation.docx
+* Screenshot.png
+
+Show a clear button:
+
+**Add more context**
+
+and:
+
+**Analyze work**
+
+---
+
+# 6. MULTIPLE-SOURCE CONTEXT
+
+Users should be able to combine completely different sources.
+
+For example:
+
+```text
+Email
++
+Supplier brief.pdf
++
+Screenshot.png
++
+Assets.zip
++
+Previous deliverable.docx
+```
+
+Karya AI should understand that these are related to the **same work request**.
+
+The UI should communicate this clearly.
+
+Use a small visual explanation such as:
+
+**Multiple sources → One work package → One analysis**
+
+Do not make users manually create relationships between every file unless necessary.
+
+---
+
+# 7. ADD CONTEXT
+
+Include an **Add context** action.
+
+This should allow users to provide information that may not exist inside an uploaded file.
+
+Examples:
+
+### Additional context
+
+**Paste anything else Karya AI should know about this work.**
+
+Placeholder:
+
+> "The client prefers the cheapest option, but delivery time is also important."
+
+Allow:
+
+* Additional instructions
+* Background information
+* Constraints
+* Important decisions
+* Personal notes
+* Known requirements
+
+This context becomes part of the Work Package.
+
+---
+
+# 8. PASTE TEXT
+
+Create a clean text input experience.
+
+When the user selects **Paste text**, open an appropriate input area.
+
+Example:
+
+### Paste work instructions
+
+> Paste an assignment, email, brief, message, meeting notes, requirements, or any other instructions related to the work.
+
+Allow the user to add the pasted content to the current Work Package.
+
+Do not force the user to choose whether it is an "assignment," "email," or "brief" unless that information is actually useful.
+
+Karya AI should primarily care about the content.
+
+---
+
+# 9. EMAIL / MESSAGE INPUT
+
+Allow users to add email or message content.
+
+The user should be able to paste:
+
+* Email
+* WhatsApp-style message
+* Slack message
+* Teams message
+* Chat transcript
+* Other instructions
+
+The system should preserve the source type when known.
+
+Example:
+
+```text
+Source: Email
+From: Project Manager
+Date: August 12, 2026
+
+"Please prepare the supplier comparison..."
+```
+
+Do not fabricate sender, date, or metadata if the user did not provide it.
+
+---
+
+# 10. URL INPUT
+
+Allow the user to add a URL.
+
+Example:
+
+### Add a source URL
+
+`https://example.com/requirements`
+
+Show:
+
+**Add URL**
+
+If URL retrieval is not implemented yet, clearly indicate that rather than pretending the URL was analyzed.
+
+---
+
+# 11. SOURCE LIST
+
+After adding sources, display a clean source list.
+
+Each source should show:
+
+* File/name
+* Type
+* Size where applicable
+* Processing status
+* Source category
+* Remove action
+
+Example:
+
+```text
+WORK PACKAGE
+
+5 sources
+
+✓ supplier-brief.pdf       PDF       Ready
+✓ proposal-a.pdf          PDF       Ready
+✓ proposal-b.pdf          PDF       Ready
+✓ requirements.docx       DOCX      Ready
+✓ email instructions      Email     Ready
+
+                         + Add source
+```
+
+Keep this visually lightweight.
+
+Do not create enormous cards for every file.
+
+---
+
+# 12. SOURCE PROCESSING STATUS
+
+Each source should have a real processing state.
+
+Possible states:
+
+* Uploading
+* Processing
+* Ready
+* Failed
+* Unsupported
+
+If processing fails, explain why where possible.
+
+Example:
+
+**Processing failed**
+
+Could not extract readable text from this file.
+
+**Try another file**
+
+Do not silently mark failed files as successfully analyzed.
+
+---
+
+# 13. SOURCE PRESERVATION
+
+This is a critical feature.
+
+Every piece of information extracted from a source must retain its origin.
+
+When Karya AI extracts a:
+
+* Requirement
+* Deadline
+* Deliverable
+* Stakeholder
+* Question
+* Decision
+* Assumption
+* Dependency
+* Risk
+* Other important finding
+
+store the source reference.
+
+The source reference should contain whatever is actually available, such as:
+
+* Original source
+* File name
+* Page number
+* Section
+* Timestamp
+* Message position
+* URL
+
+Do not fabricate source references.
+
+---
+
+# 14. "WHERE DID THIS COME FROM?"
+
+Throughout the application, findings should have a way to inspect their source.
+
+For example:
+
+**Evaluation criteria are missing**
+
+`Where did Karya AI get this?`
+
+When clicked, show:
+
+```text
+Source
+
+supplier-brief.pdf
+
+Page 2
+Section: Evaluation Criteria
+
+[ View source ]
+```
+
+For video/audio:
+
+```text
+Source
+
+client-call.mp4
+
+Timestamp: 12:43
+
+[ Open timestamp ]
+```
+
+For email/message:
+
+```text
+Source
+
+Project Manager — Email
+
+[ View source ]
+```
+
+The exact available metadata should depend on the source.
+
+---
+
+# 15. SOURCE PREVIEW
+
+Allow users to inspect the original source from within the application where technically possible.
+
+Examples:
+
+PDF:
+
+**Open page 3**
+
+DOCX:
+
+**View source**
+
+Image:
+
+**Open image**
+
+Audio/video:
+
+**Jump to timestamp**
+
+This is important because Karya AI must be **traceable**, not a black box.
+
+---
+
+# 16. WORK CONTEXT SUMMARY
+
+Before the user runs the analysis, show a compact summary.
+
+Example:
+
+### Work package
+
+**Supplier recommendation**
+
+**Sources:** 7
+
+**Types:** 4 PDFs · 1 spreadsheet · 1 email · 1 image
+
+**Additional context:** Added
+
+Then:
+
+### Ready to analyze?
+
+**Karya AI will use these sources together to understand the work, identify requirements, find missing information, detect ambiguity, and build the work plan.**
+
+Primary button:
+
+**Analyze Work**
+
+---
+
+# 17. DO NOT SHOW FABRICATED DATA
+
+This is extremely important.
+
+The Work Input screen must never contain fake:
+
+* Files
+* Requirements
+* Analysis results
+* Source references
+* Processing statuses
+* Work packages
+* User activity
+* Dates
+* Statistics
+* Insights
+
+If the user has not added anything, show an empty state.
+
+Example:
+
+> **No work added yet**
+>
+> Add the instructions, files, or context for a piece of work to get started.
+
+Do not populate the application with fake example data.
+
+If examples are needed for the UI design, clearly label them as:
+
+**Example**
+
+and ensure they cannot be mistaken for real user data.
+
+---
+
+# 18. DRAG AND DROP
+
+Implement proper drag-and-drop behavior.
+
+When the user drags files over the upload area:
+
+* Highlight the drop zone
+* Clearly indicate that files can be released
+* Accept multiple files
+* Process them together
+* Return to the normal state after dropping
+
+Do not make the entire page jump around.
+
+---
+
+# 19. ADD MORE SOURCES AT ANY TIME
+
+Users should be able to add sources after the initial upload.
+
+For example:
+
+Initial:
+
+```text
+brief.pdf
+requirements.docx
+```
+
+Later:
+
+```text
++ client-email.pdf
++ updated-budget.xlsx
+```
+
+Karya AI should update the Work Package accordingly.
+
+If the work has already been analyzed, clearly indicate that **new sources may affect the existing analysis**.
+
+Provide an action such as:
+
+**Re-analyze work**
+
+Do not silently pretend that the old analysis included newly added files.
+
+---
+
+# 20. REMOVE OR REPLACE SOURCES
+
+Users should be able to remove a source.
+
+If a source is removed after analysis, clearly communicate that existing findings may be affected.
+
+Example:
+
+> Removing this source may invalidate 4 findings.
+
+Then:
+
+**Remove source**
+
+and, where appropriate:
+
+**Re-analyze**
+
+This prevents the system from silently maintaining stale conclusions.
+
+---
+
+# 21. CLEAN UI
+
+The entire Work Input page should follow the Karya AI design philosophy:
+
+**Minimal. Clear. Modern. Uncluttered.**
+
+Do not create:
+
+* Huge dashboards
+* Dozens of cards
+* Excessive tabs
+* Giant icons
+* Unnecessary statistics
+* Decorative elements that distract from uploading work
+
+The main flow should be obvious:
+
+**Add work → Review sources → Add context → Analyze**
+
+---
+
+# 22. PRIMARY USER FLOW
+
+The ideal user experience is:
+
+### Step 1
+
+Open **Work Input**
+
+↓
+
+### Step 2
+
+Drop files / paste instructions / add sources
+
+↓
+
+### Step 3
+
+Karya AI groups everything into one **Work Package**
+
+↓
+
+### Step 4
+
+User reviews the sources
+
+↓
+
+### Step 5
+
+User optionally adds context
+
+↓
+
+### Step 6
+
+User clicks:
+
+**Analyze Work**
+
+↓
+
+### Step 7
+
+Karya AI begins the next stage:
+
+**Understand → Prepare → Plan → Verify**
+
+---
+
+# 23. IMPORTANT PRODUCT PRINCIPLE
+
+Do not make Work Input feel like:
+
+**"Upload a file to an AI chatbot."**
+
+It should feel like:
+
+**"Give Karya AI everything related to this piece of work."**
+
+The key concept is:
+
+**Many sources → One work package → One source-backed understanding of the work.**
+
+That distinction should be visible in the UI.
+
+---
+
+# 24. SIDEBAR
+
+Keep **Work Input** as the clear entry point for creating a new piece of work.
+
+Do not duplicate the same upload functionality across multiple sidebar sections.
+
+The sidebar should remain clean.
+
+Work Input should be the obvious place to:
+
+* Start new work
+* Add sources
+* Combine context
+* Create a Work Package
+* Begin analysis
+
+Once analysis starts, the user should transition naturally into the relevant analysis/work screens rather than staying on the upload page.
+
+---
+
+# 25. IMPLEMENTATION REQUIREMENT
+
+Before changing the UI:
+
+1. Inspect the existing Karya AI architecture.
+2. Inspect the current Work Input implementation.
+3. Reuse existing components where appropriate.
+4. Preserve working upload functionality.
+5. Preserve authentication.
+6. Preserve existing backend functionality.
+7. Do not fabricate backend capabilities.
+8. Do not create fake processing results.
+9. Do not remove existing supported formats without a technical reason.
+10. Ensure errors are handled clearly.
+
+If a feature listed above requires backend functionality that does not currently exist, **build the necessary implementation only if it fits the existing architecture**. Otherwise, create the correct UI state without falsely claiming that the feature works.
+
+The final Work Input experience should be **simple enough for a first-time user to understand immediately, while being powerful enough to handle the messy, multi-source nature of real work.**

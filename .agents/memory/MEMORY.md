@@ -1,0 +1,1 @@
+- [Work Input backend boundary](work-input-boundaries.md) — keep local source collection honest until file storage and analysis services are connected.
