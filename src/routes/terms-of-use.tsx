@@ -330,7 +330,7 @@ function TermsOfUse() {
             <h2>17. Contact</h2>
             <p>If you have questions about these Terms, contact us at:</p>
             <p>
-              <strong>[Karya AI contact email]</strong>
+              <strong>Contact details are not configured in this local build.</strong>
             </p>
           </section>
 

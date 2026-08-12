@@ -373,7 +373,7 @@ function PrivacyPolicy() {
               personal information, contact us at:
             </p>
             <p>
-              <strong>[Karya AI privacy/contact email]</strong>
+              <strong>Contact details are not configured in this local build.</strong>
             </p>
           </section>
 
