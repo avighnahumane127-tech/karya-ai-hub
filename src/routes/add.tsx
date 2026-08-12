@@ -839,6 +839,10 @@ function AddWork() {
                   comments: [],
                   approvals: [],
                   communicationDrafts: [],
+                  retentionPolicy: "KEEP",
+                  sensitiveFindings: [],
+                  securityEvents: [],
+                  reports: [],
                   files: sources.map((s, idx) => ({
                     id: s.id,
                     name: s.name,

@@ -468,6 +468,59 @@ export type CommunicationDraft = {
   sourceObjectIds: string[];
 };
 
+export type RetentionPolicy = "DELETE_IMMEDIATELY" | "DELETE_AFTER_24_HOURS" | "KEEP";
+export type SensitiveFinding = {
+  id: string;
+  category:
+    | "Personal information"
+    | "Financial information"
+    | "Credential or API key"
+    | "Contact information"
+    | "Confidential document";
+  confidence: "Low" | "Medium" | "High";
+  sourceFileId: string;
+  sourceFileName: string;
+  location?: string;
+  maskedPreview: string;
+  status: "Open" | "Reviewed" | "Redacted" | "Dismissed";
+};
+export type SecurityEvent = {
+  id: string;
+  type:
+    | "File deletion"
+    | "Retention changed"
+    | "Sensitive warning"
+    | "Redaction performed"
+    | "Export requested";
+  date: string;
+  detail: string;
+};
+export type ReportType = "READINESS" | "WORK PLAN" | "REQUIREMENTS MATRIX";
+export type WorkReport = {
+  id: string;
+  type: ReportType;
+  version: number;
+  createdAt: string;
+  sourceActivityId?: string;
+  finalStatus?: string;
+  markdown: string;
+};
+export type ShareSnapshot = {
+  title: string;
+  status: string;
+  summary: string;
+  requirementsSummary: string;
+  criticalIssues: string[];
+  verificationSummary: string;
+  nextSteps: string[];
+  generatedAt: string;
+};
+export type ShareLink = {
+  token: string;
+  createdAt: string;
+  snapshot: ShareSnapshot;
+};
+
 export type UserTemplate = Template & {
   owner: "User" | "System";
   createdAt: string;
@@ -484,6 +537,8 @@ export type WorkItem = {
   state: WorkState;
   collaborationEnabled?: boolean;
   templateId?: string;
+  retentionPolicy?: RetentionPolicy;
+  shareLink?: ShareLink;
   due?: string;
   archived?: boolean;
   request: RequestUnderstanding;
@@ -506,6 +561,9 @@ export type WorkItem = {
   comments: WorkComment[];
   approvals: ApprovalRecord[];
   communicationDrafts: CommunicationDraft[];
+  sensitiveFindings: SensitiveFinding[];
+  securityEvents: SecurityEvent[];
+  reports: WorkReport[];
   assumptions: { id: string; text: string }[];
   issues: Issue[];
   findings: ReadinessFinding[];
@@ -611,6 +669,9 @@ function loadPersistedWork(): WorkItem[] {
       comments: item.comments || [],
       approvals: item.approvals || [],
       communicationDrafts: item.communicationDrafts || [],
+      sensitiveFindings: item.sensitiveFindings || [],
+      securityEvents: item.securityEvents || [],
+      reports: item.reports || [],
     }));
   } catch {
     return [];
@@ -669,6 +730,9 @@ export function addWorkItem(item: WorkItem) {
     relatedQuestionIds: requirement.relatedQuestionIds || [],
   }));
   item.evidence = item.evidence || [];
+  item.sensitiveFindings = item.sensitiveFindings || [];
+  item.securityEvents = item.securityEvents || [];
+  item.reports = item.reports || [];
   workItems.unshift(item);
   for (const q of item.questions) {
     questions.push(q);
@@ -682,6 +746,470 @@ function nowLabel() {
     day: "numeric",
     year: "numeric",
   });
+}
+
+function secureId(prefix: string) {
+  const random =
+    typeof globalThis.crypto?.randomUUID === "function"
+      ? globalThis.crypto.randomUUID()
+      : `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}-${Math.random().toString(36).slice(2)}`;
+  return `${prefix}-${random}`;
+}
+
+function recordSecurityEvent(work: WorkItem, type: SecurityEvent["type"], detail: string) {
+  const date = new Date().toISOString();
+  work.securityEvents.unshift({ id: secureId("security"), type, date, detail });
+  work.activity.unshift({
+    id: secureId("act"),
+    when: nowLabel(),
+    change: detail,
+  });
+}
+
+export function setRetentionPolicy(workId: string, policy: RetentionPolicy) {
+  const work = getWork(workId);
+  if (!work) return undefined;
+  const labels: Record<RetentionPolicy, string> = {
+    DELETE_IMMEDIATELY: "Delete immediately",
+    DELETE_AFTER_24_HOURS: "Delete after 24 hours",
+    KEEP: "Keep",
+  };
+  work.retentionPolicy = policy;
+  recordSecurityEvent(work, "Retention changed", `File retention changed to ${labels[policy]}.`);
+  persistWorkItems();
+  return work;
+}
+
+function maskedPreview(value: string, category: SensitiveFinding["category"]) {
+  if (category === "Contact information" || category === "Personal information") {
+    if (value.includes("@")) {
+      const [local = "", domain = ""] = value.split("@", 2);
+      return `${local.slice(0, 1)}***@${domain}`;
+    }
+    const digits = value.replace(/\D/g, "");
+    return digits.length >= 4 ? `•••• ${digits.slice(-4)}` : "••••";
+  }
+  if (category === "Financial information") {
+    const digits = value.replace(/\D/g, "");
+    return digits.length >= 4 ? `•••• ${digits.slice(-4)}` : "••••";
+  }
+  return `${value.slice(0, 3)}••••`;
+}
+
+export function detectSensitiveData(workId: string) {
+  const work = getWork(workId);
+  if (!work) return undefined;
+  const findings: SensitiveFinding[] = [];
+  const patterns: {
+    category: SensitiveFinding["category"];
+    confidence: SensitiveFinding["confidence"];
+    regex: RegExp;
+    location: string;
+  }[] = [
+    {
+      category: "Contact information",
+      confidence: "High",
+      regex: /[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,}/gi,
+      location: "Text content",
+    },
+    {
+      category: "Personal information",
+      confidence: "Medium",
+      regex: /\\b(?:phone|mobile|ssn|passport|national id)\\s*[:=]\\s*[^\\n,;]+/gi,
+      location: "Labeled field",
+    },
+    {
+      category: "Financial information",
+      confidence: "High",
+      regex: /\\b(?:\\d[ -]*?){13,19}\\b/g,
+      location: "Number pattern",
+    },
+    {
+      category: "Credential or API key",
+      confidence: "High",
+      regex:
+        /\\b(?:sk-[A-Za-z0-9_-]{10,}|AKIA[0-9A-Z]{16}|ghp_[A-Za-z0-9]{20,}|api[_-]?key\\s*[:=]\\s*\\S+)\\b/g,
+      location: "Credential pattern",
+    },
+  ];
+
+  for (const file of work.files) {
+    if (!file.content?.trim()) continue;
+    for (const pattern of patterns) {
+      for (const match of file.content.matchAll(pattern.regex)) {
+        const value = match[0];
+        const start = match.index ?? 0;
+        const line = file.content.slice(0, start).split("\\n").length;
+        if (
+          findings.some(
+            (finding) =>
+              finding.sourceFileId === file.id &&
+              finding.category === pattern.category &&
+              finding.maskedPreview === maskedPreview(value, pattern.category),
+          )
+        ) {
+          continue;
+        }
+        findings.push({
+          id: secureId("sensitive"),
+          category: pattern.category,
+          confidence: pattern.confidence,
+          sourceFileId: file.id,
+          sourceFileName: file.name,
+          location: `${pattern.location}; line ${line}`,
+          maskedPreview: maskedPreview(value, pattern.category),
+          status: "Open",
+        });
+      }
+    }
+  }
+
+  const scannedFileIds = new Set(
+    work.files.filter((file) => file.content?.trim()).map((file) => file.id),
+  );
+  work.sensitiveFindings = [
+    ...work.sensitiveFindings.filter(
+      (finding) => !scannedFileIds.has(finding.sourceFileId) || finding.status !== "Open",
+    ),
+    ...findings,
+  ];
+  if (findings.length > 0) {
+    recordSecurityEvent(
+      work,
+      "Sensitive warning",
+      `Sensitive-data review found ${findings.length} potential finding${findings.length === 1 ? "" : "s"}; values were masked.`,
+    );
+  } else {
+    recordSecurityEvent(
+      work,
+      "Sensitive warning",
+      "Sensitive-data review completed with no matching patterns in available text content.",
+    );
+  }
+  persistWorkItems();
+  return findings;
+}
+
+export function dismissSensitiveFinding(workId: string, findingId: string) {
+  const work = getWork(workId);
+  const finding = work?.sensitiveFindings.find((item) => item.id === findingId);
+  if (!work || !finding) return undefined;
+  finding.status = "Dismissed";
+  recordSecurityEvent(
+    work,
+    "Sensitive warning",
+    `Sensitive-data finding dismissed for ${finding.sourceFileName}.`,
+  );
+  persistWorkItems();
+  return finding;
+}
+
+function markdownList(items: string[], empty = "None recorded.") {
+  return items.length > 0 ? items.map((item) => `- ${item}`).join("\\n") : `- ${empty}`;
+}
+
+function csvCell(value: string | undefined) {
+  const safe = value || "";
+  return `"${safe.replaceAll('"', '""')}"`;
+}
+
+function latestVerification(work: WorkItem) {
+  return work.verificationRuns?.[work.verificationRuns.length - 1];
+}
+
+function readinessStatus(work: WorkItem) {
+  return latestVerification(work)?.finalStatus || stateLabels[work.state];
+}
+
+export function generateReadinessReport(workId: string) {
+  const work = getWork(workId);
+  if (!work) return undefined;
+  const verification = latestVerification(work);
+  const requirements = getRequirementStats(work);
+  const evidence = getEvidenceStats(work);
+  const criticalIssues = [
+    ...work.findings
+      .filter((finding) => finding.severity === "critical" || finding.severity === "blocking")
+      .map((finding) => `${finding.title}: ${finding.explanation}`),
+    ...(verification?.findings || [])
+      .filter((finding) => finding.severity === "Critical" && finding.status !== "Resolved")
+      .map((finding) => `${finding.title}: ${finding.detail}`),
+  ];
+  const sourceLines = work.files.map(
+    (file) =>
+      `- ${file.name}${file.type ? ` (${file.type})` : ""}${file.role ? ` — ${file.role}` : ""}`,
+  );
+  const findingLines = work.findings.map(
+    (finding) =>
+      `- **${finding.type} / ${finding.severity}** — ${finding.title}: ${finding.explanation}${finding.sourceReference ? ` (source: ${finding.sourceReference})` : ""}`,
+  );
+  const requirementLines = work.requirements.map(
+    (requirement) =>
+      `- **${requirement.title}** — ${requirement.status}; source: ${requirement.source.kind} (${requirement.source.label}); evidence: ${requirement.evidence}`,
+  );
+  const now = new Date().toISOString();
+  const version = work.reports.filter((report) => report.type === "READINESS").length + 1;
+  const markdown = [
+    "# Karya AI Readiness Report",
+    "",
+    "> This report is a generated snapshot of the current Work data. It is not an official certification of readiness.",
+    "",
+    `**Work:** ${work.title}`,
+    `**Date:** ${now}`,
+    `**Overall status:** ${readinessStatus(work)}`,
+    "",
+    "## What was requested",
+    "",
+    `**Objective:** ${work.request.objective}`,
+    `**Action:** ${work.request.action}`,
+    `**Outcome:** ${work.request.outcome}`,
+    ...(work.request.deadline ? [`**Deadline:** ${work.request.deadline}`] : []),
+    ...(work.request.audience ? [`**Audience:** ${work.request.audience}`] : []),
+    "",
+    "## Deliverables",
+    "",
+    markdownList(work.request.deliverables || []),
+    "",
+    "## Readiness findings",
+    "",
+    markdownList(findingLines),
+    "",
+    "## Critical issues",
+    "",
+    markdownList(criticalIssues),
+    "",
+    "## Recommended next actions",
+    "",
+    markdownList(work.recommendedNextAction ? [work.recommendedNextAction] : []),
+    "",
+    "## Requirements summary",
+    "",
+    `- Total requirements: ${work.requirements.length}`,
+    `- Satisfied: ${requirements["SATISFIED"] || 0}`,
+    `- Missing: ${requirements["MISSING"] || 0}`,
+    `- Needs review: ${requirements["NEEDS REVIEW"] || 0}`,
+    `- Evidence items: ${evidence.total}`,
+    "",
+    markdownList(requirementLines),
+    "",
+    "## Verification",
+    "",
+    verification
+      ? `Latest verification: version ${verification.version}, ${verification.finalStatus}. ${verification.summary}`
+      : "Verification has not been run for this Work.",
+    "",
+    "## Sources",
+    "",
+    markdownList(sourceLines),
+    "",
+    "## Interpretation",
+    "",
+    "Confirmed information is represented by user-provided Work fields and recorded evidence. Readiness findings may contain AI analysis or inference, and their source references are shown where available. Unknown information is not filled in by this report.",
+  ].join("\\n");
+  const report: WorkReport = {
+    id: secureId("report"),
+    type: "READINESS",
+    version,
+    createdAt: now,
+    ...(verification
+      ? { sourceActivityId: verification.id, finalStatus: verification.finalStatus }
+      : { finalStatus: readinessStatus(work) }),
+    markdown,
+  };
+  work.reports.unshift(report);
+  recordSecurityEvent(work, "Export requested", `Readiness report version ${version} generated.`);
+  persistWorkItems();
+  return report;
+}
+
+export function generateWorkPlanMarkdown(workId: string) {
+  const work = getWork(workId);
+  if (!work) return undefined;
+  const now = new Date().toISOString();
+  const version = work.reports.filter((report) => report.type === "WORK PLAN").length + 1;
+  const groups: PlanGroup[] = [
+    "PREPARATION",
+    "RESEARCH",
+    "PRODUCTION",
+    "REVIEW",
+    "APPROVAL",
+    "DELIVERY",
+  ];
+  const sections = groups.flatMap((group) => {
+    const tasks = work.plan.filter((task) => (task.group || "PRODUCTION") === group);
+    if (tasks.length === 0) return [];
+    return [
+      `## ${group[0] + group.slice(1).toLowerCase()}`,
+      "",
+      ...tasks.flatMap((task, index) => [
+        `### ${index + 1}. ${task.title}`,
+        "",
+        `- Status: ${task.status}`,
+        ...(task.objective ? [`- Objective: ${task.objective}`] : []),
+        ...(task.inputs?.length ? [`- Inputs: ${task.inputs.join("; ")}`] : []),
+        ...(task.dependencies?.length ? [`- Dependencies: ${task.dependencies.join("; ")}`] : []),
+        ...(task.expectedOutput ? [`- Expected output: ${task.expectedOutput}`] : []),
+        ...(task.evidenceRequired?.length
+          ? [`- Evidence required: ${task.evidenceRequired.join("; ")}`]
+          : []),
+        ...(task.estimatedEffort ? [`- Estimated effort: ${task.estimatedEffort}`] : []),
+        ...(task.isCriticalPath ? ["- Critical path: Yes"] : []),
+        ...(task.canRunInParallel ? ["- Parallelizable: Yes"] : []),
+        ...(task.blocker ? [`- Blocker: ${task.blocker}`] : []),
+        "",
+      ]),
+    ];
+  });
+  const criticalPath = work.plan.filter((task) => task.isCriticalPath).map((task) => task.title);
+  const markdown = [
+    "# Karya AI Work Plan",
+    "",
+    `**Work:** ${work.title}`,
+    `**Objective:** ${work.request.objective}`,
+    ...(work.due ? [`**Deadline:** ${work.due}`] : []),
+    "",
+    "## Deliverables",
+    "",
+    markdownList(work.request.deliverables || []),
+    "",
+    "## Deadline feasibility",
+    "",
+    work.planMeta
+      ? `**${work.planMeta.feasibility.status}** — ${work.planMeta.feasibility.explanation}`
+      : "Not available: no generated feasibility assessment is recorded.",
+    "",
+    "## Critical path",
+    "",
+    markdownList(criticalPath),
+    "",
+    ...sections,
+    ...(sections.length === 0 ? ["## Tasks", "", "- No plan tasks are recorded."] : []),
+  ].join("\\n");
+  const report: WorkReport = {
+    id: secureId("report"),
+    type: "WORK PLAN",
+    version,
+    createdAt: now,
+    markdown,
+  };
+  work.reports.unshift(report);
+  recordSecurityEvent(work, "Export requested", `Work plan version ${version} generated.`);
+  persistWorkItems();
+  return report;
+}
+
+export function generateRequirementsCSV(workId: string) {
+  const work = getWork(workId);
+  if (!work) return undefined;
+  const verification = latestVerification(work);
+  const verificationByRequirement = new Map(
+    (verification?.requirementResults || []).map((result) => [result.requirementId, result.status]),
+  );
+  const header = [
+    "Requirement",
+    "Type",
+    "Priority",
+    "Status",
+    "Source",
+    "Evidence",
+    "Evidence Confidence",
+    "Related Deliverable",
+    "Related Task",
+    "Verification Status",
+  ];
+  const rows = work.requirements.flatMap((requirement) => {
+    const related = work.evidence.filter(
+      (item) =>
+        requirement.relatedEvidenceIds?.includes(item.id) ||
+        item.relatedRequirementIds.includes(requirement.id),
+    );
+    const evidenceRows = related.length > 0 ? related : [undefined];
+    return evidenceRows.map((evidence) =>
+      [
+        requirement.title,
+        requirement.type || "Not recorded",
+        requirement.priority || "Not recorded",
+        requirement.status,
+        `${requirement.source.kind}: ${requirement.source.label}`,
+        evidence?.description || "No evidence recorded",
+        evidence?.confidence || "No evidence recorded",
+        requirement.relatedDeliverableIds?.join("; ") || "Not linked",
+        requirement.relatedTaskIds?.join("; ") || "Not linked",
+        verificationByRequirement.get(requirement.id) || "Not verified",
+      ]
+        .map((value) => csvCell(value))
+        .join(","),
+    );
+  });
+  const csv = [header.map(csvCell).join(","), ...rows].join("\\n");
+  const version = work.reports.filter((report) => report.type === "REQUIREMENTS MATRIX").length + 1;
+  const report: WorkReport = {
+    id: secureId("report"),
+    type: "REQUIREMENTS MATRIX",
+    version,
+    createdAt: new Date().toISOString(),
+    markdown: csv,
+  };
+  work.reports.unshift(report);
+  recordSecurityEvent(
+    work,
+    "Export requested",
+    `Requirements matrix version ${version} generated.`,
+  );
+  persistWorkItems();
+  return report;
+}
+
+function createShareToken() {
+  return secureId("share").replace(/^share-/, "");
+}
+
+export function createShareLink(workId: string) {
+  const work = getWork(workId);
+  if (!work) return undefined;
+  const verification = latestVerification(work);
+  const requirements = getRequirementStats(work);
+  const snapshot: ShareSnapshot = {
+    title: work.title,
+    status: readinessStatus(work),
+    summary: work.description,
+    requirementsSummary: `${requirements["SATISFIED"] || 0}/${work.requirements.length} requirements satisfied`,
+    criticalIssues: [
+      ...work.findings
+        .filter((finding) => finding.severity === "critical" || finding.severity === "blocking")
+        .map((finding) => finding.title),
+      ...(verification?.findings || [])
+        .filter((finding) => finding.severity === "Critical" && finding.status !== "Resolved")
+        .map((finding) => finding.title),
+    ],
+    verificationSummary: verification?.summary || "Verification has not been run for this Work.",
+    nextSteps: work.recommendedNextAction ? [work.recommendedNextAction] : [],
+    generatedAt: new Date().toISOString(),
+  };
+  work.shareLink = { token: createShareToken(), createdAt: new Date().toISOString(), snapshot };
+  recordSecurityEvent(
+    work,
+    "Export requested",
+    "A readiness share link was created from the current Work snapshot.",
+  );
+  persistWorkItems();
+  return work.shareLink;
+}
+
+export function revokeShareLink(workId: string) {
+  const work = getWork(workId);
+  if (!work?.shareLink) return false;
+  delete work.shareLink;
+  recordSecurityEvent(work, "Export requested", "The readiness share link was revoked.");
+  persistWorkItems();
+  return true;
+}
+
+export function getShareSnapshot(token: string) {
+  for (const work of workItems) {
+    if (work.shareLink?.token === token) return work.shareLink.snapshot;
+  }
+  return undefined;
 }
 
 export function addEvidence(
