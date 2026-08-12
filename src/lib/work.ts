@@ -279,10 +279,188 @@ export function getWork(id: string): WorkItem | undefined {
 }
 
 export function addWorkItem(item: WorkItem) {
+  const created = nowLabel();
+  item.requirements = item.requirements.map((requirement) => ({
+    ...requirement,
+    workId: requirement.workId || item.id,
+    originalWording: requirement.originalWording || requirement.title,
+    currentWording: requirement.currentWording || requirement.title,
+    createdDate: requirement.createdDate || created,
+    modifiedDate: requirement.modifiedDate || created,
+    type: requirement.type || "MANDATORY",
+    priority: requirement.priority || "HIGH",
+    history: requirement.history || [],
+    relatedEvidenceIds: requirement.relatedEvidenceIds || [],
+    relatedTaskIds: requirement.relatedTaskIds || [],
+    relatedQuestionIds: requirement.relatedQuestionIds || [],
+  }));
+  item.evidence = item.evidence || [];
   workItems.unshift(item);
   for (const q of item.questions) {
     questions.push(q);
   }
+}
+
+function nowLabel() {
+  return new Date().toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+}
+
+export function addEvidence(
+  workId: string,
+  input: Omit<Evidence, "id" | "workId" | "addedDate" | "history">,
+) {
+  const work = getWork(workId);
+  if (!work) return undefined;
+
+  const evidence: Evidence = {
+    ...input,
+    id: `evidence-${Date.now()}`,
+    workId,
+    addedDate: nowLabel(),
+    history: [
+      {
+        id: `evidence-history-${Date.now()}`,
+        date: nowLabel(),
+        change: "Evidence added",
+        by: input.addedBy,
+      },
+    ],
+  };
+
+  work.evidence.push(evidence);
+  for (const requirementId of evidence.relatedRequirementIds) {
+    const requirement = work.requirements.find((item) => item.id === requirementId);
+    if (!requirement) continue;
+    requirement.relatedEvidenceIds = [...(requirement.relatedEvidenceIds || []), evidence.id];
+    requirement.status =
+      evidence.confidence === "STRONG EVIDENCE" ? "SATISFIED" : "PARTIALLY SATISFIED";
+    requirement.evidence = [
+      ...(requirement.evidence ? [requirement.evidence] : []),
+      evidence.description,
+    ].join("; ");
+    requirement.modifiedDate = nowLabel();
+    requirement.history = [
+      ...(requirement.history || []),
+      {
+        id: `requirement-history-${Date.now()}-${requirement.id}`,
+        date: nowLabel(),
+        previousWording: requirement.currentWording,
+        newWording: requirement.currentWording || requirement.title,
+        changedBy: input.addedBy,
+        source: evidence.sourceReference || evidence.source,
+        reason: "Evidence relationship updated",
+      },
+    ];
+  }
+
+  work.activity.unshift({
+    id: `act-${Date.now()}`,
+    when: nowLabel(),
+    change: `Evidence added: ${evidence.description}`,
+    source: evidence.sourceReference || evidence.source,
+  });
+
+  return evidence;
+}
+
+export function removeEvidence(workId: string, evidenceId: string) {
+  const work = getWork(workId);
+  if (!work) return;
+  const evidence = work.evidence.find((item) => item.id === evidenceId);
+  if (!evidence) return;
+
+  work.evidence = work.evidence.filter((item) => item.id !== evidenceId);
+  for (const requirement of work.requirements) {
+    if (!requirement.relatedEvidenceIds?.includes(evidenceId)) continue;
+    requirement.relatedEvidenceIds = requirement.relatedEvidenceIds.filter(
+      (id) => id !== evidenceId,
+    );
+    requirement.status =
+      requirement.relatedEvidenceIds.length > 0 ? "PARTIALLY SATISFIED" : "MISSING";
+    requirement.modifiedDate = nowLabel();
+  }
+  work.activity.unshift({
+    id: `act-${Date.now()}`,
+    when: nowLabel(),
+    change: `Evidence removed: ${evidence.description}`,
+  });
+}
+
+export function updateRequirement(
+  workId: string,
+  requirementId: string,
+  patch: Partial<Pick<Requirement, "title" | "type" | "priority" | "status" | "notes">>,
+  changedBy = "User",
+) {
+  const work = getWork(workId);
+  const requirement = work?.requirements.find((item) => item.id === requirementId);
+  if (!work || !requirement) return;
+
+  const previous = requirement.currentWording || requirement.title;
+  if (patch.title && patch.title !== previous) {
+    requirement.history = [
+      ...(requirement.history || []),
+      {
+        id: `requirement-history-${Date.now()}`,
+        date: nowLabel(),
+        previousWording: previous,
+        newWording: patch.title,
+        changedBy,
+        reason: "Requirement wording edited",
+      },
+    ];
+    requirement.currentWording = patch.title;
+    requirement.title = patch.title;
+  }
+  Object.assign(requirement, patch);
+  requirement.modifiedDate = nowLabel();
+  work.activity.unshift({
+    id: `act-${Date.now()}`,
+    when: nowLabel(),
+    change: `Requirement updated: ${requirement.title}`,
+  });
+}
+
+export function getRequirementEvidence(work: WorkItem, requirementId: string) {
+  const requirement = work.requirements.find((item) => item.id === requirementId);
+  if (!requirement) return [];
+  return work.evidence.filter((item) => requirement.relatedEvidenceIds?.includes(item.id));
+}
+
+export function getRequirementStats(work: WorkItem) {
+  const status = (requirement: Requirement) => {
+    if (requirement.status === "complete") return "SATISFIED";
+    if (requirement.status === "partial") return "PARTIALLY SATISFIED";
+    if (requirement.status === "missing") return "MISSING";
+    if (requirement.status === "conflict") return "CONTRADICTORY";
+    return requirement.status;
+  };
+  return work.requirements.reduce(
+    (result, requirement) => {
+      const key = status(requirement);
+      result[key] = (result[key] || 0) + 1;
+      return result;
+    },
+    {} as Record<string, number>,
+  );
+}
+
+export function getEvidenceStats(work: WorkItem) {
+  return work.evidence.reduce(
+    (result, evidence) => {
+      result.total += 1;
+      if (evidence.confidence === "STRONG EVIDENCE") result.strong += 1;
+      if (evidence.confidence === "PARTIAL EVIDENCE") result.partial += 1;
+      if (evidence.confidence === "WEAK EVIDENCE") result.weak += 1;
+      if (evidence.confidence === "NO EVIDENCE") result.none += 1;
+      return result;
+    },
+    { total: 0, strong: 0, partial: 0, weak: 0, none: 0 },
+  );
 }
 
 export function archiveWork(id: string) {
