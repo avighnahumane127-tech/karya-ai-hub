@@ -9,13 +9,35 @@ export type WorkState =
   | "done"
   | "review";
 
-export type ReqStatus = "complete" | "partial" | "missing" | "conflict";
+export type RequirementStatus =
+  | "NOT STARTED"
+  | "IN PROGRESS"
+  | "SATISFIED"
+  | "PARTIALLY SATISFIED"
+  | "MISSING"
+  | "CONTRADICTORY"
+  | "NEEDS REVIEW"
+  | "WAIVED";
+export type RequirementType =
+  "MANDATORY" | "OPTIONAL" | "CONDITIONAL" | "INFORMATIONAL" | "APPROVAL-REQUIRED";
+export type RequirementPriority = "CRITICAL" | "HIGH" | "MEDIUM" | "LOW";
+export type ReqStatus = "complete" | "partial" | "missing" | "conflict" | RequirementStatus;
 export type StepStatus = "blocked" | "ready" | "waiting" | "not-started" | "done";
 export type SourceKind = "confirmed" | "inferred" | "assumption" | "conflict";
 
 export type Source = { kind: SourceKind; label: string };
 
 export type Issue = { id: string; problem: string; detail: string; action: string };
+
+export type RequirementHistoryEntry = {
+  id: string;
+  date: string;
+  previousWording?: string;
+  newWording: string;
+  changedBy: string;
+  source?: string;
+  reason?: string;
+};
 
 export type Requirement = {
   id: string;
@@ -25,6 +47,64 @@ export type Requirement = {
   evidence: string;
   source: Source;
   action: string;
+  workId?: string;
+  type?: RequirementType;
+  priority?: RequirementPriority;
+  sourceLocation?: string;
+  originalWording?: string;
+  currentWording?: string;
+  createdDate?: string;
+  modifiedDate?: string;
+  createdBy?: string;
+  modifiedBy?: string;
+  relatedDeliverableIds?: string[];
+  relatedTaskIds?: string[];
+  relatedQuestionIds?: string[];
+  relatedEvidenceIds?: string[];
+  relatedRiskIds?: string[];
+  relatedDecisionIds?: string[];
+  notes?: string;
+  waiver?: { waived: boolean; by?: string; date?: string; reason?: string };
+  history?: RequirementHistoryEntry[];
+};
+
+export type EvidenceType =
+  | "File"
+  | "Page"
+  | "Link"
+  | "Screenshot"
+  | "Message"
+  | "Number"
+  | "Decision"
+  | "Approval"
+  | "Test result"
+  | "User confirmation"
+  | "Note";
+export type EvidenceConfidence =
+  "STRONG EVIDENCE" | "PARTIAL EVIDENCE" | "WEAK EVIDENCE" | "NO EVIDENCE";
+
+export type EvidenceHistoryEntry = {
+  id: string;
+  date: string;
+  change: string;
+  by: string;
+};
+
+export type Evidence = {
+  id: string;
+  workId: string;
+  type: EvidenceType;
+  description: string;
+  source?: string;
+  sourceLocation?: string;
+  sourceReference?: string;
+  relatedRequirementIds: string[];
+  confidence: EvidenceConfidence;
+  confidenceReason: string;
+  addedDate: string;
+  addedBy: "USER-PROVIDED EVIDENCE" | "AI-DETECTED EVIDENCE";
+  verificationState: "Unverified" | "Reviewed" | "Verified" | "Conflicted";
+  history: EvidenceHistoryEntry[];
 };
 
 export type PlanStep = { id: string; title: string; status: StepStatus; note?: string };
@@ -156,6 +236,7 @@ export type WorkItem = {
   archived?: boolean;
   request: RequestUnderstanding;
   requirements: Requirement[];
+  evidence: Evidence[];
   plan: PlanStep[];
   questions: Question[];
   files: WorkFile[];
