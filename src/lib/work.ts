@@ -1174,6 +1174,7 @@ function removeLocallyRetainedFiles(work: WorkItem, reason: string) {
   });
   work.recommendedNextAction =
     "Review Work items affected by locally removed files and re-upload any required source.";
+  recalculateReadiness(work);
   delete work.retentionScheduledFor;
   recordSecurityEvent(
     work,
@@ -2707,6 +2708,7 @@ export function addEvidence(
       },
     ];
   }
+  recalculateReadiness(work);
 
   work.activity.unshift({
     id: `act-${Date.now()}`,
@@ -2736,6 +2738,7 @@ export function removeEvidence(workId: string, evidenceId: string) {
       requirement.relatedEvidenceIds.length > 0 ? "PARTIALLY SATISFIED" : "MISSING";
     requirement.modifiedDate = nowLabel();
   }
+  recalculateReadiness(work);
   work.activity.unshift({
     id: `act-${Date.now()}`,
     when: nowLabel(),
@@ -2799,6 +2802,7 @@ export function updateRequirement(
     ];
   }
   requirement.modifiedDate = nowLabel();
+  recalculateReadiness(work);
   work.activity.unshift({
     id: `act-${Date.now()}`,
     when: nowLabel(),
@@ -4336,14 +4340,31 @@ function recalculateReadiness(work: WorkItem) {
   const openCriticalQuestions = work.questions.filter(
     (q) => q.priority === "MUST ANSWER BEFORE STARTING" && q.state !== "resolved",
   );
+  const blockingRequirements = work.requirements
+    .filter(
+      (requirement) =>
+        requirement.type === "MANDATORY" ||
+        requirement.type === "APPROVAL-REQUIRED" ||
+        requirement.priority === "CRITICAL",
+    )
+    .filter((requirement) =>
+      ["MISSING", "CONTRADICTORY", "NEEDS REVIEW"].includes(requirement.status),
+    );
+  const unresolvedRequirements = work.requirements.filter(
+    (requirement) =>
+      !["SATISFIED", "WAIVED"].includes(requirement.status) &&
+      !blockingRequirements.some((item) => item.id === requirement.id),
+  );
 
   const oldState = work.state;
 
-  if (openCriticalQuestions.length > 0) {
+  if (openCriticalQuestions.length > 0 || blockingRequirements.length > 0) {
     work.state = "blocked";
+  } else if (oldState === "done" || oldState === "ready-to-submit") {
+    work.state = oldState;
   } else {
     const hasWarnings = work.findings.some((f) => f.status === "open");
-    work.state = hasWarnings ? "ready-with-warnings" : "ready";
+    work.state = hasWarnings || unresolvedRequirements.length > 0 ? "ready-with-warnings" : "ready";
   }
 
   if (oldState !== work.state) {
