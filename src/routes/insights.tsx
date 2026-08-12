@@ -63,14 +63,14 @@ function InsightsPage() {
 
   const load = (refresh = false) => {
     if (refresh) setRefreshing(true);
-    const next = refresh ? refreshAnalyticsIntelligence() : getAnalyticsSnapshot(filters);
-    setSnapshot(next);
+    if (refresh) refreshAnalyticsIntelligence();
+    setSnapshot(getAnalyticsSnapshot(filters));
     if (refresh) setRefreshing(false);
   };
 
   useEffect(() => {
     setSnapshot(getAnalyticsSnapshot(filters));
-  }, [filters.from, filters.to, filters.status, filters.templateId]);
+  }, [filters]);
 
   const searchResults = useMemo(() => {
     const needle = query.trim().toLowerCase();
