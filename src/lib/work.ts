@@ -416,11 +416,74 @@ export type ReadinessFinding = {
   status: "open" | "resolved" | "overridden";
 };
 
+export type ResponsibilityAssignment = {
+  id: string;
+  person: string;
+  role: string;
+  relatedObjectType:
+    "work" | "deliverable" | "task" | "requirement" | "question" | "issue" | "approval";
+  relatedObjectId: string;
+  assignedDate: string;
+  status: "Assigned" | "In progress" | "Completed" | "Waiting";
+  dueDate?: string;
+};
+
+export type WorkComment = {
+  id: string;
+  author: string;
+  text: string;
+  createdAt: string;
+  relatedObjectType:
+    | "work"
+    | "requirement"
+    | "task"
+    | "question"
+    | "evidence"
+    | "verification"
+    | "handoff"
+    | "decision";
+  relatedObjectId: string;
+  editedAt?: string;
+  mentionedUsers: string[];
+};
+
+export type ApprovalRecord = {
+  id: string;
+  relatedObjectType: "work" | "requirement" | "deliverable" | "revision" | "final-output";
+  relatedObjectId: string;
+  reviewer: string;
+  status: "DRAFT" | "REVIEW" | "APPROVED" | "CHANGES REQUESTED";
+  date: string;
+  comment?: string;
+};
+
+export type CommunicationDraft = {
+  id: string;
+  purpose: "Clarification" | "Status update" | "Handoff" | "Delivery" | "Escalation";
+  tone: "Professional" | "Direct" | "Friendly" | "Formal" | "Urgent";
+  length: "Short" | "Detailed";
+  text: string;
+  createdAt: string;
+  editedAt?: string;
+  sourceObjectIds: string[];
+};
+
+export type UserTemplate = Template & {
+  owner: "User" | "System";
+  createdAt: string;
+  updatedAt: string;
+  uses: number;
+  defaultRequirements?: string[];
+  defaultDeliverables?: string[];
+};
+
 export type WorkItem = {
   id: string;
   title: string;
   description: string;
   state: WorkState;
+  collaborationEnabled?: boolean;
+  templateId?: string;
   due?: string;
   archived?: boolean;
   request: RequestUnderstanding;
@@ -439,6 +502,10 @@ export type WorkItem = {
   decisionHistory: DecisionChangeEntry[];
   openIssues: OpenIssue[];
   handoffPackets: HandoffPacket[];
+  assignments: ResponsibilityAssignment[];
+  comments: WorkComment[];
+  approvals: ApprovalRecord[];
+  communicationDrafts: CommunicationDraft[];
   assumptions: { id: string; text: string }[];
   issues: Issue[];
   findings: ReadinessFinding[];
@@ -540,6 +607,10 @@ function loadPersistedWork(): WorkItem[] {
       decisionHistory: item.decisionHistory || [],
       openIssues: item.openIssues || [],
       handoffPackets: item.handoffPackets || [],
+      assignments: item.assignments || [],
+      comments: item.comments || [],
+      approvals: item.approvals || [],
+      communicationDrafts: item.communicationDrafts || [],
     }));
   } catch {
     return [];
@@ -1368,7 +1439,8 @@ export function generateHandoffPacket(workId: string): HandoffPacket | undefined
   const authoritativeFiles = work.files.filter((f) => f.authorityStatus === "Authoritative");
   const currentStatus =
     (work.verificationRuns?.length || 0) > 0
-      ? work.verificationRuns[work.verificationRuns.length - 1]?.finalStatus || "READY WITH WARNINGS"
+      ? work.verificationRuns[work.verificationRuns.length - 1]?.finalStatus ||
+        "READY WITH WARNINGS"
       : work.state === "ready-to-submit"
         ? "READY TO SUBMIT"
         : work.state === "blocked"

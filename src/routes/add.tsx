@@ -835,6 +835,10 @@ function AddWork() {
                   decisionHistory: [],
                   openIssues: [],
                   handoffPackets: [],
+                  assignments: [],
+                  comments: [],
+                  approvals: [],
+                  communicationDrafts: [],
                   files: sources.map((s, idx) => ({
                     id: s.id,
                     name: s.name,
