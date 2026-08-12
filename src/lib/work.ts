@@ -2528,20 +2528,28 @@ export function generateProcessRecommendations() {
       createdAt: new Date().toISOString(),
     });
   }
+  const existingById = new Map(intelligenceStore.recommendations.map((item) => [item.id, item]));
+  const newlyObserved = recommendations.filter(
+    (recommendation) => !existingById.has(recommendation.id),
+  );
   intelligenceStore.recommendations = [
-    ...recommendations,
+    ...recommendations.map(
+      (recommendation) => existingById.get(recommendation.id) || recommendation,
+    ),
     ...intelligenceStore.recommendations.filter(
       (existing) => !recommendations.some((item) => item.id === existing.id),
     ),
   ];
-  if (recommendations.length > 0)
+  if (newlyObserved.length > 0)
     recordIntelligenceActivity(
       "Process recommendation generated",
-      `${recommendations.length} data-backed recommendation${recommendations.length === 1 ? "" : "s"} generated.`,
-      recommendations.flatMap((recommendation) => recommendation.relatedWorkIds),
+      `${newlyObserved.length} new data-backed recommendation${newlyObserved.length === 1 ? "" : "s"} generated.`,
+      newlyObserved.flatMap((recommendation) => recommendation.relatedWorkIds),
     );
   persistIntelligenceStore();
-  return recommendations;
+  return intelligenceStore.recommendations.filter(
+    (recommendation) => recommendation.status === "Open",
+  );
 }
 
 export function updateProcessRecommendation(id: string, status: ProcessRecommendation["status"]) {
