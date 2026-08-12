@@ -9,14 +9,21 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import {
+  addApproval,
+  addAssignment,
   addCompletedWorkFile,
   addDecision,
   addEvidence,
   addOpenIssue,
   addPlanTask,
   analyzeFileIntelligence,
+  addWorkComment,
+  editCommunicationDraft,
+  generateCommunicationDraft,
   generateHandoffPacket,
   generateWorkPlan,
+  setCollaborationEnabled,
+  updateAssignmentStatus,
   updateDecision,
   updateOpenIssueStatus,
   getEvidenceStats,
@@ -30,11 +37,14 @@ import {
   updateQuestionAnswer,
   updateRequirement,
   updateWorkFile,
+  type CommunicationDraft,
   type EvidenceConfidence,
+  type ApprovalRecord,
   type EvidenceType,
   type FileAuthorityStatus,
   type FilePurpose,
   type Question,
+  type ResponsibilityAssignment,
   type PlanGroup,
   type QuestionPriority,
   type ReqStatus,
@@ -58,6 +68,7 @@ export const workTabs = [
   "Questions",
   "Files",
   "Verify",
+  "Collaborate",
   "Handoff",
 ] as const;
 
@@ -274,6 +285,10 @@ export function WorkTabPanel({ work, tab }: { work: WorkItem; tab: WorkTab }) {
 
   if (tab === "Verify") {
     return <VerificationTab work={work} />;
+  }
+
+  if (tab === "Collaborate") {
+    return <CollaborationTab work={work} />;
   }
 
   return <HandoffTab work={work} />;
@@ -2270,6 +2285,400 @@ function HandoffTab({ work }: { work: WorkItem }) {
           description="Click 'Generate handoff' above to compile a structured handoff packet, AI insights summary, open issues, and decision history from the current Work state."
         />
       )}
+    </div>
+  );
+}
+
+function CollaborationTab({ work }: { work: WorkItem }) {
+  const [, rerender] = useState(0);
+  const [person, setPerson] = useState("");
+  const [role, setRole] = useState("");
+  const [author, setAuthor] = useState("");
+  const [commentText, setCommentText] = useState("");
+  const [reviewer, setReviewer] = useState("");
+  const [approvalStatus, setApprovalStatus] = useState<ApprovalRecord["status"]>("REVIEW");
+  const [purpose, setPurpose] = useState<CommunicationDraft["purpose"]>("Status update");
+  const [tone, setTone] = useState<CommunicationDraft["tone"]>("Professional");
+  const [length, setLength] = useState<CommunicationDraft["length"]>("Short");
+  const [latestDraft, setLatestDraft] = useState<CommunicationDraft | undefined>(
+    work.communicationDrafts?.[0],
+  );
+
+  if (!work.collaborationEnabled) {
+    return (
+      <div className="rounded-xl border border-dashed border-hairline p-8 text-center">
+        <p className="text-sm font-medium">Collaboration is disabled for this Work.</p>
+        <p className="mx-auto mt-2 max-w-lg text-sm text-muted-foreground">
+          Enable it only when authorized collaborators, comments, responsibilities, or approvals are
+          needed. Karya AI will not create placeholder people or activity.
+        </p>
+        <Button
+          className="mt-5"
+          size="sm"
+          onClick={() => {
+            setCollaborationEnabled(work.id, true);
+            rerender((value) => value + 1);
+          }}
+        >
+          Enable collaboration
+        </Button>
+      </div>
+    );
+  }
+
+  const submitAssignment = (event: React.FormEvent) => {
+    event.preventDefault();
+    if (!person.trim() || !role.trim()) return;
+    addAssignment(work.id, {
+      person: person.trim(),
+      role: role.trim(),
+      relatedObjectType: "work",
+      relatedObjectId: work.id,
+      status: "Assigned",
+    });
+    setPerson("");
+    setRole("");
+    rerender((value) => value + 1);
+  };
+
+  const submitComment = (event: React.FormEvent) => {
+    event.preventDefault();
+    if (!author.trim() || !commentText.trim()) return;
+    addWorkComment(work.id, {
+      author: author.trim(),
+      text: commentText.trim(),
+      relatedObjectType: "work",
+      relatedObjectId: work.id,
+    });
+    setCommentText("");
+    rerender((value) => value + 1);
+  };
+
+  const submitApproval = (event: React.FormEvent) => {
+    event.preventDefault();
+    if (!reviewer.trim()) return;
+    addApproval(work.id, {
+      relatedObjectType: "work",
+      relatedObjectId: work.id,
+      reviewer: reviewer.trim(),
+      status: approvalStatus,
+    });
+    setReviewer("");
+    rerender((value) => value + 1);
+  };
+
+  const generateMessage = () => {
+    const draft = generateCommunicationDraft(work.id, purpose, tone, length);
+    setLatestDraft(draft);
+    rerender((value) => value + 1);
+  };
+
+  const myAssignments = work.assignments.filter(
+    (assignment) => assignment.person.toLowerCase() === "me",
+  );
+  const otherAssignments = work.assignments.filter(
+    (assignment) => assignment.person.toLowerCase() !== "me",
+  );
+
+  return (
+    <div className="space-y-7">
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-hairline bg-surface p-4">
+        <div>
+          <p className="label-caps">Collaboration enabled</p>
+          <p className="mt-1 text-xs text-muted-foreground">
+            Only explicitly entered people, comments, assignments, and approvals appear here.
+          </p>
+        </div>
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={() => {
+            setCollaborationEnabled(work.id, false);
+            rerender((value) => value + 1);
+          }}
+        >
+          Disable collaboration
+        </Button>
+      </div>
+
+      <section className="space-y-3">
+        <div className="flex items-center justify-between">
+          <h2 className="label-caps">Responsibilities</h2>
+          <span className="text-xs text-muted-foreground">{work.assignments.length} assigned</span>
+        </div>
+        <div className="rounded-xl border border-hairline bg-surface p-4 space-y-4">
+          <form onSubmit={submitAssignment} className="grid gap-2 sm:grid-cols-[1fr_1fr_auto]">
+            <input
+              value={person}
+              onChange={(event) => setPerson(event.currentTarget.value)}
+              placeholder="Person"
+              className="h-9 rounded-md border border-input bg-background px-3 text-xs"
+            />
+            <input
+              value={role}
+              onChange={(event) => setRole(event.currentTarget.value)}
+              placeholder="Responsibility"
+              className="h-9 rounded-md border border-input bg-background px-3 text-xs"
+            />
+            <Button type="submit" size="sm">
+              Assign
+            </Button>
+          </form>
+          {work.assignments.length === 0 ? (
+            <p className="text-sm text-muted-foreground">
+              No responsibility has been explicitly assigned.
+            </p>
+          ) : (
+            <div className="space-y-3">
+              <div>
+                <p className="label-caps">My responsibilities</p>
+                {myAssignments.length === 0 ? (
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    No assignment recorded to “Me”.
+                  </p>
+                ) : (
+                  myAssignments.map((assignment) => (
+                    <AssignmentRow
+                      key={assignment.id}
+                      assignment={assignment}
+                      workId={work.id}
+                      onChange={() => rerender((value) => value + 1)}
+                    />
+                  ))
+                )}
+              </div>
+              <div>
+                <p className="label-caps">Other responsibilities</p>
+                {otherAssignments.length === 0 ? (
+                  <p className="mt-1 text-xs text-muted-foreground">No other person assigned.</p>
+                ) : (
+                  otherAssignments.map((assignment) => (
+                    <AssignmentRow
+                      key={assignment.id}
+                      assignment={assignment}
+                      workId={work.id}
+                      onChange={() => rerender((value) => value + 1)}
+                    />
+                  ))
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+      </section>
+
+      <div className="grid gap-6 md:grid-cols-2">
+        <section className="space-y-3">
+          <h2 className="label-caps">Comments</h2>
+          <div className="rounded-xl border border-hairline bg-surface p-4 space-y-4">
+            <form onSubmit={submitComment} className="space-y-2">
+              <input
+                value={author}
+                onChange={(event) => setAuthor(event.currentTarget.value)}
+                placeholder="Your name"
+                className="h-8 w-full rounded-md border border-input bg-background px-3 text-xs"
+              />
+              <textarea
+                value={commentText}
+                onChange={(event) => setCommentText(event.currentTarget.value)}
+                placeholder="Comment on this Work. Use @name to mention someone."
+                className="min-h-20 w-full rounded-md border border-input bg-background p-3 text-xs"
+              />
+              <Button type="submit" size="sm">
+                Add comment
+              </Button>
+            </form>
+            {work.comments.length === 0 ? (
+              <p className="text-sm text-muted-foreground">No comments recorded.</p>
+            ) : (
+              <div className="space-y-3">
+                {work.comments.map((comment) => (
+                  <div key={comment.id} className="border-t border-hairline pt-3">
+                    <p className="text-sm">{comment.text}</p>
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      {comment.author} · {comment.createdAt}
+                      {comment.mentionedUsers.length > 0
+                        ? ` · Mentions: ${comment.mentionedUsers.map((mention) => `@${mention}`).join(", ")}`
+                        : ""}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </section>
+
+        <section className="space-y-3">
+          <h2 className="label-caps">Approvals</h2>
+          <div className="rounded-xl border border-hairline bg-surface p-4 space-y-4">
+            <form onSubmit={submitApproval} className="space-y-2">
+              <div className="flex gap-2">
+                <input
+                  value={reviewer}
+                  onChange={(event) => setReviewer(event.currentTarget.value)}
+                  placeholder="Reviewer"
+                  className="h-8 flex-1 rounded-md border border-input bg-background px-3 text-xs"
+                />
+                <select
+                  value={approvalStatus}
+                  onChange={(event) =>
+                    setApprovalStatus(event.currentTarget.value as ApprovalRecord["status"])
+                  }
+                  className="h-8 rounded-md border border-input bg-background px-2 text-xs"
+                >
+                  <option>DRAFT</option>
+                  <option>REVIEW</option>
+                  <option>CHANGES REQUESTED</option>
+                  <option>APPROVED</option>
+                </select>
+              </div>
+              <Button type="submit" size="sm">
+                Record approval state
+              </Button>
+            </form>
+            {work.approvals.length === 0 ? (
+              <p className="text-sm text-muted-foreground">
+                No explicit approval has been recorded.
+              </p>
+            ) : (
+              <div className="space-y-3">
+                {work.approvals.map((approval) => (
+                  <div
+                    key={approval.id}
+                    className="flex items-start justify-between gap-3 border-t border-hairline pt-3"
+                  >
+                    <div>
+                      <p className="text-sm">{approval.reviewer}</p>
+                      <p className="mt-1 text-xs text-muted-foreground">{approval.date}</p>
+                    </div>
+                    <StatusPill
+                      tone={
+                        approval.status === "APPROVED"
+                          ? "ready"
+                          : approval.status === "CHANGES REQUESTED"
+                            ? "blocked"
+                            : "warn"
+                      }
+                    >
+                      {approval.status}
+                    </StatusPill>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </section>
+      </div>
+
+      <section className="space-y-3">
+        <h2 className="label-caps">Communication drafts</h2>
+        <div className="rounded-xl border border-hairline bg-surface p-4 space-y-4">
+          <div className="grid gap-2 sm:grid-cols-4">
+            <select
+              value={purpose}
+              onChange={(event) =>
+                setPurpose(event.currentTarget.value as CommunicationDraft["purpose"])
+              }
+              className="h-8 rounded-md border border-input bg-background px-2 text-xs"
+            >
+              <option>Status update</option>
+              <option>Clarification</option>
+              <option>Handoff</option>
+              <option>Delivery</option>
+              <option>Escalation</option>
+            </select>
+            <select
+              value={tone}
+              onChange={(event) => setTone(event.currentTarget.value as CommunicationDraft["tone"])}
+              className="h-8 rounded-md border border-input bg-background px-2 text-xs"
+            >
+              <option>Professional</option>
+              <option>Direct</option>
+              <option>Friendly</option>
+              <option>Formal</option>
+              <option>Urgent</option>
+            </select>
+            <select
+              value={length}
+              onChange={(event) =>
+                setLength(event.currentTarget.value as CommunicationDraft["length"])
+              }
+              className="h-8 rounded-md border border-input bg-background px-2 text-xs"
+            >
+              <option>Short</option>
+              <option>Detailed</option>
+            </select>
+            <Button size="sm" onClick={generateMessage}>
+              Generate draft
+            </Button>
+          </div>
+          {latestDraft ? (
+            <div className="space-y-3">
+              <textarea
+                value={latestDraft.text}
+                onChange={(event) => {
+                  const updated = { ...latestDraft, text: event.currentTarget.value };
+                  setLatestDraft(updated);
+                  editCommunicationDraft(work.id, latestDraft.id, event.currentTarget.value);
+                }}
+                className="min-h-32 w-full rounded-md border border-input bg-background p-3 text-sm"
+              />
+              <div className="flex items-center justify-between gap-3 text-xs text-muted-foreground">
+                <span>
+                  {latestDraft.purpose} · {latestDraft.tone} · Generated from current Work data
+                </span>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => navigator.clipboard?.writeText(latestDraft.text)}
+                >
+                  Copy message
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <p className="text-sm text-muted-foreground">
+              No message draft generated yet. Karya AI will not send messages automatically.
+            </p>
+          )}
+        </div>
+      </section>
+    </div>
+  );
+}
+
+function AssignmentRow({
+  assignment,
+  workId,
+  onChange,
+}: {
+  assignment: ResponsibilityAssignment;
+  workId: string;
+  onChange: () => void;
+}) {
+  return (
+    <div className="mt-2 flex items-center justify-between gap-3 border-t border-hairline pt-2">
+      <div>
+        <p className="text-sm">{assignment.person}</p>
+        <p className="text-xs text-muted-foreground">{assignment.role}</p>
+      </div>
+      <select
+        value={assignment.status}
+        onChange={(event) => {
+          updateAssignmentStatus(
+            workId,
+            assignment.id,
+            event.currentTarget.value as ResponsibilityAssignment["status"],
+          );
+          onChange();
+        }}
+        className="h-7 rounded-md border border-input bg-background px-2 text-xs"
+      >
+        <option>Assigned</option>
+        <option>In progress</option>
+        <option>Completed</option>
+        <option>Waiting</option>
+      </select>
     </div>
   );
 }
