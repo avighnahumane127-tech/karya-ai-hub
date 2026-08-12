@@ -48,6 +48,7 @@ import {
   type PlanGroup,
   type QuestionPriority,
   type ReqStatus,
+  type OpenIssue,
   type Requirement,
   type RequirementPriority,
   type RequirementType,
@@ -2161,7 +2162,9 @@ function HandoffTab({ work }: { work: WorkItem }) {
                   <div className="flex gap-2">
                     <select
                       value={newIssueSeverity}
-                      onChange={(e) => setNewIssueSeverity(e.currentTarget.value as any)}
+                      onChange={(e) =>
+                        setNewIssueSeverity(e.currentTarget.value as OpenIssue["severity"])
+                      }
                       className="h-8 rounded-md border border-input bg-background px-2 text-xs"
                     >
                       <option value="Critical">Critical</option>
@@ -2211,7 +2214,7 @@ function HandoffTab({ work }: { work: WorkItem }) {
                               updateOpenIssueStatus(
                                 work.id,
                                 issue.id,
-                                e.currentTarget.value as any,
+                                e.currentTarget.value as OpenIssue["status"],
                               );
                               rerender((v) => v + 1);
                             }}

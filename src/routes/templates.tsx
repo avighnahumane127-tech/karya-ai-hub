@@ -40,7 +40,7 @@ function TemplatesPage() {
   const [notice, setNotice] = useState("");
   const activeWork = useMemo(() => workItems.filter((work) => !work.archived), []);
 
-  const useTemplate = (template: Template | UserTemplate) => {
+  const applySelectedTemplate = (template: Template | UserTemplate) => {
     if (!selectedWorkId) {
       setNotice("Select an active Work before applying a template.");
       return;
@@ -114,7 +114,7 @@ function TemplatesPage() {
             <TemplateCard
               key={template.id}
               template={template}
-              onUse={() => useTemplate(template)}
+              onUse={() => applySelectedTemplate(template)}
             />
           ))}
         </div>
@@ -192,7 +192,7 @@ function TemplatesPage() {
                     >
                       Delete
                     </Button>
-                    <Button size="sm" onClick={() => useTemplate(template)}>
+                    <Button size="sm" onClick={() => applySelectedTemplate(template)}>
                       Use template
                     </Button>
                   </div>
