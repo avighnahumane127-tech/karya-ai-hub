@@ -21,7 +21,15 @@ import {
   editCommunicationDraft,
   generateCommunicationDraft,
   generateHandoffPacket,
+  generateReadinessReport,
+  generateRequirementsCSV,
   generateWorkPlan,
+  generateWorkPlanMarkdown,
+  createShareLink,
+  revokeShareLink,
+  setRetentionPolicy,
+  detectSensitiveData,
+  dismissSensitiveFinding,
   setCollaborationEnabled,
   updateAssignmentStatus,
   updateDecision,
@@ -49,6 +57,8 @@ import {
   type QuestionPriority,
   type ReqStatus,
   type OpenIssue,
+  type WorkReport,
+  type RetentionPolicy,
   type Requirement,
   type RequirementPriority,
   type RequirementType,
@@ -57,7 +67,7 @@ import {
   type WorkItem,
 } from "@/lib/work";
 import { cn } from "@/lib/utils";
-import { Check, Clipboard, MessageSquare, Send } from "lucide-react";
+import { Check, Clipboard, Download, MessageSquare, Send } from "lucide-react";
 import { useState } from "react";
 
 export const workTabs = [
@@ -107,6 +117,163 @@ function Section({ label, children }: { label: string; children: React.ReactNode
       <h2 className="label-caps">{label}</h2>
       <div className="mt-3">{children}</div>
     </section>
+  );
+}
+
+function downloadText(filename: string, text: string, mimeType: string) {
+  const blob = new Blob([text], { type: mimeType });
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement("a");
+  anchor.href = url;
+  anchor.download = filename;
+  document.body.appendChild(anchor);
+  anchor.click();
+  anchor.remove();
+  URL.revokeObjectURL(url);
+}
+
+function ReportExportActions({ report }: { report: WorkReport | undefined }) {
+  const [copied, setCopied] = useState(false);
+  if (!report) return null;
+  const isCsv = report.type === "REQUIREMENTS MATRIX";
+  const extension = isCsv ? "csv" : "md";
+  const mimeType = isCsv ? "text/csv;charset=utf-8" : "text/markdown;charset=utf-8";
+  const label = isCsv ? "Download CSV" : "Download Markdown";
+  const copy = async () => {
+    try {
+      await navigator.clipboard.writeText(report.markdown);
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 1600);
+    } catch {
+      setCopied(false);
+    }
+  };
+  return (
+    <div className="space-y-2 border-t border-hairline pt-4">
+      <p className="text-xs text-muted-foreground">
+        This report may contain confidential information.
+      </p>
+      <div className="flex flex-wrap gap-2">
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={() =>
+            downloadText(
+              `karya-${extension === "csv" ? "requirements-matrix" : report.type.toLowerCase().replaceAll(" ", "-")}-v${report.version}.${extension}`,
+              report.markdown,
+              mimeType,
+            )
+          }
+        >
+          <Download className="h-3.5 w-3.5" />
+          {label}
+        </Button>
+        <Button size="sm" variant="ghost" onClick={() => void copy()}>
+          <Clipboard className="h-3.5 w-3.5" />
+          {copied ? "Copied" : "Copy contents"}
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+function WorkSecurityControls({ work }: { work: WorkItem }) {
+  const [, rerender] = useState(0);
+  const [scanMessage, setScanMessage] = useState("");
+  const policy = work.retentionPolicy || "KEEP";
+  const findings = work.sensitiveFindings.filter((finding) => finding.status !== "Dismissed");
+  const policyLabels: Record<RetentionPolicy, string> = {
+    DELETE_IMMEDIATELY: "Delete immediately",
+    DELETE_AFTER_24_HOURS: "Delete after 24 hours",
+    KEEP: "Keep",
+  };
+
+  const updateRetention = (value: RetentionPolicy) => {
+    setRetentionPolicy(work.id, value);
+    rerender((current) => current + 1);
+  };
+
+  const scan = () => {
+    const result = detectSensitiveData(work.id) || [];
+    setScanMessage(
+      result.length > 0
+        ? `${result.length} potential finding${result.length === 1 ? "" : "s"} found. Values are masked.`
+        : "No matching patterns found in available text content.",
+    );
+    rerender((current) => current + 1);
+  };
+
+  const dismiss = (findingId: string) => {
+    dismissSensitiveFinding(work.id, findingId);
+    rerender((current) => current + 1);
+  };
+
+  return (
+    <div className="rounded-xl border border-hairline bg-surface p-5 space-y-5">
+      <div className="grid gap-4 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end">
+        <div>
+          <p className="text-sm font-medium">File retention</p>
+          <p className="mt-1 text-xs text-muted-foreground">
+            Controls how long uploaded Work files remain available. Deletion is applied where
+            technically possible; other systems may have separate retention.
+          </p>
+        </div>
+        <select
+          aria-label="File retention"
+          value={policy}
+          onChange={(event) => updateRetention(event.currentTarget.value as RetentionPolicy)}
+          className="h-9 rounded-md border border-input bg-background px-2 text-sm"
+        >
+          {Object.entries(policyLabels).map(([value, label]) => (
+            <option key={value} value={value}>
+              {label}
+            </option>
+          ))}
+        </select>
+      </div>
+      <div className="border-t border-hairline pt-4">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <p className="text-sm font-medium">Sensitive data review</p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Scans only available text content for potential patterns. This is a warning, not a
+              certainty.
+            </p>
+          </div>
+          <Button size="sm" variant="outline" onClick={scan}>
+            Scan available text
+          </Button>
+        </div>
+        {scanMessage ? <p className="mt-3 text-xs text-muted-foreground">{scanMessage}</p> : null}
+        {findings.length > 0 ? (
+          <div className="mt-4 divide-y divide-hairline rounded-lg border border-hairline">
+            {findings.map((finding) => (
+              <div
+                key={finding.id}
+                className="flex flex-wrap items-center justify-between gap-3 p-3"
+              >
+                <div className="min-w-0">
+                  <p className="text-xs font-medium">
+                    {finding.category} · {finding.confidence} confidence
+                  </p>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    {finding.sourceFileName}
+                    {finding.location ? ` · ${finding.location}` : ""} · {finding.maskedPreview}
+                  </p>
+                </div>
+                <Button size="sm" variant="ghost" onClick={() => dismiss(finding.id)}>
+                  Dismiss
+                </Button>
+              </div>
+            ))}
+          </div>
+        ) : null}
+        <p className="mt-3 text-[11px] text-muted-foreground">
+          Redaction is not implemented. Review findings before sharing or exporting Work
+          information.
+        </p>
+      </div>
+    </div>
   );
 }
 
@@ -168,6 +335,9 @@ export function WorkTabPanel({ work, tab }: { work: WorkItem; tab: WorkTab }) {
               </p>
             </div>
           </div>
+        </Section>
+        <Section label="Security & Privacy">
+          <WorkSecurityControls work={work} />
         </Section>
       </div>
     );
@@ -530,6 +700,9 @@ function requirementStatusLabel(status: ReqStatus) {
 
 function RequirementsTab({ work }: { work: WorkItem }) {
   const [, rerender] = useState(0);
+  const [latestReport, setLatestReport] = useState<WorkReport | undefined>(() =>
+    work.reports.find((report) => report.type === "REQUIREMENTS MATRIX"),
+  );
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [draftTitle, setDraftTitle] = useState("");
@@ -543,6 +716,13 @@ function RequirementsTab({ work }: { work: WorkItem }) {
       requirement.priority === "CRITICAL"
     );
   });
+
+  const exportMatrix = () => {
+    const report = generateRequirementsCSV(work.id);
+    if (!report) return;
+    setLatestReport(report);
+    rerender((value) => value + 1);
+  };
 
   if (work.requirements.length === 0) {
     return (
@@ -565,9 +745,15 @@ function RequirementsTab({ work }: { work: WorkItem }) {
               {stats["NEEDS REVIEW"] || 0} needs review
             </p>
           </div>
-          <StatusPill tone={attention.length > 0 ? "warn" : "ready"}>
-            {attention.length > 0 ? `${attention.length} need attention` : "On track"}
-          </StatusPill>
+          <div className="flex flex-wrap items-center gap-2">
+            <StatusPill tone={attention.length > 0 ? "warn" : "ready"}>
+              {attention.length > 0 ? `${attention.length} need attention` : "On track"}
+            </StatusPill>
+            <Button size="sm" variant="outline" onClick={exportMatrix}>
+              <Download className="h-3.5 w-3.5" />
+              Export matrix
+            </Button>
+          </div>
         </div>
         {attention.length > 0 ? (
           <div className="mt-4 space-y-2 border-t border-hairline pt-4">
@@ -589,6 +775,7 @@ function RequirementsTab({ work }: { work: WorkItem }) {
             ))}
           </div>
         ) : null}
+        <ReportExportActions report={latestReport} />
       </div>
 
       <div className="divide-y divide-hairline rounded-xl border border-hairline bg-surface">
@@ -1011,6 +1198,9 @@ function EvidenceTab({ work }: { work: WorkItem }) {
 
 function WorkPlanTab({ work }: { work: WorkItem }) {
   const [, rerender] = useState(0);
+  const [latestReport, setLatestReport] = useState<WorkReport | undefined>(() =>
+    work.reports.find((report) => report.type === "WORK PLAN"),
+  );
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [showAdd, setShowAdd] = useState(false);
   const [newTitle, setNewTitle] = useState("");
@@ -1041,6 +1231,13 @@ function WorkPlanTab({ work }: { work: WorkItem }) {
     addPlanTask(work.id, newTitle, newGroup);
     setNewTitle("");
     setShowAdd(false);
+    rerender((value) => value + 1);
+  };
+
+  const exportPlan = () => {
+    const report = generateWorkPlanMarkdown(work.id);
+    if (!report) return;
+    setLatestReport(report);
     rerender((value) => value + 1);
   };
 
@@ -1079,12 +1276,17 @@ function WorkPlanTab({ work }: { work: WorkItem }) {
           </div>
           <div className="flex items-center gap-2">
             <StatusPill tone={feasibilityTone}>{plan.feasibility.status}</StatusPill>
+            <Button size="sm" variant="outline" onClick={exportPlan}>
+              <Download className="h-3.5 w-3.5" />
+              Export work plan
+            </Button>
             <Button size="sm" variant="outline" onClick={regenerate}>
               Recalculate
             </Button>
           </div>
         </div>
         <p className="text-sm leading-relaxed">{plan.feasibility.explanation}</p>
+        <ReportExportActions report={latestReport} />
         <div className="grid gap-3 sm:grid-cols-3">
           <div className="rounded-lg bg-accent/40 p-3">
             <p className="label-caps">Estimated effort</p>
@@ -1670,6 +1872,9 @@ function FileIntelligenceTab({ work }: { work: WorkItem }) {
 
 function VerificationTab({ work }: { work: WorkItem }) {
   const [, rerender] = useState(0);
+  const [latestReport, setLatestReport] = useState<WorkReport | undefined>(() =>
+    work.reports.find((report) => report.type === "READINESS"),
+  );
   const [expandedFindingId, setExpandedFindingId] = useState<string | null>(null);
   const currentRun = work.verificationRuns?.[work.verificationRuns.length - 1];
   const finalFiles = work.files.filter((file) => file.role === "Final");
@@ -1691,6 +1896,13 @@ function VerificationTab({ work }: { work: WorkItem }) {
 
   const verify = () => {
     runVerification(work.id);
+    rerender((value) => value + 1);
+  };
+
+  const exportReadiness = () => {
+    const report = generateReadinessReport(work.id);
+    if (!report) return;
+    setLatestReport(report);
     rerender((value) => value + 1);
   };
 
@@ -1752,6 +1964,10 @@ function VerificationTab({ work }: { work: WorkItem }) {
           </div>
           <div className="flex flex-wrap items-center gap-2">
             <StatusPill tone={statusTone}>{currentRun.finalStatus}</StatusPill>
+            <Button size="sm" variant="outline" onClick={exportReadiness}>
+              <Download className="h-3.5 w-3.5" />
+              Export readiness report
+            </Button>
             <Button size="sm" variant="outline" onClick={verify}>
               Rerun verification
             </Button>
@@ -1766,6 +1982,7 @@ function VerificationTab({ work }: { work: WorkItem }) {
           </div>
         </div>
         <p className="text-sm text-muted-foreground">{currentRun.summary}</p>
+        <ReportExportActions report={latestReport} />
         <div className="grid gap-3 sm:grid-cols-4">
           <div className="rounded-lg bg-accent/40 p-3">
             <p className="label-caps">Satisfied</p>
@@ -1994,12 +2211,32 @@ function HandoffTab({ work }: { work: WorkItem }) {
     "High",
   );
   const [newIssueDesc, setNewIssueDesc] = useState("");
+  const [shareMessage, setShareMessage] = useState("");
 
   const packets = work.handoffPackets || [];
   const latestPacket = packets[packets.length - 1];
 
   const handleGenerate = () => {
     generateHandoffPacket(work.id);
+    rerender((value) => value + 1);
+  };
+
+  const handleShare = async () => {
+    const link = createShareLink(work.id);
+    if (!link) return;
+    const href = `${window.location.origin}/r/${link.token}`;
+    try {
+      await navigator.clipboard.writeText(href);
+      setShareMessage("Readiness link copied. It contains only the current read-only snapshot.");
+    } catch {
+      setShareMessage(href);
+    }
+    rerender((value) => value + 1);
+  };
+
+  const handleRevokeShare = () => {
+    revokeShareLink(work.id);
+    setShareMessage("The readiness link was revoked.");
     rerender((value) => value + 1);
   };
 
@@ -2054,12 +2291,37 @@ function HandoffTab({ work }: { work: WorkItem }) {
                 {latestPacket.readinessStatus}
               </StatusPill>
             ) : null}
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={work.shareLink ? handleRevokeShare : () => void handleShare()}
+            >
+              {work.shareLink ? "Revoke shared report" : "Share readiness"}
+            </Button>
             <Button size="sm" onClick={handleGenerate}>
               {latestPacket ? "Generate updated handoff" : "Generate handoff"}
             </Button>
           </div>
         </div>
 
+        {work.shareLink ? (
+          <div className="rounded-lg border border-hairline bg-accent/30 p-4 space-y-2">
+            <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+              Active readiness link
+            </p>
+            <p className="break-all text-xs text-muted-foreground">
+              {typeof window === "undefined"
+                ? ""
+                : `${window.location.origin}/r/${work.shareLink.token}`}
+            </p>
+            <p className="text-[11px] text-muted-foreground">
+              This local read-only snapshot intentionally excludes private comments, decisions,
+              credentials, and files. Server-backed public sharing and expiration are not enabled in
+              this client.
+            </p>
+          </div>
+        ) : null}
+        {shareMessage ? <p className="text-xs text-muted-foreground">{shareMessage}</p> : null}
         {latestPacket ? (
           <div className="rounded-lg bg-accent/30 p-4 space-y-3">
             <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">

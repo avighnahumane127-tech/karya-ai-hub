@@ -25,6 +25,7 @@ import { Route as TemplatesRouteImport } from './routes/templates'
 import { Route as TermsOfUseRouteImport } from './routes/terms-of-use'
 import { Route as UseCasesRouteImport } from './routes/use-cases'
 import { Route as VerificationRouteImport } from './routes/verification'
+import { Route as RShareIdRouteImport } from './routes/r.$shareId'
 import { Route as WorkIndexRouteImport } from './routes/work.index'
 import { Route as WorkWorkIdRouteImport } from './routes/work.$workId'
 
@@ -108,6 +109,11 @@ const VerificationRoute = VerificationRouteImport.update({
   path: '/verification',
   getParentRoute: () => rootRouteImport,
 } as any)
+const RShareIdRoute = RShareIdRouteImport.update({
+  id: '/r/$shareId',
+  path: '/r/$shareId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const WorkIndexRoute = WorkIndexRouteImport.update({
   id: '/work/',
   path: '/work/',
@@ -136,6 +142,7 @@ export interface FileRoutesByFullPath {
   '/terms-of-use': typeof TermsOfUseRoute
   '/use-cases': typeof UseCasesRoute
   '/verification': typeof VerificationRoute
+  '/r/$shareId': typeof RShareIdRoute
   '/work/$workId': typeof WorkWorkIdRoute
   '/work/': typeof WorkIndexRoute
 }
@@ -156,6 +163,7 @@ export interface FileRoutesByTo {
   '/terms-of-use': typeof TermsOfUseRoute
   '/use-cases': typeof UseCasesRoute
   '/verification': typeof VerificationRoute
+  '/r/$shareId': typeof RShareIdRoute
   '/work/$workId': typeof WorkWorkIdRoute
   '/work': typeof WorkIndexRoute
 }
@@ -177,6 +185,7 @@ export interface FileRoutesById {
   '/terms-of-use': typeof TermsOfUseRoute
   '/use-cases': typeof UseCasesRoute
   '/verification': typeof VerificationRoute
+  '/r/$shareId': typeof RShareIdRoute
   '/work/$workId': typeof WorkWorkIdRoute
   '/work/': typeof WorkIndexRoute
 }
@@ -199,6 +208,7 @@ export interface FileRouteTypes {
     | '/terms-of-use'
     | '/use-cases'
     | '/verification'
+    | '/r/$shareId'
     | '/work/$workId'
     | '/work/'
   fileRoutesByTo: FileRoutesByTo
@@ -219,6 +229,7 @@ export interface FileRouteTypes {
     | '/terms-of-use'
     | '/use-cases'
     | '/verification'
+    | '/r/$shareId'
     | '/work/$workId'
     | '/work'
   id:
@@ -239,6 +250,7 @@ export interface FileRouteTypes {
     | '/terms-of-use'
     | '/use-cases'
     | '/verification'
+    | '/r/$shareId'
     | '/work/$workId'
     | '/work/'
   fileRoutesById: FileRoutesById
@@ -260,6 +272,7 @@ export interface RootRouteChildren {
   TermsOfUseRoute: typeof TermsOfUseRoute
   UseCasesRoute: typeof UseCasesRoute
   VerificationRoute: typeof VerificationRoute
+  RShareIdRoute: typeof RShareIdRoute
   WorkWorkIdRoute: typeof WorkWorkIdRoute
   WorkIndexRoute: typeof WorkIndexRoute
 }
@@ -378,6 +391,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof VerificationRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/r/$shareId': {
+      id: '/r/$shareId'
+      path: '/r/$shareId'
+      fullPath: '/r/$shareId'
+      preLoaderRoute: typeof RShareIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/work/': {
       id: '/work/'
       path: '/work'
@@ -412,6 +432,7 @@ const rootRouteChildren: RootRouteChildren = {
   TermsOfUseRoute: TermsOfUseRoute,
   UseCasesRoute: UseCasesRoute,
   VerificationRoute: VerificationRoute,
+  RShareIdRoute: RShareIdRoute,
   WorkWorkIdRoute: WorkWorkIdRoute,
   WorkIndexRoute: WorkIndexRoute,
 }
