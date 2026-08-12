@@ -96,6 +96,30 @@ export type ActivityRecord = {
   user?: string;
 };
 
+export type ReadinessFindingType =
+  | "missing-info"
+  | "missing-asset"
+  | "contradiction"
+  | "ambiguity"
+  | "assumption"
+  | "risk"
+  | "dependency";
+
+export type ReadinessFindingSeverity =
+  "low" | "medium" | "high" | "critical" | "blocking" | "non-blocking" | "informational";
+
+export type ReadinessFinding = {
+  id: string;
+  type: ReadinessFindingType;
+  severity: ReadinessFindingSeverity;
+  title: string;
+  explanation: string;
+  whyItMatters: string;
+  sourceReference?: string;
+  recommendedAction: string;
+  status: "open" | "resolved" | "overridden";
+};
+
 export type WorkItem = {
   id: string;
   title: string;
@@ -114,6 +138,8 @@ export type WorkItem = {
   decisions: { id: string; text: string; source?: string }[];
   assumptions: { id: string; text: string }[];
   issues: Issue[];
+  findings: ReadinessFinding[];
+  recommendedNextAction: string;
 };
 
 export const stateLabels: Record<WorkState, string> = {

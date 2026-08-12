@@ -793,7 +793,7 @@ function AddWork() {
                   id: newId,
                   title: titleText,
                   description: understandingObjective,
-                  state: "ready",
+                  state: sources.length >= 2 ? "ready" : "ready-with-warnings",
                   due: understandingDeadline,
                   request: {
                     objective: understandingObjective,
@@ -864,8 +864,46 @@ function AddWork() {
                     },
                   ],
                   decisions: [],
-                  assumptions: [],
+                  assumptions: [
+                    {
+                      id: `assump-${Date.now()}`,
+                      text: `Intended audience is ${understandingAudience}.`,
+                    },
+                  ],
                   issues: [],
+                  findings: [
+                    {
+                      id: `find-${Date.now()}-1`,
+                      type: "assumption",
+                      severity: "medium",
+                      title: "Audience assumption required",
+                      explanation: `Karya AI assumes the intended audience is ${understandingAudience}.`,
+                      whyItMatters: "Tone and depth should match audience expectations.",
+                      sourceReference: "Request Understanding confirmation",
+                      recommendedAction: "Confirm intended audience before final submission.",
+                      status: "open",
+                    },
+                    ...(sources.length < 2
+                      ? [
+                          {
+                            id: `find-${Date.now()}-2`,
+                            type: "missing-info" as const,
+                            severity: "low" as const,
+                            title: "Single source package",
+                            explanation: "Only one source was provided in this work package.",
+                            whyItMatters:
+                              "Additional supporting documentation reduces rework risk.",
+                            sourceReference: "Work Package",
+                            recommendedAction: "Consider adding supporting files if available.",
+                            status: "open" as const,
+                          },
+                        ]
+                      : []),
+                  ],
+                  recommendedNextAction:
+                    sources.length < 2
+                      ? "Consider adding supporting context or files, then proceed with execution."
+                      : "Proceed with drafting deliverables against confirmed requirements.",
                 };
                 addWorkItem(newItem);
                 setShowUnderstanding(false);

@@ -4,6 +4,7 @@ import { stateLabels, type ReqStatus, type StepStatus, type WorkItem } from "@/l
 
 export const workTabs = [
   "Overview",
+  "Readiness",
   "Requirements",
   "Plan",
   "Questions",
@@ -42,14 +43,133 @@ export function WorkTabPanel({ work, tab }: { work: WorkItem; tab: WorkTab }) {
   if (tab === "Overview") {
     return (
       <div className="space-y-9">
-        <Section label="Status">
-          <StatusPill tone={work.state === "done" ? "ready" : "info"}>
-            {stateLabels[work.state]}
-          </StatusPill>
+        <Section label="Readiness Status">
+          <div className="rounded-xl border border-hairline bg-surface p-5 space-y-4">
+            <div className="flex items-center justify-between">
+              <StatusPill
+                tone={
+                  work.state === "ready"
+                    ? "ready"
+                    : work.state === "ready-with-warnings"
+                      ? "warn"
+                      : work.state === "blocked"
+                        ? "blocked"
+                        : "info"
+                }
+              >
+                {stateLabels[work.state]}
+              </StatusPill>
+              <span className="text-xs text-muted-foreground">
+                Evaluated from {work.findings?.length || 0} findings
+              </span>
+            </div>
+            <p className="text-sm text-foreground leading-relaxed">
+              {work.findings && work.findings.length > 0
+                ? work.findings[0].explanation
+                : "All required inputs are available and no blocking issues were detected."}
+            </p>
+            {work.recommendedNextAction ? (
+              <div className="rounded-md bg-accent/50 p-3 text-xs space-y-1">
+                <p className="font-medium">Recommended next action</p>
+                <p className="text-muted-foreground">{work.recommendedNextAction}</p>
+              </div>
+            ) : null}
+          </div>
         </Section>
         <Section label="What is being asked">
           <p className="text-sm leading-relaxed">{work.description}</p>
         </Section>
+      </div>
+    );
+  }
+
+  if (tab === "Readiness") {
+    return (
+      <div className="space-y-6">
+        <div className="rounded-xl border border-hairline bg-surface p-6 space-y-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="label-caps">Readiness Engine</p>
+              <h2 className="text-lg font-medium mt-1">{stateLabels[work.state]}</h2>
+            </div>
+            <StatusPill
+              tone={
+                work.state === "ready"
+                  ? "ready"
+                  : work.state === "ready-with-warnings"
+                    ? "warn"
+                    : work.state === "blocked"
+                      ? "blocked"
+                      : "info"
+              }
+            >
+              {stateLabels[work.state]}
+            </StatusPill>
+          </div>
+          <p className="text-sm text-muted-foreground leading-relaxed">
+            The Readiness Engine continuously evaluates your work package against requirements,
+            constraints, assumptions, and sources.
+          </p>
+          {work.recommendedNextAction ? (
+            <div className="rounded-lg border border-hairline bg-accent/40 p-4 space-y-1.5">
+              <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                Recommended Next Action
+              </p>
+              <p className="text-sm font-medium">{work.recommendedNextAction}</p>
+            </div>
+          ) : null}
+        </div>
+
+        <div className="space-y-4">
+          <h2 className="label-caps">Findings ({work.findings?.length || 0})</h2>
+          {!work.findings || work.findings.length === 0 ? (
+            <EmptyState
+              title="No readiness findings."
+              description="No blocking issues, contradictions, or assumptions detected."
+            />
+          ) : (
+            <div className="divide-y divide-hairline border-y border-hairline bg-surface rounded-xl border">
+              {work.findings.map((f) => (
+                <div key={f.id} className="p-5 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <span className="rounded-full bg-accent px-2 py-0.5 text-[10px] font-medium uppercase text-foreground">
+                        {f.type}
+                      </span>
+                      <p className="text-sm font-medium">{f.title}</p>
+                    </div>
+                    <StatusPill
+                      tone={
+                        f.severity === "high" || f.severity === "critical"
+                          ? "blocked"
+                          : f.severity === "medium"
+                            ? "warn"
+                            : "neutral"
+                      }
+                    >
+                      {f.severity}
+                    </StatusPill>
+                  </div>
+                  <p className="text-sm text-muted-foreground">{f.explanation}</p>
+                  <p className="text-xs text-muted-foreground/80 italic">
+                    Why it matters: {f.whyItMatters}
+                  </p>
+                  {f.sourceReference ? (
+                    <p className="text-xs text-muted-foreground">Source: {f.sourceReference}</p>
+                  ) : null}
+                  <div className="pt-2 flex items-center justify-between border-t border-hairline text-xs">
+                    <span className="font-medium text-foreground">
+                      Action: {f.recommendedAction}
+                    </span>
+                    <span className="rounded bg-accent px-2 py-1 text-muted-foreground">
+                      Status: {f.status}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
     );
   }
@@ -173,7 +293,9 @@ export function WorkTabPanel({ work, tab }: { work: WorkItem; tab: WorkTab }) {
               {c.note ? <p className="mt-1 text-sm text-muted-foreground">{c.note}</p> : null}
             </div>
             <StatusPill
-              tone={c.status === "satisfied" ? "ready" : c.status === "missing" ? "blocked" : "warn"}
+              tone={
+                c.status === "satisfied" ? "ready" : c.status === "missing" ? "blocked" : "warn"
+              }
             >
               {c.status}
             </StatusPill>
