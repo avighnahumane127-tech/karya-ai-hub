@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 
 import { EmptyState, PageHeader, StatusPill, type Tone } from "@/components/primitives";
@@ -519,11 +519,24 @@ function InsightsPage() {
               <p className="label-caps">Recorded evidence</p>
               <p className="mt-1 text-sm font-medium">{selectedItem.label}</p>
               <p className="mt-1 text-sm text-muted-foreground">{selectedItem.detail}</p>
-              <p className="mt-2 text-xs text-muted-foreground">
-                Observed in {selectedItem.count} Work item{selectedItem.count === 1 ? "" : "s"}:{" "}
-                {selectedItem.workIds.map((id) => getWork(id)?.title || id).join(", ") ||
-                  "No direct Work link recorded."}
-              </p>
+              <div className="mt-2 text-xs text-muted-foreground">
+                <span>
+                  Observed in {selectedItem.count} Work item{selectedItem.count === 1 ? "" : "s"}
+                  :{" "}
+                </span>
+                {selectedItem.workIds.length > 0
+                  ? selectedItem.workIds.map((id) => (
+                      <Link
+                        key={id}
+                        to="/work/$workId"
+                        params={{ workId: id }}
+                        className="mr-2 underline underline-offset-2 hover:text-foreground"
+                      >
+                        {getWork(id)?.title || id}
+                      </Link>
+                    ))
+                  : "No direct Work link recorded."}
+              </div>
             </div>
             <button
               type="button"

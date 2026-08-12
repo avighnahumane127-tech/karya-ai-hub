@@ -2143,6 +2143,38 @@ export function createOrganizationPolicy(
   return policy;
 }
 
+export function updateOrganizationPolicy(
+  policyId: string,
+  patch: Partial<
+    Pick<OrganizationPolicy, "name" | "rule" | "appliesTo" | "severity" | "enforcementMode">
+  >,
+  changedBy = "User",
+) {
+  const policy = intelligenceStore.policies.find((item) => item.id === policyId);
+  if (!policy) return undefined;
+  const changes = Object.entries(patch)
+    .filter(([key, value]) => value !== undefined && value !== policy[key as keyof typeof policy])
+    .map(
+      ([key, value]) => `${key}: ${String(policy[key as keyof typeof policy])} → ${String(value)}`,
+    );
+  if (changes.length === 0) return policy;
+  Object.assign(policy, patch);
+  policy.version += 1;
+  policy.history.unshift({
+    id: secureId("policy-history"),
+    date: nowLabel(),
+    change: changes.join("; "),
+    by: changedBy,
+  });
+  recordIntelligenceActivity(
+    "Policy created",
+    `Policy changed: ${policy.name} version ${policy.version}.`,
+    [],
+  );
+  persistIntelligenceStore();
+  return policy;
+}
+
 function policyMatchesWork(policy: OrganizationPolicy, work: WorkItem) {
   const scope = normalizePatternText(`${work.title} ${work.description} ${work.request.objective}`);
   return !policy.appliesTo || scope.includes(normalizePatternText(policy.appliesTo));
@@ -2362,11 +2394,17 @@ export function analyzeRequirementChanges(workId: string) {
       id: `requirement-change-${entry.id}`,
       workId,
       requirementId: requirement.id,
-      changeType: "Modified" as const,
+      changeType: entry.reason?.startsWith("Status changed")
+        ? ("Status changed" as const)
+        : entry.reason?.startsWith("Type changed")
+          ? ("Type changed" as const)
+          : entry.reason?.startsWith("Priority changed")
+            ? ("Priority changed" as const)
+            : ("Modified" as const),
       ...(entry.previousWording ? { oldValue: entry.previousWording } : {}),
       newValue: entry.newWording,
       ...(entry.source ? { source: entry.source } : {}),
-      impact: "Requirement wording changed; related plan tasks and verification may need review.",
+      impact: `${entry.reason || "Requirement changed"}; related plan tasks and verification may need review.`,
       createdAt: new Date().toISOString(),
     })),
   );
@@ -2683,6 +2721,9 @@ export function updateRequirement(
   if (!work || !requirement) return;
 
   const previous = requirement.currentWording || requirement.title;
+  const previousStatus = requirement.status;
+  const previousType = requirement.type;
+  const previousPriority = requirement.priority;
   if (patch.title && patch.title !== previous) {
     requirement.history = [
       ...(requirement.history || []),
@@ -2699,6 +2740,29 @@ export function updateRequirement(
     requirement.title = patch.title;
   }
   Object.assign(requirement, patch);
+  const stateChanges = [
+    patch.status && patch.status !== previousStatus
+      ? `Status changed: ${previousStatus} → ${patch.status}`
+      : undefined,
+    patch.type && patch.type !== previousType
+      ? `Type changed: ${previousType || "Unknown"} → ${patch.type}`
+      : undefined,
+    patch.priority && patch.priority !== previousPriority
+      ? `Priority changed: ${previousPriority || "Unknown"} → ${patch.priority}`
+      : undefined,
+  ].filter((change): change is string => Boolean(change));
+  if (stateChanges.length > 0) {
+    requirement.history = [
+      ...(requirement.history || []),
+      ...stateChanges.map((reason) => ({
+        id: `requirement-history-${Date.now()}-${reason.slice(0, 8)}`,
+        date: nowLabel(),
+        newWording: requirement.currentWording || requirement.title,
+        changedBy,
+        reason,
+      })),
+    ];
+  }
   requirement.modifiedDate = nowLabel();
   work.activity.unshift({
     id: `act-${Date.now()}`,
