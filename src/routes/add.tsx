@@ -829,6 +829,8 @@ function AddWork() {
                     },
                   ],
                   questions: [],
+                  fileFindings: [],
+                  verificationRuns: [],
                   files: sources.map((s, idx) => ({
                     id: s.id,
                     name: s.name,

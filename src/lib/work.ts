@@ -225,6 +225,21 @@ export type Question = {
   state: "must" | "waiting" | "resolved";
 };
 
+export type FilePurpose =
+  | "Brief"
+  | "Requirement source"
+  | "Reference"
+  | "Supporting material"
+  | "Working file"
+  | "Final deliverable"
+  | "Evidence"
+  | "Template"
+  | "Approval"
+  | "Unknown";
+export type FileAuthorityStatus =
+  "Unknown" | "Candidate" | "Authoritative" | "Possibly outdated" | "Conflicted";
+export type FileProcessingStatus = "Ready" | "Needs review" | "Unsupported";
+
 export type WorkFile = {
   id: string;
   name: string;
@@ -234,6 +249,102 @@ export type WorkFile = {
   size?: string;
   content?: string;
   category?: string;
+  source?: string;
+  uploadedDate?: string;
+  likelyPurpose?: FilePurpose;
+  processingStatus?: FileProcessingStatus;
+  versionLabel?: string;
+  versionFamily?: string;
+  authorityStatus?: FileAuthorityStatus;
+  authorityConfirmedBy?: string;
+  authorityConfirmedDate?: string;
+  relatedRequirementIds?: string[];
+  relatedEvidenceIds?: string[];
+  relatedFileIds?: string[];
+  relationshipConfidence?: "DIRECT RELATIONSHIP" | "POSSIBLE RELATIONSHIP";
+  contentFingerprint?: string;
+};
+
+export type FileIntelligenceFindingType =
+  | "exact-duplicate"
+  | "possible-duplicate"
+  | "version-conflict"
+  | "possibly-outdated"
+  | "missing-referenced-file"
+  | "multiple-authoritative";
+export type FileIntelligenceFinding = {
+  id: string;
+  type: FileIntelligenceFindingType;
+  severity: "Critical" | "High" | "Medium" | "Low" | "Informational";
+  title: string;
+  detail: string;
+  fileIds: string[];
+  sourceReference?: string;
+  recommendedAction: string;
+  status: "Open" | "Resolved" | "Human review";
+};
+
+export type VerificationSeverity = "Critical" | "High" | "Medium" | "Low" | "Informational";
+export type VerificationFinalStatus =
+  "READY TO SUBMIT" | "READY WITH WARNINGS" | "NOT READY" | "HUMAN REVIEW REQUIRED";
+export type VerificationFindingType =
+  | "missing-requirement"
+  | "partial-requirement"
+  | "contradiction"
+  | "numerical-inconsistency"
+  | "missing-attachment"
+  | "format"
+  | "missing-section"
+  | "weak-evidence"
+  | "outdated-source"
+  | "human-review";
+export type VerificationFinding = {
+  id: string;
+  type: VerificationFindingType;
+  severity: VerificationSeverity;
+  title: string;
+  detail: string;
+  relatedRequirementIds: string[];
+  relatedEvidenceIds: string[];
+  relatedFileIds: string[];
+  sourceReference?: string;
+  recommendedAction: string;
+  status: "Open" | "Resolved" | "Human review";
+};
+export type VerificationRequirementResult = {
+  requirementId: string;
+  status: "SATISFIED" | "PARTIALLY SATISFIED" | "MISSING" | "CONTRADICTORY" | "NEEDS REVIEW";
+  finding: string;
+  evidenceIds: string[];
+  outputFileIds: string[];
+};
+export type CompletionTestItem = {
+  id: string;
+  type:
+    | "CONTENT"
+    | "EVIDENCE"
+    | "CONSISTENCY"
+    | "FORMAT"
+    | "ATTACHMENTS"
+    | "APPROVAL"
+    | "STRUCTURE"
+    | "NUMERICAL"
+    | "DEADLINE";
+  title: string;
+  status: "Pass" | "Warning" | "Fail" | "Needs review";
+  detail: string;
+  relatedRequirementIds: string[];
+};
+export type VerificationRun = {
+  id: string;
+  date: string;
+  version: number;
+  submittedFileIds: string[];
+  requirementResults: VerificationRequirementResult[];
+  findings: VerificationFinding[];
+  completionTest: CompletionTestItem[];
+  finalStatus: VerificationFinalStatus;
+  summary: string;
 };
 
 export type VerifyCheck = {
@@ -319,6 +430,8 @@ export type WorkItem = {
   planMeta?: WorkPlan;
   questions: Question[];
   files: WorkFile[];
+  fileFindings: FileIntelligenceFinding[];
+  verificationRuns: VerificationRun[];
   verify: VerifyCheck[];
   timeline: TimelineEvent[];
   activity: ActivityRecord[];
@@ -357,6 +470,8 @@ function loadPersistedWork(): WorkItem[] {
       timeline: item.timeline || [],
       questions: item.questions || [],
       requirements: item.requirements || [],
+      fileFindings: item.fileFindings || [],
+      verificationRuns: item.verificationRuns || [],
     }));
   } catch {
     return [];
