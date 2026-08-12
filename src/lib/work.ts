@@ -2884,6 +2884,9 @@ function inferFilePurpose(file: WorkFile): FilePurpose {
 }
 
 function fileProcessingStatus(file: WorkFile): FileProcessingStatus {
+  if (file.type === "Text" || file.type === "Context") {
+    return file.content ? "Ready" : "Needs review";
+  }
   const extension = file.name.toLowerCase().split(".").pop() || "";
   const supported = [
     "pdf",

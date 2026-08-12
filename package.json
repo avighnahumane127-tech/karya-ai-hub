@@ -11,6 +11,7 @@
     "lint": "eslint .",
     "test:full-validation": "node --experimental-strip-types scripts/full-validation.mts",
     "test:secret-preview": "node --experimental-strip-types scripts/secret-preview-validation.mts",
+    "test:quick-work-input": "node --experimental-strip-types scripts/quick-work-input-validation.mts",
     "format": "prettier --write ."
   },
   "dependencies": {

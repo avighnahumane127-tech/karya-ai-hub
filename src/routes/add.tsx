@@ -22,7 +22,7 @@ import {
   X,
 } from "lucide-react";
 import { useNavigate } from "@tanstack/react-router";
-import { useRef, useState, type ChangeEvent, type DragEvent } from "react";
+import { useEffect, useRef, useState, type ChangeEvent, type DragEvent } from "react";
 
 import { PageHeader } from "@/components/primitives";
 import {
@@ -31,6 +31,7 @@ import {
   applyRetentionPolicy,
   generateWorkPlan,
   type RetentionPolicy,
+  type WorkFile,
   type WorkItem,
 } from "@/lib/work";
 import { Button } from "@/components/ui/button";
@@ -43,6 +44,13 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
+import {
+  acceptedFileTypes,
+  consumeQuickWorkDraft,
+  createFileSource,
+  type SourceStatus,
+  type WorkInputSource,
+} from "@/lib/work-input";
 
 const title = "Add Work — Karya AI";
 const description =
@@ -61,93 +69,7 @@ export const Route = createFileRoute("/add")({
 });
 
 type DialogMode = "text" | "url" | "message" | "context" | null;
-type SourceStatus = "Ready" | "Coming soon" | "Not yet supported";
-type SourceRecord = {
-  id: string;
-  name: string;
-  type: string;
-  size?: string;
-  status: SourceStatus;
-  detail: string;
-  file?: File;
-  href?: string;
-  content?: string;
-  category: string;
-};
-
-const supportedExtensions = new Set([
-  ".pdf",
-  ".doc",
-  ".docx",
-  ".txt",
-  ".md",
-  ".csv",
-  ".xls",
-  ".xlsx",
-  ".png",
-  ".jpg",
-  ".jpeg",
-  ".webp",
-  ".gif",
-  ".zip",
-]);
-
-const mediaExtensions = new Set([".mp3", ".wav", ".m4a", ".ogg", ".mp4", ".mov", ".webm"]);
-
-function extensionOf(name: string) {
-  const extension = name.slice(name.lastIndexOf(".")).toLowerCase();
-  return extension === name.toLowerCase() ? "" : extension;
-}
-
-function typeOfFile(file: File) {
-  const extension = extensionOf(file.name);
-  if (extension === ".pdf") return "PDF";
-  if (extension === ".doc" || extension === ".docx") return "DOCX";
-  if (extension === ".txt" || extension === ".md") return "Text";
-  if (extension === ".csv" || extension === ".xls" || extension === ".xlsx") return "Spreadsheet";
-  if (extension === ".zip") return "ZIP";
-  if (
-    file.type.startsWith("image/") ||
-    [".png", ".jpg", ".jpeg", ".webp", ".gif"].includes(extension)
-  ) {
-    return "Image";
-  }
-  if (file.type.startsWith("audio/") || [".mp3", ".wav", ".m4a", ".ogg"].includes(extension)) {
-    return "Audio";
-  }
-  if (file.type.startsWith("video/") || [".mp4", ".mov", ".webm"].includes(extension)) {
-    return "Video";
-  }
-  return "File";
-}
-
-function formatBytes(bytes: number) {
-  if (bytes < 1024) return `${bytes} B`;
-  if (bytes < 1024 * 1024) return `${Math.round(bytes / 1024)} KB`;
-  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
-}
-
-function createFileSource(file: File): SourceRecord {
-  const extension = extensionOf(file.name);
-  const type = typeOfFile(file);
-  const isMedia = mediaExtensions.has(extension) || type === "Audio" || type === "Video";
-  const isSupported = supportedExtensions.has(extension) || type === "Image";
-
-  return {
-    id: `${file.name}-${file.lastModified}-${file.size}-${crypto.randomUUID()}`,
-    name: file.name,
-    type,
-    size: formatBytes(file.size),
-    status: isMedia ? "Coming soon" : isSupported ? "Ready" : "Not yet supported",
-    detail: isMedia
-      ? "Stored locally. Multimodal analysis is coming soon."
-      : isSupported
-        ? "Included in this work package. Analysis has not run yet."
-        : "This file can be kept here, but analysis support is not yet available.",
-    file,
-    category: "File",
-  };
-}
+type SourceRecord = WorkInputSource;
 
 function sourceIcon(type: string) {
   if (type === "Image") return ImageIcon;
@@ -190,6 +112,33 @@ function AddWork() {
   const [understandingDeadline, setUnderstandingDeadline] = useState("");
   const [understandingAudience, setUnderstandingAudience] = useState("");
   const [understandingDeliverables, setUnderstandingDeliverables] = useState("");
+
+  useEffect(() => {
+    const quickDraft = consumeQuickWorkDraft();
+    if (!quickDraft) return;
+
+    const prompt = quickDraft.prompt.trim();
+    const quickSources: SourceRecord[] = [
+      ...(prompt
+        ? [
+            {
+              id: `quick-text-${crypto.randomUUID()}`,
+              name: "Quick add instructions",
+              type: "Text",
+              status: "Ready" as const,
+              detail: "Pasted content preserved in this work package. Analysis has not run yet.",
+              content: prompt,
+              category: "Text",
+            },
+          ]
+        : []),
+      ...quickDraft.files.map(createFileSource),
+    ];
+
+    setSources(quickSources);
+    setContext(quickDraft.context.trim());
+    setPackageName(prompt.slice(0, 120));
+  }, []);
 
   const markPackageChanged = () => {
     if (analysisStarted) setAnalysisDirty(true);
@@ -346,7 +295,7 @@ function AddWork() {
             type="file"
             multiple
             className="hidden"
-            accept=".pdf,.doc,.docx,.txt,.md,.csv,.xls,.xlsx,.png,.jpg,.jpeg,.webp,.gif,.zip,.mp3,.wav,.m4a,.ogg,.mp4,.mov,.webm"
+            accept={acceptedFileTypes}
             onChange={onFileChange}
           />
           <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-full bg-accent">
@@ -817,13 +766,38 @@ function AddWork() {
                   .map((s) => s.trim())
                   .filter(Boolean);
                 const requirementId = `req-${Date.now()}-1`;
+                const workSources: WorkFile[] = [
+                  ...sources.map((source, index): WorkFile => ({
+                    id: source.id,
+                    name: source.name,
+                    role: index === 0 ? "Source" : "Working file",
+                    type: source.type,
+                    ...(source.size ? { size: source.size } : {}),
+                    ...(source.content ? { content: source.content } : {}),
+                    category: source.category,
+                  })),
+                  ...(context.trim()
+                    ? [
+                        {
+                          id: `context-${Date.now()}`,
+                          name: "Additional context",
+                          role: "Working file" as const,
+                          type: "Context",
+                          content: context.trim(),
+                          category: "Context",
+                          source: "Work Input",
+                        },
+                      ]
+                    : []),
+                ];
+                const workSourceCount = workSources.length;
                 const newItem: WorkItem = {
                   id: newId,
                   title: titleText,
                   description: objective,
                   state: !audience
                     ? "blocked"
-                    : sources.length >= 2
+                    : workSourceCount >= 2
                       ? "ready"
                       : "ready-with-warnings",
                   ...(deadline ? { due: deadline } : {}),
@@ -896,15 +870,7 @@ function AddWork() {
                   sensitiveFindings: [],
                   securityEvents: [],
                   reports: [],
-                  files: sources.map((s, idx) => ({
-                    id: s.id,
-                    name: s.name,
-                    role: idx === 0 ? "Source" : "Working file",
-                    type: s.type,
-                    ...(s.size ? { size: s.size } : {}),
-                    ...(s.content ? { content: s.content } : {}),
-                    category: s.category,
-                  })),
+                  files: workSources,
                   verify: [
                     { id: "v-1", title: "Objective addressed", status: "satisfied" },
                     { id: "v-2", title: "Requirements met", status: "satisfied" },
@@ -918,7 +884,7 @@ function AddWork() {
                         year: "numeric",
                       }),
                       title: "Work package created and analyzed",
-                      detail: `${sources.length} sources and context combined. Request understanding confirmed.`,
+                      detail: `${workSourceCount} sources combined. Request understanding confirmed.`,
                     },
                   ],
                   activity: [
@@ -960,7 +926,7 @@ function AddWork() {
                           },
                         ]
                       : []),
-                    ...(sources.length < 2
+                    ...(workSourceCount < 2
                       ? [
                           {
                             id: `find-${Date.now()}-2`,
@@ -980,7 +946,7 @@ function AddWork() {
                   ],
                   recommendedNextAction: !audience
                     ? "Confirm the intended audience before final submission."
-                    : sources.length < 2
+                    : workSourceCount < 2
                       ? "Consider adding supporting context or files, then proceed with execution."
                       : "Proceed with drafting deliverables against confirmed requirements.",
                 };
