@@ -25,7 +25,13 @@ import { useNavigate } from "@tanstack/react-router";
 import { useRef, useState, type ChangeEvent, type DragEvent } from "react";
 
 import { PageHeader } from "@/components/primitives";
-import { addWorkItem, analyzeFileIntelligence, generateWorkPlan, type WorkItem } from "@/lib/work";
+import {
+  addWorkItem,
+  analyzeFileIntelligence,
+  generateWorkPlan,
+  type RetentionPolicy,
+  type WorkItem,
+} from "@/lib/work";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -789,6 +795,13 @@ function AddWork() {
               onClick={() => {
                 const newId = `work-${Date.now()}`;
                 const titleText = packageName.trim() || sources[0]?.name || "New Work Package";
+                const savedRetention = window.localStorage.getItem("karya-ai-default-retention");
+                const retentionPolicy: RetentionPolicy =
+                  savedRetention === "DELETE_IMMEDIATELY" ||
+                  savedRetention === "DELETE_AFTER_24_HOURS" ||
+                  savedRetention === "KEEP"
+                    ? savedRetention
+                    : "KEEP";
                 const newItem: WorkItem = {
                   id: newId,
                   title: titleText,
@@ -839,7 +852,7 @@ function AddWork() {
                   comments: [],
                   approvals: [],
                   communicationDrafts: [],
-                  retentionPolicy: "KEEP",
+                  retentionPolicy,
                   sensitiveFindings: [],
                   securityEvents: [],
                   reports: [],
