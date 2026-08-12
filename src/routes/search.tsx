@@ -47,8 +47,42 @@ function SearchPage() {
 
   const matchedFiles = activeWork.flatMap((w) =>
     w.files
-      .filter((f) => f.name.toLowerCase().includes(trimmed))
+      .filter(
+        (f) =>
+          f.name.toLowerCase().includes(trimmed) ||
+          (f.type || "").toLowerCase().includes(trimmed) ||
+          (f.likelyPurpose || "").toLowerCase().includes(trimmed) ||
+          (f.authorityStatus || "").toLowerCase().includes(trimmed),
+      )
       .map((f) => ({ workId: w.id, workTitle: w.title, file: f })),
+  );
+
+  const matchedFileFindings = activeWork.flatMap((w) =>
+    (w.fileFindings || [])
+      .filter(
+        (finding) =>
+          finding.title.toLowerCase().includes(trimmed) ||
+          finding.detail.toLowerCase().includes(trimmed) ||
+          finding.status.toLowerCase().includes(trimmed),
+      )
+      .map((finding) => ({ workId: w.id, workTitle: w.title, finding })),
+  );
+
+  const matchedVerification = activeWork.flatMap((w) =>
+    (w.verificationRuns || []).flatMap((run) => [
+      ...run.findings
+        .filter(
+          (finding) =>
+            finding.title.toLowerCase().includes(trimmed) ||
+            finding.detail.toLowerCase().includes(trimmed) ||
+            finding.status.toLowerCase().includes(trimmed),
+        )
+        .map((finding) => ({ workId: w.id, workTitle: w.title, run, finding })),
+      ...(run.finalStatus.toLowerCase().includes(trimmed) ||
+      run.summary.toLowerCase().includes(trimmed)
+        ? [{ workId: w.id, workTitle: w.title, run, finding: undefined }]
+        : []),
+    ]),
   );
 
   const matchedEvidence = activeWork.flatMap((w) =>
@@ -79,6 +113,8 @@ function SearchPage() {
     (matchedWorks.length > 0 ||
       matchedReqs.length > 0 ||
       matchedFiles.length > 0 ||
+      matchedFileFindings.length > 0 ||
+      matchedVerification.length > 0 ||
       matchedEvidence.length > 0 ||
       matchedQuestions.length > 0 ||
       matchedDecisions.length > 0);
@@ -170,6 +206,56 @@ function SearchPage() {
                         <span className="text-xs text-muted-foreground">{workTitle}</span>
                       </div>
                       <p className="mt-1 text-xs text-muted-foreground">{file.type || file.role}</p>
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            ) : null}
+
+            {matchedFileFindings.length > 0 ? (
+              <div>
+                <p className="label-caps mb-3">File Intelligence ({matchedFileFindings.length})</p>
+                <div className="divide-y divide-hairline rounded-xl border border-hairline bg-surface">
+                  {matchedFileFindings.map(({ workId, workTitle, finding }) => (
+                    <Link
+                      key={finding.id}
+                      to="/work/$workId"
+                      params={{ workId }}
+                      className="block p-4 hover:bg-accent/40 transition-colors"
+                    >
+                      <div className="flex items-center justify-between">
+                        <p className="text-sm font-medium">{finding.title}</p>
+                        <span className="text-xs text-muted-foreground">{workTitle}</span>
+                      </div>
+                      <p className="mt-1 text-xs text-muted-foreground">
+                        {finding.detail} · {finding.status}
+                      </p>
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            ) : null}
+
+            {matchedVerification.length > 0 ? (
+              <div>
+                <p className="label-caps mb-3">Verification ({matchedVerification.length})</p>
+                <div className="divide-y divide-hairline rounded-xl border border-hairline bg-surface">
+                  {matchedVerification.map(({ workId, workTitle, run, finding }) => (
+                    <Link
+                      key={`${run.id}-${finding?.id || "run"}`}
+                      to="/work/$workId"
+                      params={{ workId }}
+                      className="block p-4 hover:bg-accent/40 transition-colors"
+                    >
+                      <div className="flex items-center justify-between">
+                        <p className="text-sm font-medium">
+                          {finding?.title || `Verification version ${run.version}`}
+                        </p>
+                        <span className="text-xs text-muted-foreground">{workTitle}</span>
+                      </div>
+                      <p className="mt-1 text-xs text-muted-foreground">
+                        {finding?.detail || run.summary} · {run.finalStatus}
+                      </p>
                     </Link>
                   ))}
                 </div>

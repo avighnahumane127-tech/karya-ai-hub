@@ -9,19 +9,26 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import {
+  addCompletedWorkFile,
   addEvidence,
   addPlanTask,
+  analyzeFileIntelligence,
   generateWorkPlan,
   getEvidenceStats,
   getRequirementEvidence,
   getRequirementStats,
+  markFileAuthority,
+  runVerification,
   stateLabels,
   updatePlanTask,
   updatePlanTaskStatus,
   updateQuestionAnswer,
   updateRequirement,
+  updateWorkFile,
   type EvidenceConfidence,
   type EvidenceType,
+  type FileAuthorityStatus,
+  type FilePurpose,
   type Question,
   type PlanGroup,
   type QuestionPriority,
@@ -30,6 +37,7 @@ import {
   type RequirementPriority,
   type RequirementType,
   type StepStatus,
+  type VerificationFinalStatus,
   type WorkItem,
 } from "@/lib/work";
 import { cn } from "@/lib/utils";
@@ -256,59 +264,11 @@ export function WorkTabPanel({ work, tab }: { work: WorkItem; tab: WorkTab }) {
   }
 
   if (tab === "Files") {
-    if (work.files.length === 0) {
-      return (
-        <EmptyState
-          title="No files added to this work."
-          description="Add the source documents, working files and final deliverables here."
-          action={<Button size="sm">Upload files</Button>}
-        />
-      );
-    }
-    return (
-      <div className="divide-y divide-hairline border-y border-hairline">
-        {work.files.map((f) => (
-          <div key={f.id} className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-4 py-4">
-            <div className="min-w-0">
-              <p className="truncate text-sm">{f.name}</p>
-              {f.meta ? <p className="text-xs text-muted-foreground">{f.meta}</p> : null}
-            </div>
-            <StatusPill tone={f.role === "Missing" ? "blocked" : "neutral"}>{f.role}</StatusPill>
-          </div>
-        ))}
-      </div>
-    );
+    return <FileIntelligenceTab work={work} />;
   }
 
   if (tab === "Verify") {
-    if (work.verify.length === 0) {
-      return (
-        <EmptyState
-          title="Nothing to verify yet."
-          description="Upload your completed work to verify it against the original request."
-          action={<Button size="sm">Upload completed work</Button>}
-        />
-      );
-    }
-    return (
-      <div className="divide-y divide-hairline border-y border-hairline">
-        {work.verify.map((c) => (
-          <div key={c.id} className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-4 py-5">
-            <div className="min-w-0">
-              <p className="text-sm font-medium">{c.title}</p>
-              {c.note ? <p className="mt-1 text-sm text-muted-foreground">{c.note}</p> : null}
-            </div>
-            <StatusPill
-              tone={
-                c.status === "satisfied" ? "ready" : c.status === "missing" ? "blocked" : "warn"
-              }
-            >
-              {c.status}
-            </StatusPill>
-          </div>
-        ))}
-      </div>
-    );
+    return <VerificationTab work={work} />;
   }
 
   return (
@@ -1455,3 +1415,556 @@ function TaskSummary({ task, onOpen }: { task: WorkItem["plan"][number]; onOpen:
 }
 
 type PlanTaskStatus = StepStatus;
+
+function FileIntelligenceTab({ work }: { work: WorkItem }) {
+  const [, rerender] = useState(0);
+  const [expandedId, setExpandedId] = useState<string | null>(null);
+  const findings = work.fileFindings || [];
+  const authoritative = work.files.filter(
+    (file) => file.authorityStatus === "Authoritative",
+  ).length;
+  const needsReview = work.files.filter(
+    (file) =>
+      file.processingStatus === "Needs review" ||
+      file.authorityStatus === "Possibly outdated" ||
+      file.authorityStatus === "Conflicted",
+  ).length;
+
+  const analyze = () => {
+    analyzeFileIntelligence(work.id);
+    rerender((value) => value + 1);
+  };
+
+  if (work.files.length === 0) {
+    return (
+      <EmptyState
+        title="No files added to this Work."
+        description="Add source documents through Work Input before asking Karya AI to analyze file relationships, versions, and authority."
+      />
+    );
+  }
+
+  return (
+    <div className="space-y-7">
+      <div className="rounded-xl border border-hairline bg-surface p-5">
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div>
+            <p className="label-caps">File Intelligence</p>
+            <p className="mt-1 text-sm text-muted-foreground">
+              {work.files.length} files · {authoritative} explicitly authoritative ·{" "}
+              {findings.length} findings
+            </p>
+          </div>
+          <Button size="sm" variant="outline" onClick={analyze}>
+            Re-analyze files
+          </Button>
+        </div>
+        {needsReview > 0 ? (
+          <p className="mt-4 rounded-md bg-warn-soft px-3 py-2 text-xs text-warn">
+            {needsReview} file{needsReview === 1 ? "" : "s"} need review before they can be treated
+            as reliable sources.
+          </p>
+        ) : null}
+      </div>
+
+      {findings.length > 0 ? (
+        <section className="space-y-3">
+          <h2 className="label-caps">File findings</h2>
+          <div className="divide-y divide-hairline rounded-xl border border-hairline bg-surface">
+            {findings.map((finding) => (
+              <div key={finding.id} className="p-4 space-y-2">
+                <div className="flex items-start justify-between gap-4">
+                  <div>
+                    <p className="text-sm font-medium">{finding.title}</p>
+                    <p className="mt-1 text-sm text-muted-foreground">{finding.detail}</p>
+                  </div>
+                  <StatusPill
+                    tone={
+                      finding.severity === "Critical" || finding.severity === "High"
+                        ? "blocked"
+                        : finding.severity === "Medium"
+                          ? "warn"
+                          : "neutral"
+                    }
+                  >
+                    {finding.status}
+                  </StatusPill>
+                </div>
+                <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-muted-foreground">
+                  <span>Action: {finding.recommendedAction}</span>
+                  {finding.sourceReference ? <span>Source: {finding.sourceReference}</span> : null}
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+      ) : (
+        <EmptyState
+          title="No file intelligence findings."
+          description="No duplicate, version, authority, or missing-reference finding has been recorded from the available file data."
+        />
+      )}
+
+      <section className="space-y-3">
+        <h2 className="label-caps">File inventory</h2>
+        <div className="divide-y divide-hairline rounded-xl border border-hairline bg-surface">
+          {work.files.map((file) => {
+            const expanded = expandedId === file.id;
+            const authorityTone =
+              file.authorityStatus === "Authoritative"
+                ? "ready"
+                : file.authorityStatus === "Conflicted" ||
+                    file.authorityStatus === "Possibly outdated"
+                  ? "warn"
+                  : "neutral";
+            return (
+              <div key={file.id} className="p-4">
+                <button
+                  type="button"
+                  className="w-full text-left"
+                  onClick={() => setExpandedId(expanded ? null : file.id)}
+                >
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-medium">{file.name}</p>
+                      <p className="mt-1 text-xs text-muted-foreground">
+                        {file.type || "Unknown type"}
+                        {file.size ? ` · ${file.size}` : ""} · {file.role}
+                      </p>
+                    </div>
+                    <div className="flex shrink-0 items-center gap-2">
+                      <StatusPill tone={authorityTone}>
+                        {file.authorityStatus || "Unknown"}
+                      </StatusPill>
+                      <StatusPill
+                        tone={
+                          file.processingStatus === "Unsupported"
+                            ? "blocked"
+                            : file.processingStatus === "Needs review"
+                              ? "warn"
+                              : "ready"
+                        }
+                      >
+                        {file.processingStatus || "Not analyzed"}
+                      </StatusPill>
+                    </div>
+                  </div>
+                </button>
+                <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+                  <span>Likely purpose: {file.likelyPurpose || "Unknown"}</span>
+                  {file.relationshipConfidence ? (
+                    <span>· {file.relationshipConfidence}</span>
+                  ) : null}
+                  {file.relatedFileIds?.length ? (
+                    <span>
+                      · {file.relatedFileIds.length} related file
+                      {file.relatedFileIds.length === 1 ? "" : "s"}
+                    </span>
+                  ) : null}
+                </div>
+                {expanded ? (
+                  <div className="mt-4 space-y-4 border-t border-hairline pt-4">
+                    <div className="grid gap-4 sm:grid-cols-2">
+                      <div>
+                        <p className="label-caps">Source</p>
+                        <p className="mt-1 text-sm text-muted-foreground">
+                          {file.source || "Source unavailable."}
+                        </p>
+                        <p className="mt-1 text-xs text-muted-foreground">
+                          Uploaded: {file.uploadedDate || "Date unavailable."}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="label-caps">Version family</p>
+                        <p className="mt-1 text-sm text-muted-foreground">
+                          {file.versionFamily || "Not determined."}
+                        </p>
+                        <p className="mt-1 text-xs text-muted-foreground">
+                          A filename marker is not treated as authority.
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <label className="text-xs text-muted-foreground">
+                        Classify purpose
+                        <select
+                          value={file.likelyPurpose || "Unknown"}
+                          onChange={(event) => {
+                            updateFilePurpose(
+                              work.id,
+                              file.id,
+                              event.currentTarget.value as FilePurpose,
+                            );
+                            rerender((value) => value + 1);
+                          }}
+                          className="ml-2 h-8 rounded-md border border-input bg-background px-2 text-xs"
+                        >
+                          {[
+                            "Brief",
+                            "Requirement source",
+                            "Reference",
+                            "Supporting material",
+                            "Working file",
+                            "Final deliverable",
+                            "Evidence",
+                            "Template",
+                            "Approval",
+                            "Unknown",
+                          ].map((purpose) => (
+                            <option key={purpose}>{purpose}</option>
+                          ))}
+                        </select>
+                      </label>
+                      <label className="text-xs text-muted-foreground">
+                        Authority
+                        <select
+                          value={file.authorityStatus || "Unknown"}
+                          onChange={(event) => {
+                            markFileAuthority(
+                              work.id,
+                              file.id,
+                              event.currentTarget.value as FileAuthorityStatus,
+                            );
+                            rerender((value) => value + 1);
+                          }}
+                          className="ml-2 h-8 rounded-md border border-input bg-background px-2 text-xs"
+                        >
+                          {[
+                            "Unknown",
+                            "Candidate",
+                            "Authoritative",
+                            "Possibly outdated",
+                            "Conflicted",
+                          ].map((status) => (
+                            <option key={status}>{status}</option>
+                          ))}
+                        </select>
+                      </label>
+                    </div>
+                  </div>
+                ) : null}
+              </div>
+            );
+          })}
+        </div>
+      </section>
+    </div>
+  );
+}
+
+function VerificationTab({ work }: { work: WorkItem }) {
+  const [, rerender] = useState(0);
+  const [expandedFindingId, setExpandedFindingId] = useState<string | null>(null);
+  const currentRun = work.verificationRuns?.[work.verificationRuns.length - 1];
+  const finalFiles = work.files.filter((file) => file.role === "Final");
+
+  const handleUpload = async (file: File | undefined) => {
+    if (!file) return;
+    const isText = /\.(txt|md|csv)$/i.test(file.name);
+    const content = isText ? await file.text() : undefined;
+    addCompletedWorkFile(work.id, {
+      name: file.name,
+      ...(file.type ? { type: file.type } : {}),
+      ...(file.size ? { size: `${Math.ceil(file.size / 1024)} KB` } : {}),
+      ...(content ? { content } : {}),
+      source: "User upload",
+    });
+    runVerification(work.id);
+    rerender((value) => value + 1);
+  };
+
+  const verify = () => {
+    runVerification(work.id);
+    rerender((value) => value + 1);
+  };
+
+  if (!currentRun) {
+    return (
+      <div className="space-y-6">
+        <div className="rounded-xl border border-dashed border-hairline p-8 text-center">
+          <p className="text-sm font-medium">No completed work has been verified yet.</p>
+          <p className="mx-auto mt-2 max-w-lg text-sm text-muted-foreground">
+            Upload a final PDF, DOCX, PPTX, spreadsheet, image, or supported text file. Unsupported
+            formats will remain explicitly marked for human review.
+          </p>
+          <label className="mt-5 inline-flex cursor-pointer items-center rounded-md bg-foreground px-3 py-2 text-sm font-medium text-background hover:opacity-90">
+            <span>Upload completed work</span>
+            <input
+              type="file"
+              className="sr-only"
+              onChange={(event) => void handleUpload(event.currentTarget.files?.[0])}
+            />
+          </label>
+        </div>
+        <div className="rounded-lg border border-hairline bg-surface p-4 text-xs text-muted-foreground">
+          Requirements are checked individually. A file existing in the Work Package is not treated
+          as proof that the completed work satisfies it.
+        </div>
+      </div>
+    );
+  }
+
+  const resultCounts = currentRun.requirementResults.reduce(
+    (counts, result) => {
+      counts[result.status] = (counts[result.status] || 0) + 1;
+      return counts;
+    },
+    {} as Record<string, number>,
+  );
+  const critical = currentRun.findings.filter((finding) => finding.severity === "Critical");
+  const warnings = currentRun.findings.filter((finding) => finding.severity !== "Critical");
+  const statusTone: Tone =
+    currentRun.finalStatus === "READY TO SUBMIT"
+      ? "ready"
+      : currentRun.finalStatus === "NOT READY"
+        ? "blocked"
+        : currentRun.finalStatus === "HUMAN REVIEW REQUIRED"
+          ? "info"
+          : "warn";
+
+  return (
+    <div className="space-y-7">
+      <div className="rounded-xl border border-hairline bg-surface p-5 space-y-5">
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div>
+            <p className="label-caps">Verify</p>
+            <h2 className="mt-1 text-lg font-medium">{work.title}</h2>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Version {currentRun.version} · {currentRun.date} ·{" "}
+              {finalFiles.map((file) => file.name).join(", ")}
+            </p>
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <StatusPill tone={statusTone}>{currentRun.finalStatus}</StatusPill>
+            <Button size="sm" variant="outline" onClick={verify}>
+              Rerun verification
+            </Button>
+            <label className="inline-flex cursor-pointer items-center rounded-md border border-input px-3 py-1.5 text-xs font-medium hover:bg-accent">
+              <span>Upload new version</span>
+              <input
+                type="file"
+                className="sr-only"
+                onChange={(event) => void handleUpload(event.currentTarget.files?.[0])}
+              />
+            </label>
+          </div>
+        </div>
+        <p className="text-sm text-muted-foreground">{currentRun.summary}</p>
+        <div className="grid gap-3 sm:grid-cols-4">
+          <div className="rounded-lg bg-accent/40 p-3">
+            <p className="label-caps">Satisfied</p>
+            <p className="mt-1 text-lg font-medium">{resultCounts["SATISFIED"] || 0}</p>
+          </div>
+          <div className="rounded-lg bg-accent/40 p-3">
+            <p className="label-caps">Partial</p>
+            <p className="mt-1 text-lg font-medium">{resultCounts["PARTIALLY SATISFIED"] || 0}</p>
+          </div>
+          <div className="rounded-lg bg-accent/40 p-3">
+            <p className="label-caps">Missing</p>
+            <p className="mt-1 text-lg font-medium">{resultCounts["MISSING"] || 0}</p>
+          </div>
+          <div className="rounded-lg bg-accent/40 p-3">
+            <p className="label-caps">Needs review</p>
+            <p className="mt-1 text-lg font-medium">{resultCounts["NEEDS REVIEW"] || 0}</p>
+          </div>
+        </div>
+      </div>
+
+      {critical.length > 0 ? (
+        <section className="space-y-3">
+          <h2 className="label-caps">Critical issues</h2>
+          <div className="divide-y divide-hairline rounded-xl border border-hairline bg-surface">
+            {critical.map((finding) => (
+              <VerificationFindingRow
+                key={finding.id}
+                finding={finding}
+                expanded={expandedFindingId === finding.id}
+                onToggle={() =>
+                  setExpandedFindingId(expandedFindingId === finding.id ? null : finding.id)
+                }
+              />
+            ))}
+          </div>
+        </section>
+      ) : null}
+      {warnings.length > 0 ? (
+        <section className="space-y-3">
+          <h2 className="label-caps">Warnings and review items</h2>
+          <div className="divide-y divide-hairline rounded-xl border border-hairline bg-surface">
+            {warnings.map((finding) => (
+              <VerificationFindingRow
+                key={finding.id}
+                finding={finding}
+                expanded={expandedFindingId === finding.id}
+                onToggle={() =>
+                  setExpandedFindingId(expandedFindingId === finding.id ? null : finding.id)
+                }
+              />
+            ))}
+          </div>
+        </section>
+      ) : null}
+
+      <section className="space-y-3">
+        <div className="flex items-center justify-between">
+          <h2 className="label-caps">Requirement verification</h2>
+          <span className="text-xs text-muted-foreground">
+            Each requirement is checked separately
+          </span>
+        </div>
+        <div className="divide-y divide-hairline rounded-xl border border-hairline bg-surface">
+          {currentRun.requirementResults.map((result) => (
+            <div
+              key={result.requirementId}
+              className="grid gap-3 p-4 sm:grid-cols-[minmax(0,1fr)_auto]"
+            >
+              <div>
+                <p className="text-sm font-medium">
+                  {work.requirements.find((requirement) => requirement.id === result.requirementId)
+                    ?.title || "Requirement"}
+                </p>
+                <p className="mt-1 text-sm text-muted-foreground">{result.finding}</p>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  Evidence checked: {result.evidenceIds.length} · Output files checked:{" "}
+                  {result.outputFileIds.length}
+                </p>
+              </div>
+              <StatusPill
+                tone={
+                  result.status === "SATISFIED"
+                    ? "ready"
+                    : result.status === "NEEDS REVIEW"
+                      ? "info"
+                      : result.status === "PARTIALLY SATISFIED"
+                        ? "warn"
+                        : "blocked"
+                }
+              >
+                {result.status}
+              </StatusPill>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section className="space-y-3">
+        <h2 className="label-caps">Completion test</h2>
+        <div className="divide-y divide-hairline rounded-xl border border-hairline bg-surface">
+          {currentRun.completionTest.map((item) => (
+            <div key={item.id} className="flex items-start justify-between gap-4 p-4">
+              <div>
+                <p className="text-sm font-medium">{item.title}</p>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  {item.type} · {item.detail}
+                </p>
+              </div>
+              <StatusPill
+                tone={
+                  item.status === "Pass"
+                    ? "ready"
+                    : item.status === "Fail"
+                      ? "blocked"
+                      : item.status === "Needs review"
+                        ? "info"
+                        : "warn"
+                }
+              >
+                {item.status}
+              </StatusPill>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {work.verificationRuns.length > 1 ? (
+        <section className="space-y-3">
+          <h2 className="label-caps">Verification history</h2>
+          <div className="divide-y divide-hairline rounded-xl border border-hairline bg-surface">
+            {work.verificationRuns
+              .slice()
+              .reverse()
+              .map((run) => (
+                <div key={run.id} className="flex items-center justify-between gap-4 p-4">
+                  <div>
+                    <p className="text-sm font-medium">
+                      {run.date} · Version {run.version}
+                    </p>
+                    <p className="mt-1 text-xs text-muted-foreground">{run.summary}</p>
+                  </div>
+                  <StatusPill
+                    tone={
+                      run.finalStatus === "READY TO SUBMIT"
+                        ? "ready"
+                        : run.finalStatus === "NOT READY"
+                          ? "blocked"
+                          : "warn"
+                    }
+                  >
+                    {run.finalStatus}
+                  </StatusPill>
+                </div>
+              ))}
+          </div>
+        </section>
+      ) : null}
+    </div>
+  );
+}
+
+function VerificationFindingRow({
+  finding,
+  expanded,
+  onToggle,
+}: {
+  finding: WorkItem["verificationRuns"][number]["findings"][number];
+  expanded: boolean;
+  onToggle: () => void;
+}) {
+  return (
+    <div className="p-4">
+      <button type="button" className="w-full text-left" onClick={onToggle}>
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <p className="text-sm font-medium">{finding.title}</p>
+            <p className="mt-1 text-sm text-muted-foreground">{finding.detail}</p>
+          </div>
+          <StatusPill
+            tone={
+              finding.severity === "Critical"
+                ? "blocked"
+                : finding.status === "Human review"
+                  ? "info"
+                  : "warn"
+            }
+          >
+            {finding.severity}
+          </StatusPill>
+        </div>
+      </button>
+      {expanded ? (
+        <div className="mt-4 space-y-3 border-t border-hairline pt-4 text-xs">
+          <p>
+            <span className="font-medium">Recommended action: </span>
+            {finding.recommendedAction}
+          </p>
+          <p>
+            <span className="font-medium">Status: </span>
+            {finding.status}
+          </p>
+          {finding.sourceReference ? (
+            <p>
+              <span className="font-medium">Source: </span>
+              {finding.sourceReference}
+            </p>
+          ) : (
+            <p className="text-muted-foreground">Source reference unavailable.</p>
+          )}
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+function updateFilePurpose(workId: string, fileId: string, likelyPurpose: FilePurpose) {
+  updateWorkFile(workId, fileId, { likelyPurpose });
+}
