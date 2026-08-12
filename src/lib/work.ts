@@ -526,6 +526,211 @@ export type ShareLink = {
   snapshot: ShareSnapshot;
 };
 
+export type AnalyticsFilters = {
+  from?: string;
+  to?: string;
+  status?: WorkState | "ALL";
+  templateId?: string | "ALL";
+};
+export type AnalyticsRankedItem = {
+  label: string;
+  count: number;
+  workIds: string[];
+  confidence: "High" | "Medium" | "Low";
+  provenance: "FOUND IN DATA" | "INFERRED" | "UNKNOWN";
+  detail: string;
+};
+export type OrganizationalPattern = {
+  id: string;
+  pattern: string;
+  evidence: string;
+  frequency: number;
+  sources: string[];
+  lastObserved: string;
+  scope: "INDIVIDUAL" | "TEAM" | "ORGANIZATION";
+  confidence: "High" | "Medium" | "Low";
+  status: "Known pattern" | "Marked incorrect";
+};
+export type OrganizationPolicy = {
+  id: string;
+  name: string;
+  rule: string;
+  scope: "INDIVIDUAL" | "TEAM" | "ORGANIZATION";
+  appliesTo: string;
+  severity: "Informational" | "Warning" | "Blocking";
+  enforcementMode: "Observe" | "Require review" | "Block";
+  createdBy: string;
+  createdDate: string;
+  version: number;
+  history: { id: string; date: string; change: string; by: string }[];
+};
+export type PolicyCheck = {
+  id: string;
+  policyId: string;
+  workId: string;
+  status: "PASS" | "WARNING" | "BLOCKED";
+  detail: string;
+  source: "Organization Policy";
+  checkedAt: string;
+};
+export type CrossWorkDependency = {
+  id: string;
+  sourceWorkId: string;
+  targetWorkId: string;
+  dependency: string;
+  status: "Potentially blocked" | "Confirmed" | "Blocked" | "Resolved";
+  owner?: string;
+  impact: string;
+  expectedAvailability?: string;
+  evidence: string;
+  confidence: "High" | "Medium" | "Low";
+  userConfirmed: boolean;
+  createdAt: string;
+};
+export type ChangeImpactRecord = {
+  id: string;
+  workId: string;
+  changeType:
+    | "Deadline"
+    | "Requirement"
+    | "Deliverable"
+    | "Scope"
+    | "File/version"
+    | "Decision"
+    | "Policy"
+    | "Approval";
+  oldValue: string;
+  newValue: string;
+  affectedTaskIds: string[];
+  affectedDependencyIds: string[];
+  affectedRequirementIds: string[];
+  affectedHandoffIds: string[];
+  criticalPathChanged: boolean;
+  risk: "Low" | "Medium" | "High";
+  feasibility?: DeadlineFeasibility;
+  summary: string;
+  createdAt: string;
+};
+export type RequirementChangeRecord = {
+  id: string;
+  workId: string;
+  requirementId: string;
+  changeType:
+    "New" | "Removed" | "Modified" | "Priority changed" | "Type changed" | "Status changed";
+  oldValue?: string;
+  newValue?: string;
+  source?: string;
+  impact: string;
+  createdAt: string;
+};
+export type RegressionCheck = {
+  id: string;
+  previousWorkId: string;
+  currentWorkId: string;
+  recurringBasis: string;
+  expectedRequirementIds: string[];
+  satisfiedRequirementIds: string[];
+  missingRequirementIds: string[];
+  newRequirementIds: string[];
+  status: "PASS" | "REGRESSION DETECTED" | "INSUFFICIENT DATA";
+  summary: string;
+  createdAt: string;
+};
+export type QualityPattern = {
+  id: string;
+  pattern: string;
+  frequency: number;
+  severity: "Low" | "Medium" | "High";
+  workIds: string[];
+  firstObserved: string;
+  lastObserved: string;
+  trend: "Increasing" | "Stable" | "Decreasing" | "Unknown";
+  confidence: "High" | "Medium" | "Low";
+  provenance: "FOUND IN DATA" | "INFERRED" | "UNKNOWN";
+};
+export type ProcessRecommendation = {
+  id: string;
+  title: string;
+  evidence: string;
+  frequency: number;
+  impact: string;
+  confidence: "High" | "Medium" | "Low";
+  relatedWorkIds: string[];
+  action: "Review recommendation" | "Create template" | "Create policy";
+  status: "Open" | "Accepted" | "Dismissed" | "Snoozed";
+  createdAt: string;
+};
+export type IntelligenceActivity = {
+  id: string;
+  type:
+    | "Pattern detected"
+    | "Policy created"
+    | "Cross-work dependency detected"
+    | "Change impact generated"
+    | "Requirement changes detected"
+    | "Regression detected"
+    | "Quality pattern detected"
+    | "Process recommendation generated"
+    | "Recommendation updated";
+  detail: string;
+  date: string;
+  workIds: string[];
+};
+export type IntelligenceStore = {
+  policies: OrganizationPolicy[];
+  policyChecks: PolicyCheck[];
+  crossWorkDependencies: CrossWorkDependency[];
+  changeImpacts: ChangeImpactRecord[];
+  requirementChanges: RequirementChangeRecord[];
+  regressions: RegressionCheck[];
+  recommendations: ProcessRecommendation[];
+  activities: IntelligenceActivity[];
+};
+export type AnalyticsSnapshot = {
+  generatedAt: string;
+  filters: AnalyticsFilters;
+  includedWorkIds: string[];
+  hasData: boolean;
+  overview: {
+    totalWork: number;
+    completed: number;
+    blocked: number;
+    waiting: number;
+    verificationOutcomes: AnalyticsRankedItem[];
+    completedOverTime: AnalyticsRankedItem[];
+    completionTiming: { withinDeadline: number; afterDeadline: number; unavailable: number };
+    averageCompletionDuration: string;
+  };
+  blockers: AnalyticsRankedItem[];
+  clarifications: {
+    averagePerWork: string;
+    beforeStarting: number;
+    duringExecution: number;
+    waitingForResponse: number;
+    resolved: number;
+    averageResolutionTime: string;
+  };
+  missingInformation: AnalyticsRankedItem[];
+  repeatedRequirements: AnalyticsRankedItem[];
+  requirementFailures: AnalyticsRankedItem[];
+  handoffDelays: { status: "AVAILABLE" | "NOT ENOUGH DATA"; detail: string };
+  revisionCauses: AnalyticsRankedItem[];
+  quality: {
+    firstPassSatisfied: string;
+    requirementsNeedingRevision: number;
+    evidenceCoverage: string;
+    verificationFailures: number;
+    repeatedQualityPatterns: QualityPattern[];
+  };
+  patterns: OrganizationalPattern[];
+  policyChecks: PolicyCheck[];
+  crossWorkDependencies: CrossWorkDependency[];
+  changeImpacts: ChangeImpactRecord[];
+  requirementChanges: RequirementChangeRecord[];
+  regressions: RegressionCheck[];
+  recommendations: ProcessRecommendation[];
+};
+
 export type UserTemplate = Template & {
   owner: "User" | "System";
   createdAt: string;
@@ -570,6 +775,7 @@ export type WorkItem = {
   sensitiveFindings: SensitiveFinding[];
   securityEvents: SecurityEvent[];
   reports: WorkReport[];
+  analyticsExcluded?: boolean;
   assumptions: { id: string; text: string }[];
   issues: Issue[];
   findings: ReadinessFinding[];
