@@ -66,6 +66,9 @@ const stepTone: Record<StepStatus, Tone> = {
   waiting: "warn",
   "not-started": "neutral",
   done: "ready",
+  "in-progress": "info",
+  skipped: "neutral",
+  "needs-review": "warn",
 };
 
 function Section({ label, children }: { label: string; children: React.ReactNode }) {

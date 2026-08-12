@@ -22,7 +22,24 @@ export type RequirementType =
   "MANDATORY" | "OPTIONAL" | "CONDITIONAL" | "INFORMATIONAL" | "APPROVAL-REQUIRED";
 export type RequirementPriority = "CRITICAL" | "HIGH" | "MEDIUM" | "LOW";
 export type ReqStatus = "complete" | "partial" | "missing" | "conflict" | RequirementStatus;
-export type StepStatus = "blocked" | "ready" | "waiting" | "not-started" | "done";
+export type StepStatus =
+  | "blocked"
+  | "ready"
+  | "waiting"
+  | "not-started"
+  | "done"
+  | "in-progress"
+  | "skipped"
+  | "needs-review";
+export type PlanGroup =
+  "PREPARATION" | "RESEARCH" | "PRODUCTION" | "REVIEW" | "APPROVAL" | "DELIVERY";
+export type PlanTaskStatus = StepStatus;
+export type DeadlineFeasibility =
+  | "FEASIBLE"
+  | "FEASIBLE WITH WARNINGS"
+  | "POTENTIALLY INFEASIBLE"
+  | "BLOCKED"
+  | "INSUFFICIENT INFORMATION";
 export type SourceKind = "confirmed" | "inferred" | "assumption" | "conflict";
 
 export type Source = { kind: SourceKind; label: string };
@@ -107,7 +124,68 @@ export type Evidence = {
   history: EvidenceHistoryEntry[];
 };
 
-export type PlanStep = { id: string; title: string; status: StepStatus; note?: string };
+export type PlanDependency = {
+  id: string;
+  prerequisiteTaskId: string;
+  dependentTaskId: string;
+  reason: string;
+  type: "task" | "requirement" | "question" | "file" | "evidence" | "approval" | "decision";
+  status: "open" | "resolved";
+};
+
+export type PlanTask = {
+  id: string;
+  title: string;
+  group?: PlanGroup;
+  status: PlanTaskStatus;
+  note?: string;
+  objective?: string;
+  inputs?: string[];
+  expectedOutput?: string;
+  dependencies?: string[];
+  dependencyReasons?: string[];
+  evidenceRequired?: string[];
+  relatedRequirementIds?: string[];
+  relatedDeliverableIds?: string[];
+  relatedQuestionIds?: string[];
+  relatedRiskIds?: string[];
+  evidenceIds?: string[];
+  estimatedEffort?: string;
+  isCriticalPath?: boolean;
+  canRunInParallel?: boolean;
+  blocker?: string;
+  blockedByTaskIds?: string[];
+  userModified?: boolean;
+  sourceReference?: string;
+};
+
+/** Legacy alias retained for existing Work Plan consumers. */
+export type PlanStep = PlanTask;
+
+export type WorkPlanHistoryEntry = {
+  id: string;
+  date: string;
+  change: string;
+  reason?: string;
+  affectedTaskIds?: string[];
+};
+
+export type WorkPlan = {
+  tasks: PlanTask[];
+  dependencies: PlanDependency[];
+  criticalPathTaskIds: string[];
+  parallelGroups: string[][];
+  feasibility: {
+    status: DeadlineFeasibility;
+    explanation: string;
+    estimatedEffort?: string;
+    availableTime?: string;
+    unresolvedDependencyCount: number;
+  };
+  history: WorkPlanHistoryEntry[];
+  version: number;
+  lastGeneratedAt?: string;
+};
 
 export type QuestionCategory =
   | "Blocking"
@@ -237,7 +315,8 @@ export type WorkItem = {
   request: RequestUnderstanding;
   requirements: Requirement[];
   evidence: Evidence[];
-  plan: PlanStep[];
+  plan: PlanTask[];
+  planMeta?: WorkPlan;
   questions: Question[];
   files: WorkFile[];
   verify: VerifyCheck[];
