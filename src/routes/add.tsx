@@ -184,20 +184,12 @@ function AddWork() {
   const [analysisDirty, setAnalysisDirty] = useState(false);
   const [selectedPreview, setSelectedPreview] = useState<SourceRecord | null>(null);
   const [showUnderstanding, setShowUnderstanding] = useState(false);
-  const [understandingObjective, setUnderstandingObjective] = useState(
-    "Review and analyze the provided sources to deliver actionable recommendations and outcomes.",
-  );
-  const [understandingAction, setUnderstandingAction] = useState(
-    "Review sources, extract key requirements, and synthesize findings.",
-  );
-  const [understandingOutcome, setUnderstandingOutcome] = useState(
-    "A comprehensive work package with verified requirements and clear next steps.",
-  );
-  const [understandingDeadline, setUnderstandingDeadline] = useState("Friday");
-  const [understandingAudience, setUnderstandingAudience] = useState("Management and stakeholders");
-  const [understandingDeliverables, setUnderstandingDeliverables] = useState(
-    "Analysis report, requirements list, recommendation summary",
-  );
+  const [understandingObjective, setUnderstandingObjective] = useState("");
+  const [understandingAction, setUnderstandingAction] = useState("");
+  const [understandingOutcome, setUnderstandingOutcome] = useState("");
+  const [understandingDeadline, setUnderstandingDeadline] = useState("");
+  const [understandingAudience, setUnderstandingAudience] = useState("");
+  const [understandingDeliverables, setUnderstandingDeliverables] = useState("");
 
   const markPackageChanged = () => {
     if (analysisStarted) setAnalysisDirty(true);
@@ -723,8 +715,8 @@ function AddWork() {
           <DialogHeader>
             <DialogTitle>Here's what I believe you're being asked to do</DialogTitle>
             <DialogDescription>
-              Karya AI has analyzed your {sources.length} sources and context. Review this
-              understanding before we build your work plan.
+              Record the understanding you want this Work to use. This client does not extract or
+              invent missing fields; anything you leave blank remains unknown.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-2 text-sm">
@@ -734,6 +726,7 @@ function AddWork() {
                 <input
                   value={understandingObjective}
                   onChange={(e) => setUnderstandingObjective(e.target.value)}
+                  placeholder="Unknown until confirmed"
                   className="mt-1 w-full rounded border border-input bg-background px-2.5 py-1.5 text-sm outline-none focus:ring-1 focus:ring-ring"
                 />
               </div>
@@ -743,6 +736,7 @@ function AddWork() {
                   <input
                     value={understandingAction}
                     onChange={(e) => setUnderstandingAction(e.target.value)}
+                    placeholder="Unknown until confirmed"
                     className="mt-1 w-full rounded border border-input bg-background px-2.5 py-1.5 text-sm outline-none focus:ring-1 focus:ring-ring"
                   />
                 </div>
@@ -751,6 +745,7 @@ function AddWork() {
                   <input
                     value={understandingOutcome}
                     onChange={(e) => setUnderstandingOutcome(e.target.value)}
+                    placeholder="Unknown until confirmed"
                     className="mt-1 w-full rounded border border-input bg-background px-2.5 py-1.5 text-sm outline-none focus:ring-1 focus:ring-ring"
                   />
                 </div>
@@ -761,6 +756,7 @@ function AddWork() {
                   <input
                     value={understandingDeadline}
                     onChange={(e) => setUnderstandingDeadline(e.target.value)}
+                    placeholder="Unknown until confirmed"
                     className="mt-1 w-full rounded border border-input bg-background px-2.5 py-1.5 text-sm outline-none focus:ring-1 focus:ring-ring"
                   />
                 </div>
@@ -769,6 +765,7 @@ function AddWork() {
                   <input
                     value={understandingAudience}
                     onChange={(e) => setUnderstandingAudience(e.target.value)}
+                    placeholder="Unknown until confirmed"
                     className="mt-1 w-full rounded border border-input bg-background px-2.5 py-1.5 text-sm outline-none focus:ring-1 focus:ring-ring"
                   />
                 </div>
@@ -778,13 +775,15 @@ function AddWork() {
                 <input
                   value={understandingDeliverables}
                   onChange={(e) => setUnderstandingDeliverables(e.target.value)}
+                  placeholder="Unknown until confirmed"
                   className="mt-1 w-full rounded border border-input bg-background px-2.5 py-1.5 text-sm outline-none focus:ring-1 focus:ring-ring"
                 />
               </div>
             </div>
             <p className="text-xs text-muted-foreground">
-              You can edit any field above to correct Karya AI's interpretation. This understanding
-              becomes the source of truth for this work.
+              Fields are user-confirmed only after you edit and submit them. Leave optional fields
+              blank when the source material does not establish them; Karya AI will treat them as
+              unknown rather than filling them in.
             </p>
           </div>
           <DialogFooter className="gap-2 sm:gap-0">
@@ -793,6 +792,11 @@ function AddWork() {
             </Button>
             <Button
               type="button"
+              disabled={
+                !understandingObjective.trim() ||
+                !understandingAction.trim() ||
+                !understandingOutcome.trim()
+              }
               onClick={() => {
                 const newId = `work-${Date.now()}`;
                 const titleText = packageName.trim() || sources[0]?.name || "New Work Package";
@@ -803,26 +807,33 @@ function AddWork() {
                   savedRetention === "KEEP"
                     ? savedRetention
                     : "KEEP";
+                const objective = understandingObjective.trim();
+                const action = understandingAction.trim();
+                const outcome = understandingOutcome.trim();
+                const deadline = understandingDeadline.trim();
+                const audience = understandingAudience.trim();
+                const deliverables = understandingDeliverables
+                  .split(",")
+                  .map((s) => s.trim())
+                  .filter(Boolean);
+                const requirementId = `req-${Date.now()}-1`;
                 const newItem: WorkItem = {
                   id: newId,
                   title: titleText,
-                  description: understandingObjective,
+                  description: objective,
                   state: sources.length >= 2 ? "ready" : "ready-with-warnings",
-                  due: understandingDeadline,
+                  ...(deadline ? { due: deadline } : {}),
                   request: {
-                    objective: understandingObjective,
-                    action: understandingAction,
-                    outcome: understandingOutcome,
-                    deadline: understandingDeadline,
-                    audience: understandingAudience,
-                    deliverables: understandingDeliverables
-                      .split(",")
-                      .map((s) => s.trim())
-                      .filter(Boolean),
+                    objective,
+                    action,
+                    outcome,
+                    ...(deadline ? { deadline } : {}),
+                    ...(audience ? { audience } : {}),
+                    ...(deliverables.length > 0 ? { deliverables } : {}),
                   },
                   requirements: [
                     {
-                      id: `req-${Date.now()}-1`,
+                      id: requirementId,
                       title: "Fulfill requested deliverables",
                       status: "NOT STARTED",
                       why: understandingObjective,
@@ -833,6 +844,31 @@ function AddWork() {
                     },
                   ],
                   evidence: [],
+                  questions: audience
+                    ? []
+                    : [
+                        {
+                          id: `question-${Date.now()}`,
+                          workId: newId,
+                          workTitle: titleText,
+                          question: "Who is the intended audience for this Work?",
+                          why: "Audience affects tone, depth, and the shape of the final deliverable.",
+                          category: "Scope",
+                          priority: "MUST ANSWER BEFORE STARTING",
+                          impact: "High",
+                          status: "Open",
+                          relatedRequirementIds: [requirementId],
+                          relatedDependencyIds: [],
+                          relatedRiskIds: [],
+                          relatedFindingIds: [],
+                          state: "must",
+                          createdDate: new Date().toLocaleDateString("en-US", {
+                            month: "short",
+                            day: "numeric",
+                            year: "numeric",
+                          }),
+                        },
+                      ],
                   plan: [
                     { id: "step-1", title: "Review requirements and sources", status: "done" },
                     { id: "step-2", title: "Execute work deliverables", status: "ready" },
@@ -842,7 +878,6 @@ function AddWork() {
                       status: "not-started",
                     },
                   ],
-                  questions: [],
                   fileFindings: [],
                   verificationRuns: [],
                   decisions: [],
@@ -893,26 +928,34 @@ function AddWork() {
                       change: "Work item created from Work Input package",
                     },
                   ],
-                  assumptions: [
-                    {
-                      id: `assump-${Date.now()}`,
-                      text: `Intended audience is ${understandingAudience}.`,
-                    },
-                  ],
+                  assumptions: audience
+                    ? []
+                    : [
+                        {
+                          id: `assump-${Date.now()}`,
+                          text: "Audience is unknown because it was not confirmed in the Work input.",
+                        },
+                      ],
                   issues: [],
                   findings: [
-                    {
-                      id: `find-${Date.now()}-1`,
-                      type: "assumption",
-                      severity: "medium",
-                      confidence: "Medium",
-                      title: "Audience assumption required",
-                      explanation: `Karya AI assumes the intended audience is ${understandingAudience}.`,
-                      whyItMatters: "Tone and depth should match audience expectations.",
-                      sourceReference: "Request Understanding confirmation",
-                      recommendedAction: "Confirm intended audience before final submission.",
-                      status: "open",
-                    },
+                    ...(!audience
+                      ? [
+                          {
+                            id: `find-${Date.now()}-1`,
+                            type: "missing-info" as const,
+                            severity: "medium" as const,
+                            confidence: "High" as const,
+                            title: "Audience is unknown",
+                            explanation: "The Work input does not establish the intended audience.",
+                            whyItMatters:
+                              "Tone and depth may need to change for a different audience.",
+                            sourceReference: "Request Understanding",
+                            recommendedAction:
+                              "Confirm the intended audience before final submission.",
+                            status: "open" as const,
+                          },
+                        ]
+                      : []),
                     ...(sources.length < 2
                       ? [
                           {
@@ -931,8 +974,9 @@ function AddWork() {
                         ]
                       : []),
                   ],
-                  recommendedNextAction:
-                    sources.length < 2
+                  recommendedNextAction: !audience
+                    ? "Confirm the intended audience before final submission."
+                    : sources.length < 2
                       ? "Consider adding supporting context or files, then proceed with execution."
                       : "Proceed with drafting deliverables against confirmed requirements.",
                 };
