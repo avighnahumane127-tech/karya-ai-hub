@@ -943,6 +943,20 @@ export function markFileAuthority(
   persistWorkItems();
 }
 
+export function updateWorkFile(workId: string, fileId: string, patch: Partial<WorkFile>) {
+  const work = getWork(workId);
+  const file = work?.files.find((item) => item.id === fileId);
+  if (!work || !file) return;
+  Object.assign(file, patch);
+  work.activity.unshift({
+    id: `act-${Date.now()}`,
+    when: nowLabel(),
+    change: `File metadata updated: ${file.name}`,
+  });
+  analyzeFileIntelligence(workId);
+  persistWorkItems();
+}
+
 export function addCompletedWorkFile(workId: string, input: Omit<WorkFile, "id" | "role">) {
   const work = getWork(workId);
   if (!work) return undefined;
