@@ -1350,7 +1350,7 @@ export function dismissSensitiveFinding(workId: string, findingId: string) {
 }
 
 function markdownList(items: string[], empty = "None recorded.") {
-  return items.length > 0 ? items.map((item) => `- ${item}`).join("\\n") : `- ${empty}`;
+  return items.length > 0 ? items.map((item) => `- ${item}`).join("\n") : `- ${empty}`;
 }
 
 function csvCell(value: string | undefined) {
@@ -1450,7 +1450,7 @@ export function generateReadinessReport(workId: string) {
     "## Interpretation",
     "",
     "Confirmed information is represented by user-provided Work fields and recorded evidence. Readiness findings may contain AI analysis or inference, and their source references are shown where available. Unknown information is not filled in by this report.",
-  ].join("\\n");
+  ].join("\n");
   const report: WorkReport = {
     id: secureId("report"),
     type: "READINESS",
@@ -1529,7 +1529,7 @@ export function generateWorkPlanMarkdown(workId: string) {
     "",
     ...sections,
     ...(sections.length === 0 ? ["## Tasks", "", "- No plan tasks are recorded."] : []),
-  ].join("\\n");
+  ].join("\n");
   const report: WorkReport = {
     id: secureId("report"),
     type: "WORK PLAN",
@@ -1586,7 +1586,7 @@ export function generateRequirementsCSV(workId: string) {
         .join(","),
     );
   });
-  const csv = [header.map(csvCell).join(","), ...rows].join("\\n");
+  const csv = [header.map(csvCell).join(","), ...rows].join("\n");
   const version = work.reports.filter((report) => report.type === "REQUIREMENTS MATRIX").length + 1;
   const report: WorkReport = {
     id: secureId("report"),
@@ -3158,7 +3158,7 @@ function requirementStatusForVerification(
 function contentHasRequirement(content: string, title: string) {
   const words = title
     .toLowerCase()
-    .split(/\\W+/)
+    .split(/\W+/)
     .filter((word) => word.length > 4);
   if (words.length === 0) return false;
   const normalized = content.toLowerCase();
@@ -3220,7 +3220,7 @@ export function runVerification(workId: string) {
   const content = submittedFiles
     .map((file) => file.content || "")
     .filter(Boolean)
-    .join("\\n");
+    .join("\n");
   const results: VerificationRequirementResult[] = [];
   const findings: VerificationFinding[] = [];
 
