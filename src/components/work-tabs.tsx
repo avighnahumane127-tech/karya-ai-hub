@@ -1,6 +1,25 @@
 import { EmptyState, SourceTag, StatusPill, type Tone } from "@/components/primitives";
 import { Button } from "@/components/ui/button";
-import { stateLabels, type ReqStatus, type StepStatus, type WorkItem } from "@/lib/work";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  stateLabels,
+  updateQuestionAnswer,
+  type Question,
+  type QuestionPriority,
+  type ReqStatus,
+  type StepStatus,
+  type WorkItem,
+} from "@/lib/work";
+import { cn } from "@/lib/utils";
+import { Check, Clipboard, MessageSquare, Send } from "lucide-react";
+import { useState } from "react";
 
 export const workTabs = [
   "Overview",
@@ -229,24 +248,7 @@ export function WorkTabPanel({ work, tab }: { work: WorkItem; tab: WorkTab }) {
   }
 
   if (tab === "Questions") {
-    if (work.questions.length === 0) {
-      return (
-        <EmptyState
-          title="No unanswered questions."
-          description="Questions appear when something must be clarified before the work can proceed."
-        />
-      );
-    }
-    return (
-      <div className="divide-y divide-hairline border-y border-hairline">
-        {work.questions.map((q) => (
-          <div key={q.id} className="py-5">
-            <p className="text-sm font-medium">{q.question}</p>
-            <p className="mt-1 text-sm text-muted-foreground">{q.why}</p>
-          </div>
-        ))}
-      </div>
-    );
+    return <QuestionsTab work={work} />;
   }
 
   if (tab === "Files") {
@@ -310,5 +312,230 @@ export function WorkTabPanel({ work, tab }: { work: WorkItem; tab: WorkTab }) {
       title="No handoff prepared."
       description="A handoff packet is created from completed work, unresolved issues, files and next steps."
     />
+  );
+}
+
+function QuestionsTab({ work }: { work: WorkItem }) {
+  const [answeringId, setAnsweringId] = useState<string | null>(null);
+  const [answer, setAnswer] = useState("");
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [generatedMessage, setGeneratedMessage] = useState("");
+  const [selectedTone, setSelectedMessageTone] = useState("Professional");
+
+  if (work.questions.length === 0) {
+    return (
+      <EmptyState
+        title="No unanswered questions."
+        description="Questions appear when something must be clarified before the work can proceed."
+      />
+    );
+  }
+
+  const priorities: QuestionPriority[] = [
+    "MUST ANSWER BEFORE STARTING",
+    "CAN ANSWER LATER",
+    "OPTIONAL",
+  ];
+
+  const handleAnswer = (qId: string) => {
+    updateQuestionAnswer(work.id, qId, answer);
+    setAnsweringId(null);
+    setAnswer("");
+  };
+
+  const generateAskMessage = (questions: Question[]) => {
+    setIsGenerating(true);
+    // Simulate AI message generation
+    setTimeout(() => {
+      const qList = questions.map((q, i) => `${i + 1}. ${q.question}`).join("\n");
+      const msg = `Hi, before I proceed with the "${work.title}" project, could you please clarify the following:\n\n${qList}\n\nThis will help ensure the work is accurate and meets your expectations. Thanks!`;
+      setGeneratedMessage(msg);
+      setIsGenerating(false);
+    }, 800);
+  };
+
+  return (
+    <div className="space-y-10">
+      <div className="flex items-center justify-between">
+        <h2 className="label-caps">
+          {work.questions.filter((q) => q.state !== "resolved").length} Active Questions
+        </h2>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => generateAskMessage(work.questions.filter((q) => q.state !== "resolved"))}
+        >
+          <Send className="mr-2 h-3.5 w-3.5" />
+          Ask Boss/Client
+        </Button>
+      </div>
+
+      <div className="space-y-12">
+        {priorities.map((priority) => {
+          const items = work.questions.filter((q) => q.priority === priority);
+          if (items.length === 0) return null;
+
+          return (
+            <section key={priority} className="space-y-4">
+              <div className="flex items-center gap-3">
+                <h3
+                  className={cn(
+                    "text-[11px] font-bold tracking-wider uppercase px-2 py-0.5 rounded",
+                    priority === "MUST ANSWER BEFORE STARTING"
+                      ? "bg-blocked-soft text-blocked"
+                      : priority === "CAN ANSWER LATER"
+                        ? "bg-warn-soft text-warn"
+                        : "bg-muted text-muted-foreground",
+                  )}
+                >
+                  {priority}
+                </h3>
+                <div className="h-px flex-1 bg-hairline" />
+              </div>
+
+              <div className="divide-y divide-hairline border-y border-hairline">
+                {items.map((q) => (
+                  <div key={q.id} className="py-6 space-y-4">
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="space-y-1">
+                        <p className="text-sm font-medium leading-relaxed">{q.question}</p>
+                        <p className="text-xs text-muted-foreground">{q.why}</p>
+                        <div className="flex flex-wrap items-center gap-3 mt-2">
+                          <span className="text-[10px] text-muted-foreground uppercase font-medium">
+                            Category: {q.category}
+                          </span>
+                          <span className="text-[10px] text-muted-foreground uppercase font-medium">
+                            Impact: {q.impact}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="flex shrink-0 items-center gap-2">
+                        {q.state === "resolved" ? (
+                          <StatusPill tone="ready">Resolved</StatusPill>
+                        ) : (
+                          <>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => {
+                                setAnsweringId(q.id);
+                                setAnswer(q.answer || "");
+                              }}
+                            >
+                              Answer
+                            </Button>
+                            <StatusPill
+                              tone={priority === "MUST ANSWER BEFORE STARTING" ? "blocked" : "warn"}
+                            >
+                              {q.status}
+                            </StatusPill>
+                          </>
+                        )}
+                      </div>
+                    </div>
+
+                    {q.state === "resolved" && q.answer && (
+                      <div className="rounded-lg bg-accent/30 p-4 border border-hairline">
+                        <p className="text-xs font-medium uppercase text-muted-foreground mb-2">
+                          Answer
+                        </p>
+                        <p className="text-sm text-foreground">{q.answer}</p>
+                        <p className="text-[10px] text-muted-foreground mt-2 italic">
+                          Source: {q.answerSource}
+                        </p>
+                      </div>
+                    )}
+
+                    {answeringId === q.id && (
+                      <div className="space-y-3 p-4 rounded-lg border border-input bg-surface">
+                        <textarea
+                          value={answer}
+                          onChange={(e) => setAnswer(e.target.value)}
+                          placeholder="Type the answer here..."
+                          className="w-full min-h-[100px] bg-transparent text-sm outline-none resize-y"
+                          autoFocus
+                        />
+                        <div className="flex justify-end gap-2">
+                          <Button variant="ghost" size="sm" onClick={() => setAnsweringId(null)}>
+                            Cancel
+                          </Button>
+                          <Button
+                            size="sm"
+                            onClick={() => handleAnswer(q.id)}
+                            disabled={!answer.trim()}
+                          >
+                            Save Answer
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </section>
+          );
+        })}
+      </div>
+
+      <Dialog open={!!generatedMessage} onOpenChange={(open) => !open && setGeneratedMessage("")}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Ask Boss / Client</DialogTitle>
+            <DialogDescription>
+              We've drafted a professional message to help you get the answers you need.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="flex items-center gap-2 mb-2">
+              <span className="text-xs font-medium text-muted-foreground">Tone:</span>
+              {["Professional", "Direct", "Friendly", "Urgent", "Formal"].map((tone) => (
+                <button
+                  key={tone}
+                  onClick={() => setSelectedMessageTone(tone)}
+                  className={cn(
+                    "text-[10px] px-2 py-0.5 rounded border transition-colors",
+                    selectedTone === tone
+                      ? "bg-foreground text-background border-foreground"
+                      : "bg-transparent text-muted-foreground border-hairline hover:border-muted-foreground",
+                  )}
+                >
+                  {tone}
+                </button>
+              ))}
+            </div>
+            <div className="relative">
+              <textarea
+                value={generatedMessage}
+                onChange={(e) => setGeneratedMessage(e.target.value)}
+                className="w-full min-h-[250px] p-4 rounded-lg border border-hairline bg-muted/20 text-sm leading-relaxed font-sans outline-none focus:ring-1 focus:ring-ring"
+              />
+              <Button
+                variant="ghost"
+                size="icon-xs"
+                className="absolute top-2 right-2"
+                onClick={() => navigator.clipboard.writeText(generatedMessage)}
+              >
+                <Clipboard className="h-3.5 w-3.5" />
+              </Button>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setGeneratedMessage("")}>
+              Close
+            </Button>
+            <Button
+              onClick={() => {
+                // In a real app, this might trigger a share or copy
+                navigator.clipboard.writeText(generatedMessage);
+                setGeneratedMessage("");
+              }}
+            >
+              <Check className="mr-2 h-3.5 w-3.5" />
+              Copy to Clipboard
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div>
   );
 }

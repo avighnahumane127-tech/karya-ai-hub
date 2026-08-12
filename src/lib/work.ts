@@ -29,15 +29,42 @@ export type Requirement = {
 
 export type PlanStep = { id: string; title: string; status: StepStatus; note?: string };
 
+export type QuestionCategory =
+  | "Blocking"
+  | "Planning"
+  | "Scope"
+  | "Deliverable"
+  | "Files/assets"
+  | "Review/approval"
+  | "Optional preferences";
+
+export type QuestionPriority = "MUST ANSWER BEFORE STARTING" | "CAN ANSWER LATER" | "OPTIONAL";
+
+export type QuestionStatus =
+  "Open" | "Ready to Ask" | "Asked" | "Waiting for Answer" | "Answered" | "Resolved" | "Dismissed";
+
 export type Question = {
   id: string;
-  question: string;
-  why: string;
-  state: "must" | "waiting" | "resolved";
-  person?: string;
-  priority?: string;
   workId: string;
   workTitle: string;
+  question: string;
+  why: string;
+  category: QuestionCategory;
+  priority: QuestionPriority;
+  impact: "Low" | "Medium" | "High" | "Critical";
+  status: QuestionStatus;
+  personResponsible?: string;
+  createdDate: string;
+  askedDate?: string;
+  answeredDate?: string;
+  answer?: string;
+  answerSource?: string;
+  relatedRequirementIds: string[];
+  relatedDependencyIds: string[];
+  relatedRiskIds: string[];
+  relatedFindingIds: string[];
+  // Legacy support for older components
+  state: "must" | "waiting" | "resolved";
 };
 
 export type WorkFile = {
@@ -205,6 +232,77 @@ export function restoreWork(id: string) {
         year: "numeric",
       }),
       change: "Work restored from archive",
+    });
+  }
+}
+
+export function updateQuestionAnswer(
+  workId: string,
+  questionId: string,
+  answer: string,
+  source?: string,
+) {
+  const work = workItems.find((w) => w.id === workId);
+  if (!work) return;
+
+  const question = work.questions.find((q) => q.id === questionId);
+  if (!question) return;
+
+  const globalQ = questions.find((q) => q.id === questionId);
+
+  const now = new Date().toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+
+  question.answer = answer;
+  question.answerSource = source || "User input";
+  question.answeredDate = now;
+  question.status = "Answered";
+  question.state = "resolved";
+
+  if (globalQ) {
+    globalQ.answer = answer;
+    globalQ.answeredDate = now;
+    globalQ.status = "Answered";
+    globalQ.state = "resolved";
+  }
+
+  // Record activity
+  work.activity.unshift({
+    id: `act-${Date.now()}`,
+    when: now,
+    change: `Question answered: "${question.question.substring(0, 30)}..."`,
+  });
+
+  // Recalculate readiness (simulated)
+  recalculateReadiness(work);
+}
+
+function recalculateReadiness(work: WorkItem) {
+  const openCriticalQuestions = work.questions.filter(
+    (q) => q.priority === "MUST ANSWER BEFORE STARTING" && q.state !== "resolved",
+  );
+
+  const oldState = work.state;
+
+  if (openCriticalQuestions.length > 0) {
+    work.state = "blocked";
+  } else {
+    const hasWarnings = work.findings.some((f) => f.status === "open");
+    work.state = hasWarnings ? "ready-with-warnings" : "ready";
+  }
+
+  if (oldState !== work.state) {
+    work.activity.unshift({
+      id: `act-${Date.now()}-readiness`,
+      when: new Date().toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+      }),
+      change: `Readiness recalculated: ${oldState} → ${work.state}`,
     });
   }
 }
