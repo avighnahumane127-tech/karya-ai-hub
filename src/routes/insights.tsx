@@ -286,7 +286,7 @@ function InsightsPage() {
         ) : (
           <NotEnoughData />
         )}
-        <div className="mt-3 grid gap-3 lg:grid-cols-2">
+        <div className="mt-3 grid gap-3 lg:grid-cols-3">
           <RankedList
             title="Verification outcomes"
             items={snapshot.overview.verificationOutcomes}
@@ -295,6 +295,11 @@ function InsightsPage() {
           <RankedList
             title="Completed over time"
             items={snapshot.overview.completedOverTime}
+            onSelect={setSelectedItem}
+          />
+          <RankedList
+            title="Completed by type"
+            items={snapshot.overview.completedByType}
             onSelect={setSelectedItem}
           />
         </div>

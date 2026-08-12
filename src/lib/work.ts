@@ -713,6 +713,7 @@ export type AnalyticsSnapshot = {
     waiting: number;
     verificationOutcomes: AnalyticsRankedItem[];
     completedOverTime: AnalyticsRankedItem[];
+    completedByType: AnalyticsRankedItem[];
     completionTiming: { withinDeadline: number; afterDeadline: number; unavailable: number };
     averageCompletionDuration: string;
   };
@@ -1951,6 +1952,13 @@ export function getAnalyticsSnapshot(filters: AnalyticsFilters = {}): AnalyticsS
       workId: work.id,
     })),
   );
+  const completedByType = rankAnalyticsItems(
+    completed.map((work) => ({
+      label: work.templateId || "Untemplated Work",
+      detail: work.title,
+      workId: work.id,
+    })),
+  );
   const questionCount = works.reduce((sum, work) => sum + work.questions.length, 0);
   const resolvedQuestions = works.flatMap((work) =>
     work.questions.filter((question) => question.state === "resolved"),
@@ -2020,6 +2028,7 @@ export function getAnalyticsSnapshot(filters: AnalyticsFilters = {}): AnalyticsS
       waiting: waiting.length,
       verificationOutcomes,
       completedOverTime,
+      completedByType,
       completionTiming: { withinDeadline: 0, afterDeadline: 0, unavailable: completed.length },
       averageCompletionDuration: "Not enough timestamp data yet.",
     },
