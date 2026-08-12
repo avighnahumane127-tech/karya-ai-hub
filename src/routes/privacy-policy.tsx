@@ -22,7 +22,7 @@ function PrivacyPolicy() {
         <div className="mb-10 border-b border-hairline pb-10">
           <h1 className="text-3xl tracking-tight sm:text-4xl">Privacy Policy</h1>
           <p className="mt-3 text-sm text-muted-foreground">
-            <strong>Last updated:</strong> [Date]
+            <strong>Last updated:</strong> August 12, 2026
           </p>
           <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
             This Privacy Policy explains how Karya AI collects, uses, stores, and protects
@@ -68,7 +68,6 @@ function PrivacyPolicy() {
 
         {/* Body */}
         <div className="legal-body space-y-10 text-sm leading-relaxed">
-
           <section id="section-1">
             <h2>1. Information We Collect</h2>
             <p>
@@ -124,8 +123,8 @@ function PrivacyPolicy() {
               <li>Diagnostic information</li>
             </ul>
             <p className="notice">
-              [The exact categories of automatically collected information should be confirmed
-              based on the actual implementation.]
+              [The exact categories of automatically collected information should be confirmed based
+              on the actual implementation.]
             </p>
           </section>
 
@@ -190,8 +189,8 @@ function PrivacyPolicy() {
               <li>Comply with legal obligations.</li>
               <li>Protect the rights, safety, and property of Karya AI, users, or others.</li>
               <li>
-                Complete a business transaction such as a merger, acquisition, financing, or sale
-                of assets, where applicable.
+                Complete a business transaction such as a merger, acquisition, financing, or sale of
+                assets, where applicable.
               </li>
             </ul>
             <p>
@@ -217,8 +216,8 @@ function PrivacyPolicy() {
               <li>Other technical services</li>
             </ul>
             <p>
-              Third-party providers may process information on Karya AI's behalf where necessary
-              to provide their services.
+              Third-party providers may process information on Karya AI's behalf where necessary to
+              provide their services.
             </p>
             <p className="notice">
               [The actual third-party providers and their applicable privacy policies should be
@@ -251,8 +250,8 @@ function PrivacyPolicy() {
             <h2>7. Data Retention</h2>
             <p>
               We retain information only for as long as reasonably necessary for the purposes
-              described in this Privacy Policy, unless a longer period is required or permitted
-              by law.
+              described in this Privacy Policy, unless a longer period is required or permitted by
+              law.
             </p>
             <p>The specific retention period may depend on:</p>
             <ul>
@@ -271,21 +270,21 @@ function PrivacyPolicy() {
           <section id="section-8">
             <h2>8. Data Security</h2>
             <p>
-              We take reasonable measures designed to protect information from unauthorized
-              access, loss, misuse, alteration, or disclosure.
+              We take reasonable measures designed to protect information from unauthorized access,
+              loss, misuse, alteration, or disclosure.
             </p>
             <p>However, no online service can guarantee absolute security.</p>
             <p className="notice">
-              [Specific security measures and certifications should only be listed if they have
-              been implemented and verified.]
+              [Specific security measures and certifications should only be listed if they have been
+              implemented and verified.]
             </p>
           </section>
 
           <section id="section-9">
             <h2>9. Your Privacy Rights</h2>
             <p>
-              Depending on where you live, you may have rights regarding your personal
-              information, which may include the right to:
+              Depending on where you live, you may have rights regarding your personal information,
+              which may include the right to:
             </p>
             <ul>
               <li>Request access to personal information we hold about you.</li>
@@ -296,9 +295,7 @@ function PrivacyPolicy() {
               <li>Request a copy of certain information.</li>
               <li>Withdraw consent where processing is based on consent.</li>
             </ul>
-            <p>
-              These rights may be subject to applicable legal exceptions and limitations.
-            </p>
+            <p>These rights may be subject to applicable legal exceptions and limitations.</p>
             <p>To make a privacy request, contact us using the information provided below.</p>
           </section>
 
@@ -310,8 +307,8 @@ function PrivacyPolicy() {
               service.
             </p>
             <p className="notice">
-              [The actual cookies, analytics tools, and tracking technologies used by Karya AI
-              must be confirmed before publication.]
+              [The actual cookies, analytics tools, and tracking technologies used by Karya AI must
+              be confirmed before publication.]
             </p>
             <p>Where required by law, applicable consent mechanisms will be provided.</p>
           </section>
@@ -347,16 +344,14 @@ function PrivacyPolicy() {
               [Actual countries, transfer mechanisms, and applicable legal requirements must be
               confirmed before publication.]
             </p>
-            <p>
-              Where required, appropriate safeguards will be used for international transfers.
-            </p>
+            <p>Where required, appropriate safeguards will be used for international transfers.</p>
           </section>
 
           <section id="section-13">
             <h2>13. Changes to This Privacy Policy</h2>
             <p>
-              We may update this Privacy Policy from time to time as Karya AI develops or our
-              data practices change.
+              We may update this Privacy Policy from time to time as Karya AI develops or our data
+              practices change.
             </p>
             <p>
               When we make changes, we will update the <strong>Last updated</strong> date.
@@ -366,8 +361,8 @@ function PrivacyPolicy() {
               changes.
             </p>
             <p>
-              Your continued use of Karya AI after an updated Privacy Policy becomes effective
-              means you acknowledge the revised policy.
+              Your continued use of Karya AI after an updated Privacy Policy becomes effective means
+              you acknowledge the revised policy.
             </p>
           </section>
 
@@ -386,9 +381,13 @@ function PrivacyPolicy() {
           <div className="border-t border-hairline pt-8 text-xs text-muted-foreground">
             <p className="font-medium">Karya AI</p>
             <div className="mt-1 flex flex-wrap gap-3">
-              <Link to="/terms-of-use" className="hover:text-foreground">Terms of Use</Link>
+              <Link to="/terms-of-use" className="hover:text-foreground">
+                Terms of Use
+              </Link>
               <span>·</span>
-              <Link to="/privacy-policy" className="hover:text-foreground">Privacy Policy</Link>
+              <Link to="/privacy-policy" className="hover:text-foreground">
+                Privacy Policy
+              </Link>
             </div>
           </div>
         </div>

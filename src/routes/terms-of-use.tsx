@@ -22,12 +22,12 @@ function TermsOfUse() {
         <div className="mb-10 border-b border-hairline pb-10">
           <h1 className="text-3xl tracking-tight sm:text-4xl">Terms of Use</h1>
           <p className="mt-3 text-sm text-muted-foreground">
-            <strong>Last updated:</strong> [Date]
+            <strong>Last updated:</strong> August 12, 2026
           </p>
           <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
-            These Terms of Use govern your access to and use of Karya AI and its related
-            services. By accessing or using Karya AI, you agree to these Terms. If you do not
-            agree with them, do not use the service.
+            These Terms of Use govern your access to and use of Karya AI and its related services.
+            By accessing or using Karya AI, you agree to these Terms. If you do not agree with them,
+            do not use the service.
           </p>
         </div>
 
@@ -69,7 +69,6 @@ function TermsOfUse() {
 
         {/* Body */}
         <div className="legal-body space-y-10 text-sm leading-relaxed">
-
           <section id="section-1">
             <h2>1. About Karya AI</h2>
             <p>
@@ -82,16 +81,14 @@ function TermsOfUse() {
               questions, evidence, and completion criteria.
             </p>
             <p>
-              Karya AI provides assistance and analysis. It does not perform the underlying work
-              on the user's behalf and does not replace the user's judgment or responsibility.
+              Karya AI provides assistance and analysis. It does not perform the underlying work on
+              the user's behalf and does not replace the user's judgment or responsibility.
             </p>
           </section>
 
           <section id="section-2">
             <h2>2. Eligibility</h2>
-            <p>
-              You must be legally capable of entering into a binding agreement to use Karya AI.
-            </p>
+            <p>You must be legally capable of entering into a binding agreement to use Karya AI.</p>
             <p className="notice">
               <strong>[Minimum age requirement to be finalized.]</strong>
             </p>
@@ -120,8 +117,8 @@ function TermsOfUse() {
           <section id="section-4">
             <h2>4. Your Content</h2>
             <p>
-              You may provide Karya AI with information such as work instructions, documents,
-              files, images, messages, requirements, evidence, and completed work.
+              You may provide Karya AI with information such as work instructions, documents, files,
+              images, messages, requirements, evidence, and completed work.
             </p>
             <p>You retain the rights you already have in your content.</p>
             <p>
@@ -129,9 +126,9 @@ function TermsOfUse() {
               provide and operate the service.
             </p>
             <p>
-              You are responsible for ensuring that you have the necessary rights and permissions
-              to upload or otherwise provide content to Karya AI, including content belonging to
-              an employer, client, customer, or other third party.
+              You are responsible for ensuring that you have the necessary rights and permissions to
+              upload or otherwise provide content to Karya AI, including content belonging to an
+              employer, client, customer, or other third party.
             </p>
             <p>You should not provide content that you are not authorized to share.</p>
           </section>
@@ -153,8 +150,8 @@ function TermsOfUse() {
               <li>Other analysis</li>
             </ul>
             <p>
-              A result marked <strong>Ready</strong>, <strong>Verified</strong>, or similar does
-              not guarantee that the underlying work is actually correct or complete.
+              A result marked <strong>Ready</strong>, <strong>Verified</strong>, or similar does not
+              guarantee that the underlying work is actually correct or complete.
             </p>
             <p>
               You are responsible for reviewing Karya AI's outputs and making your own decisions
@@ -185,9 +182,7 @@ function TermsOfUse() {
             <ul>
               <li>Use the service for unlawful purposes.</li>
               <li>Upload content that you do not have permission to provide.</li>
-              <li>
-                Attempt to gain unauthorized access to the service or another user's account.
-              </li>
+              <li>Attempt to gain unauthorized access to the service or another user's account.</li>
               <li>Attempt to bypass or compromise security measures.</li>
               <li>Interfere with the operation or availability of the service.</li>
               <li>
@@ -203,14 +198,13 @@ function TermsOfUse() {
           <section id="section-8">
             <h2>8. Intellectual Property</h2>
             <p>
-              Karya AI, including its software, interface, branding, design, and related
-              materials, is owned by Karya AI or its licensors and is protected by applicable
-              intellectual property laws.
+              Karya AI, including its software, interface, branding, design, and related materials,
+              is owned by Karya AI or its licensors and is protected by applicable intellectual
+              property laws.
             </p>
             <p>
-              Except for the limited right to use Karya AI as permitted by these Terms, these
-              Terms do not grant you ownership of or other rights to Karya AI's intellectual
-              property.
+              Except for the limited right to use Karya AI as permitted by these Terms, these Terms
+              do not grant you ownership of or other rights to Karya AI's intellectual property.
             </p>
             <p className="notice">[AI-generated output ownership terms to be finalized.]</p>
           </section>
@@ -231,8 +225,8 @@ function TermsOfUse() {
             <h2>10. Availability</h2>
             <p>
               We aim to provide a reliable service, but Karya AI may occasionally be unavailable
-              because of maintenance, technical problems, updates, outages, or circumstances
-              outside our control.
+              because of maintenance, technical problems, updates, outages, or circumstances outside
+              our control.
             </p>
             <p>
               We do not guarantee that the service will always be uninterrupted, error-free, or
@@ -277,31 +271,30 @@ function TermsOfUse() {
           <section id="section-13">
             <h2>13. Limitation of Liability</h2>
             <p>
-              To the maximum extent permitted by applicable law, Karya AI and its affiliates
-              will not be liable for indirect, incidental, special, consequential, or punitive
-              damages, or for loss of profits, data, business opportunities, or goodwill arising
-              from or related to your use of the service.
+              To the maximum extent permitted by applicable law, Karya AI and its affiliates will
+              not be liable for indirect, incidental, special, consequential, or punitive damages,
+              or for loss of profits, data, business opportunities, or goodwill arising from or
+              related to your use of the service.
             </p>
             <p className="notice">
-              [Specific liability limitations, exclusions, exceptions, and
-              jurisdiction-dependent provisions require legal review before publication.]
+              [Specific liability limitations, exclusions, exceptions, and jurisdiction-dependent
+              provisions require legal review before publication.]
             </p>
           </section>
 
           <section id="section-14">
             <h2>14. Indemnification</h2>
             <p>
-              To the extent permitted by applicable law, you agree to indemnify and hold Karya
-              AI harmless from claims, damages, losses, liabilities, and reasonable expenses
-              arising from:
+              To the extent permitted by applicable law, you agree to indemnify and hold Karya AI
+              harmless from claims, damages, losses, liabilities, and reasonable expenses arising
+              from:
             </p>
             <ul>
               <li>Your misuse of Karya AI.</li>
               <li>Your violation of these Terms.</li>
               <li>Your violation of another person's rights.</li>
               <li>
-                Content you provide to Karya AI without having the necessary rights or
-                permissions.
+                Content you provide to Karya AI without having the necessary rights or permissions.
               </li>
             </ul>
             <p className="notice">
@@ -312,8 +305,8 @@ function TermsOfUse() {
           <section id="section-15">
             <h2>15. Governing Law</h2>
             <p className="notice">
-              [Governing law and jurisdiction to be finalized based on the applicable legal
-              entity and jurisdiction.]
+              [Governing law and jurisdiction to be finalized based on the applicable legal entity
+              and jurisdiction.]
             </p>
           </section>
 
@@ -345,9 +338,13 @@ function TermsOfUse() {
           <div className="border-t border-hairline pt-8 text-xs text-muted-foreground">
             <p className="font-medium">Karya AI</p>
             <div className="mt-1 flex flex-wrap gap-3">
-              <Link to="/privacy-policy" className="hover:text-foreground">Privacy Policy</Link>
+              <Link to="/privacy-policy" className="hover:text-foreground">
+                Privacy Policy
+              </Link>
               <span>·</span>
-              <Link to="/terms-of-use" className="hover:text-foreground">Terms of Use</Link>
+              <Link to="/terms-of-use" className="hover:text-foreground">
+                Terms of Use
+              </Link>
             </div>
           </div>
         </div>
