@@ -4351,6 +4351,7 @@ export function updateQuestionAnswer(
 ) {
   const work = workItems.find((w) => w.id === workId);
   if (!work) return;
+  if (!answer.trim()) return;
 
   const question = work.questions.find((q) => q.id === questionId);
   if (!question) return;

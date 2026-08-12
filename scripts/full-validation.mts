@@ -227,6 +227,12 @@ pass(
   workLib.getWork(work.id)?.sensitiveFindings.some((finding) => finding.status === "Dismissed"),
 );
 
+updateQuestionAnswer(work.id, "question-criteria", "   ", "User confirmation");
+pass(
+  "empty question answer leaves blocker open",
+  workLib.getWork(work.id)?.questions.find((question) => question.id === "question-criteria")
+    ?.state !== "resolved",
+);
 updateQuestionAnswer(work.id, "question-criteria", "Use Q3 pricing.", "User confirmation");
 pass(
   "question answer preserves missing-requirement blocker",
@@ -249,7 +255,12 @@ pass(
   "plan exposes parallel-work opportunities",
   (workLib.getWork(work.id)?.planMeta?.parallelGroups.length || 0) > 0,
 );
+const planVersionBeforeRequirementUpdate = workLib.getWork(work.id)?.planMeta?.version || 0;
 updateRequirement(work.id, "req-sources", { status: "SATISFIED", priority: "HIGH" });
+pass(
+  "requirement change regenerates the plan",
+  (workLib.getWork(work.id)?.planMeta?.version || 0) > planVersionBeforeRequirementUpdate,
+);
 addEvidence(work.id, {
   type: "File",
   description: "Q3 pricing and supplier source material",
@@ -490,6 +501,21 @@ pass("share link creates a snapshot", Boolean(share && getShareSnapshot(share?.t
 revokeShareLink(work.id);
 pass("revoked share link is inaccessible", getShareSnapshot(share?.token || "") === undefined);
 
+const unsupportedFile = addCompletedWorkFile(work.id, {
+  name: "untrusted-binary.exe",
+  type: "application/octet-stream",
+  source: "Validation upload",
+});
+pass(
+  "unsupported file is classified without corrupting Work",
+  unsupportedFile?.processingStatus === "Unsupported" && Boolean(workLib.getWork(work.id)),
+);
+pass(
+  "adding a file reruns File Intelligence",
+  (workLib.getWork(work.id)?.activity || []).some((activity) =>
+    String(activity.change || "").startsWith("File Intelligence analyzed"),
+  ),
+);
 const verificationFile = addCompletedWorkFile(work.id, {
   name: "final.pdf",
   type: "application/pdf",
@@ -525,5 +551,14 @@ workLib.archiveWork(work.id);
 pass("archive changes Work state", workLib.getWork(work.id)?.archived === true);
 workLib.restoreWork(work.id);
 pass("restore changes Work state", workLib.getWork(work.id)?.archived === false);
+const persistedAfterLifecycle = JSON.parse(storage.get("karya-ai-work-items") || "[]").find(
+  (item: WorkItem) => item.id === work.id,
+);
+pass(
+  "post-mutation Work state persists across storage reload boundary",
+  persistedAfterLifecycle?.archived === false &&
+    persistedAfterLifecycle?.communicationDrafts.length === 5 &&
+    persistedAfterLifecycle?.files.every((file) => file.role === "Missing" && !file.content),
+);
 
 console.log(JSON.stringify({ passed: Object.keys(checks).length, checks }, null, 2));
