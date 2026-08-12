@@ -117,6 +117,34 @@ const work = {
       type: "application/pdf",
       content: "Review supplier proposals. Include sources and warranty terms.",
     },
+    {
+      id: "duplicate-source",
+      name: "copy.pdf",
+      role: "Source",
+      type: "application/pdf",
+      content: "Review supplier proposals. Include sources and warranty terms.",
+    },
+    {
+      id: "final-candidate",
+      name: "final.pdf",
+      role: "Source",
+      type: "application/pdf",
+      content: "Approved final",
+    },
+    {
+      id: "final2-candidate",
+      name: "final2.pdf",
+      role: "Source",
+      type: "application/pdf",
+      content: "Approved final 2",
+    },
+    {
+      id: "approved-candidate",
+      name: "approved.pdf",
+      role: "Source",
+      type: "application/pdf",
+      content: "Approved source",
+    },
   ],
   fileFindings: [],
   verificationRuns: [],
@@ -156,6 +184,16 @@ pass(
   ),
 );
 analyzeFileIntelligence(work.id);
+pass(
+  "file intelligence detects identical duplicate",
+  work.fileFindings.some((finding) => finding.type === "exact-duplicate"),
+);
+pass(
+  "file intelligence does not choose newest filename",
+  ["final.pdf", "final2.pdf", "approved.pdf"].every(
+    (name) => work.files.find((file) => file.name === name)?.authorityStatus !== "Authoritative",
+  ),
+);
 pass(
   "file intelligence analyzes source inventory",
   (workLib.getWork(work.id)?.files || []).every((file) => file.processingStatus),
