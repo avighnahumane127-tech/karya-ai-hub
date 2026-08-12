@@ -21,6 +21,7 @@ import {
   updateCrossWorkDependencyStatus,
   updateProcessRecommendation,
   updateWorkDeadline,
+  setWorkAnalyticsExcluded,
   analyzeRequirementChanges,
   workItems,
 } from "@/lib/work";
@@ -134,6 +135,46 @@ function InsightsPage() {
         Scope: <span className="font-medium text-foreground">Individual</span> · local Work items
         included only · archived or excluded Work is omitted · no organization-wide or team-wide
         claims are made in this client.
+      </div>
+      <div className="mt-3 flex flex-wrap items-end gap-3 rounded-lg border border-hairline bg-surface p-4">
+        <label className="grid gap-1 text-xs text-muted-foreground">
+          Analytics inclusion
+          <select
+            value={selectedWorkId}
+            onChange={(event) => setSelectedWorkId(event.currentTarget.value)}
+            className="h-9 min-w-64 rounded-md border border-input bg-background px-2 text-sm text-foreground"
+          >
+            <option value="">Select a Work item</option>
+            {workItems
+              .filter((work) => !work.archived)
+              .map((work) => (
+                <option key={work.id} value={work.id}>
+                  {work.title}
+                  {work.analyticsExcluded ? " (excluded)" : ""}
+                </option>
+              ))}
+          </select>
+        </label>
+        <button
+          type="button"
+          disabled={!selectedWorkId}
+          onClick={() => {
+            const work = getWork(selectedWorkId);
+            if (!work) return;
+            const nextExcluded = !work.analyticsExcluded;
+            setWorkAnalyticsExcluded(selectedWorkId, nextExcluded);
+            setMessage(
+              `${work.title} is now ${nextExcluded ? "excluded from" : "included in"} analytics.`,
+            );
+            load(true);
+          }}
+          className="h-9 rounded-md border border-input px-3 text-xs disabled:opacity-50"
+        >
+          {getWork(selectedWorkId)?.analyticsExcluded ? "Include Work" : "Exclude Work"}
+        </button>
+        <span className="text-xs text-muted-foreground">
+          Exclusion is a local user choice and is recorded in Work activity.
+        </span>
       </div>
 
       <section className="mt-6 rounded-xl border border-hairline bg-surface p-4">
