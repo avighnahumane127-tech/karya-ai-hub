@@ -475,6 +475,7 @@ export function addEvidence(
     source: evidence.sourceReference || evidence.source || "Source unavailable.",
   });
 
+  generateWorkPlan(workId);
   persistWorkItems();
   return evidence;
 }
@@ -500,6 +501,7 @@ export function removeEvidence(workId: string, evidenceId: string) {
     when: nowLabel(),
     change: `Evidence removed: ${evidence.description}`,
   });
+  generateWorkPlan(workId);
   persistWorkItems();
 }
 
@@ -536,6 +538,7 @@ export function updateRequirement(
     when: nowLabel(),
     change: `Requirement updated: ${requirement.title}`,
   });
+  generateWorkPlan(workId);
   persistWorkItems();
 }
 
@@ -1060,8 +1063,9 @@ export function updateQuestionAnswer(
     change: `Question answered: "${question.question.substring(0, 30)}..."`,
   });
 
-  // Recalculate readiness (simulated)
+  // Recalculate readiness and the dependency-aware Work Plan.
   recalculateReadiness(work);
+  generateWorkPlan(workId);
   persistWorkItems();
 }
 
