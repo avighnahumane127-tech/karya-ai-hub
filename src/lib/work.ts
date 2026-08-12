@@ -1253,26 +1253,26 @@ export function detectSensitiveData(workId: string) {
     {
       category: "Contact information",
       confidence: "High",
-      regex: /[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,}/gi,
+      regex: /[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi,
       location: "Text content",
     },
     {
       category: "Personal information",
       confidence: "Medium",
-      regex: /\\b(?:phone|mobile|ssn|passport|national id)\\s*[:=]\\s*[^\\n,;]+/gi,
+      regex: /\b(?:phone|mobile|ssn|passport|national id)\s*[:=]\s*[^\n,;]+/gi,
       location: "Labeled field",
     },
     {
       category: "Financial information",
       confidence: "High",
-      regex: /\\b(?:\\d[ -]*?){13,19}\\b/g,
+      regex: /\b(?:\d[ -]*?){13,19}\b/g,
       location: "Number pattern",
     },
     {
       category: "Credential or API key",
       confidence: "High",
       regex:
-        /\\b(?:sk-[A-Za-z0-9_-]{10,}|AKIA[0-9A-Z]{16}|ghp_[A-Za-z0-9]{20,}|api[_-]?key\\s*[:=]\\s*\\S+)\\b/g,
+        /\b(?:sk-[A-Za-z0-9_-]{10,}|AKIA[0-9A-Z]{16}|ghp_[A-Za-z0-9]{20,}|api[_-]?key\s*[:=]\s*\S+)\b/g,
       location: "Credential pattern",
     },
   ];
@@ -1283,7 +1283,7 @@ export function detectSensitiveData(workId: string) {
       for (const match of file.content.matchAll(pattern.regex)) {
         const value = match[0];
         const start = match.index ?? 0;
-        const line = file.content.slice(0, start).split("\\n").length;
+        const line = file.content.slice(0, start).split("\n").length;
         if (
           findings.some(
             (finding) =>
