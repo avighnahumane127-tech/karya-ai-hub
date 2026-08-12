@@ -2565,6 +2565,36 @@ export function generateProcessRecommendations() {
       createdAt: new Date().toISOString(),
     });
   }
+  const topMissingInformation = snapshot.missingInformation.find((item) => item.count >= 2);
+  if (topMissingInformation) {
+    recommendations.push({
+      id: `recommendation-missing-${normalizePatternText(topMissingInformation.label).replace(/\s+/g, "-")}`,
+      title: `Add a checklist for repeated missing information: ${topMissingInformation.label}`,
+      evidence: topMissingInformation.detail,
+      frequency: topMissingInformation.count,
+      impact: `Observed across ${topMissingInformation.count} Work items; no causal claim is made.`,
+      confidence: topMissingInformation.confidence,
+      relatedWorkIds: topMissingInformation.workIds,
+      action: "Create template",
+      status: "Open",
+      createdAt: new Date().toISOString(),
+    });
+  }
+  const topQualityPattern = snapshot.quality.repeatedQualityPatterns[0];
+  if (topQualityPattern) {
+    recommendations.push({
+      id: `recommendation-quality-${normalizePatternText(topQualityPattern.pattern).replace(/\s+/g, "-")}`,
+      title: `Review recurring verification issue: ${topQualityPattern.pattern}`,
+      evidence: `Observed in ${topQualityPattern.frequency} Work items.`,
+      frequency: topQualityPattern.frequency,
+      impact: "Repeated verification failure is recorded; causation is not inferred.",
+      confidence: topQualityPattern.confidence,
+      relatedWorkIds: topQualityPattern.workIds,
+      action: "Review recommendation",
+      status: "Open",
+      createdAt: new Date().toISOString(),
+    });
+  }
   const topRequirement = snapshot.repeatedRequirements[0];
   if (topRequirement) {
     recommendations.push({

@@ -426,18 +426,38 @@ function InsightsPage() {
                   Sources: {pattern.sources.join(", ") || "Unknown"} · Last observed:{" "}
                   {pattern.lastObserved} · Scope: {pattern.scope}
                 </p>
-                {pattern.status !== "Marked incorrect" ? (
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {pattern.status !== "Marked incorrect" ? (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        updateOrganizationalPattern(pattern.id, "Marked incorrect");
+                        load(true);
+                      }}
+                      className="rounded-md border border-input px-3 py-1.5 text-xs hover:bg-accent"
+                    >
+                      Mark pattern incorrect
+                    </button>
+                  ) : null}
                   <button
                     type="button"
                     onClick={() => {
-                      updateOrganizationalPattern(pattern.id, "Marked incorrect");
+                      createOrganizationPolicy({
+                        name: `Review pattern: ${pattern.pattern}`,
+                        rule: `Consider ${pattern.pattern} for relevant Work.`,
+                        scope: "INDIVIDUAL",
+                        appliesTo: "",
+                        severity: "Warning",
+                        enforcementMode: "Require review",
+                        createdBy: "User",
+                      });
                       load(true);
                     }}
-                    className="mt-3 rounded-md border border-input px-3 py-1.5 text-xs hover:bg-accent"
+                    className="rounded-md border border-input px-3 py-1.5 text-xs hover:bg-accent"
                   >
-                    Mark pattern incorrect
+                    Create policy from pattern
                   </button>
-                ) : null}
+                </div>
               </div>
             ))
           )}
