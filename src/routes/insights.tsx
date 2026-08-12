@@ -21,6 +21,7 @@ import {
   updateCrossWorkDependencyStatus,
   updateProcessRecommendation,
   updateWorkDeadline,
+  updateOrganizationalPattern,
   setWorkAnalyticsExcluded,
   analyzeRequirementChanges,
   compareSourceVersions,
@@ -425,6 +426,18 @@ function InsightsPage() {
                   Sources: {pattern.sources.join(", ") || "Unknown"} · Last observed:{" "}
                   {pattern.lastObserved} · Scope: {pattern.scope}
                 </p>
+                {pattern.status !== "Marked incorrect" ? (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      updateOrganizationalPattern(pattern.id, "Marked incorrect");
+                      load(true);
+                    }}
+                    className="mt-3 rounded-md border border-input px-3 py-1.5 text-xs hover:bg-accent"
+                  >
+                    Mark pattern incorrect
+                  </button>
+                ) : null}
               </div>
             ))
           )}

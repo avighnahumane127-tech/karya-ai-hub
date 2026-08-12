@@ -1843,6 +1843,9 @@ function refreshOrganizationalMemory(works = includedWorks()) {
     group.push(value);
     groups.set(value.key, group);
   }
+  const existingStatuses = new Map(
+    intelligenceStore.patterns.map((pattern) => [pattern.id, pattern.status]),
+  );
   const patterns = Array.from(groups.entries())
     .filter(([, group]) => new Set(group.map((item) => item.work.id)).size >= 2)
     .map(([key, group]) => {
@@ -1858,7 +1861,9 @@ function refreshOrganizationalMemory(works = includedWorks()) {
           group.map((item) => item.work.activity[0]?.when).find(Boolean) || "Date unavailable",
         scope: "INDIVIDUAL" as const,
         confidence: workIds.length >= 3 ? ("High" as const) : ("Medium" as const),
-        status: "Known pattern" as const,
+        status:
+          existingStatuses.get(`pattern-requirement-${key.replace(/\s+/g, "-")}`) ||
+          "Known pattern",
       };
     });
   intelligenceStore.patterns = patterns;
